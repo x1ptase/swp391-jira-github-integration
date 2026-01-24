@@ -1,12 +1,16 @@
-# Java
+# Compiled class files
 target/
+*.class
 
-# Node
-node_modules/
+# Log files
+*.log
 
-# IDE
-.idea/
-.vscode/
+# Package files
+*.jar
+*.war
+*.ear
 
-# OS
-.DS_Store
+# Maven/Gradle temporary files
+.gradle/
+build/
+.mvn/
