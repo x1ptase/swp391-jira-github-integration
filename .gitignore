@@ -1,12 +1,18 @@
-# Java
-target/
-
-# Node
+# Dependencies
 node_modules/
 
-# IDE
-.idea/
-.vscode/
+# Production build
+build/
+dist/
 
-# OS
-.DS_Store
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables (Bảo mật cho API keys/DB info)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
