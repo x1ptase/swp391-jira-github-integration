@@ -14,6 +14,7 @@ integrating Jira Software Cloud and GitHub.
 - Database: SQL Server
 - Integration: Jira Cloud REST API, GitHub REST API
 - Containerization: Docker, Docker Compose
+- Testing & API Tools: Postman
 
 ## Repository Structure
 - /backend   : Spring Boot REST API
