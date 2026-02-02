@@ -1,0 +1,16 @@
+# Java Maven
+target/
+*.class
+*.jar
+
+# IDE rác
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Hệ điều hành
+.DS_Store
+Thumbs.db
