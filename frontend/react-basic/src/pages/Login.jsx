@@ -10,20 +10,26 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('https://your-api/login', {
+      const res = await fetch("/api/auth/login", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem('token', data.token);
-        // Điều hướng theo vai trò
-      } else {
-        setError(data.message || 'Đăng nhập thất bại');
+
+      if (!res.ok) {
+        throw new Error("Login failed");
       }
-    } catch (err) {
-      setError('Lỗi kết nối máy chủ');
+
+      const data = await res.json();
+
+      // Lưu token vào localStorage
+      localStorage.setItem("token", data.data.token);
+
+      alert("Login thành công!");
+      window.location.href = "/home";
+    } catch (error) {
+      console.error(error);
+      setError("Sai tài khoản hoặc mật khẩu");
     }
   };
 
