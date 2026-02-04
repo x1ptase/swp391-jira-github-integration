@@ -2,6 +2,7 @@ package com.swp391.backend.controller;
 
 import com.swp391.backend.common.ApiResponse;
 import com.swp391.backend.dto.request.LoginRequest;
+import com.swp391.backend.dto.request.RegisterRequest;
 import com.swp391.backend.dto.response.LoginResponse;
 import com.swp391.backend.service.AuthService;
 import jakarta.validation.Valid;
@@ -21,5 +22,11 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         return ApiResponse.success(authService.login(loginRequest));
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<String> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        authService.register(registerRequest);
+        return ApiResponse.success("User registered successfully!");
     }
 }
