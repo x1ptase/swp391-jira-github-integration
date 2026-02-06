@@ -9,98 +9,113 @@ function AdminHome() {
   const [totalPages, setTotalPages] = useState(0);
 
   const [form, setForm] = useState({
-    id: null,
+    userId: null,
     username: "",
     email: "",
+    githubUsername: "",
+    jiraEmail: "",
     fullName: "",
-    role: "USER",
+    password: "",
+    roleCode: "STUDENT",
   });
 
-  //  FETCH USERS 
+  // ===== FETCH USERS =====
   const fetchUsers = async (p = 0) => {
-    try {
-      const res = await fetch(`${API}?page=${p}&size=5`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      const data = await res.json();
-      setUsers(data.data.content);
-      setTotalPages(data.data.totalPages);
-      setPage(p);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-    }
+    const res = await fetch(`${API}?page=${p}&size=7`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    const json = await res.json();
+    setUsers(json.data.content);
+    setTotalPages(json.data.totalPages);
+    setPage(p);
   };
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  // CREATE / UPDATE 
+  // ===== CREATE / UPDATE =====
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      if (form.id) {
-        await fetch(`${API}/${form.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(form),
-        });
-      } else {
-        await fetch(API, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(form),
-        });
-      }
-      resetForm();
-      fetchUsers(page);
-    } catch (err) {
-      console.error("Error saving user:", err);
-    }
-  };
 
-  //  DELETE 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this user?")) return;
-    try {
-      await fetch(`${API}/${id}`, {
-        method: "DELETE",
+    if (form.userId) {
+      // UPDATE (không đổi password)
+      await fetch(`${API}/${form.userId}`, {
+        method: "PUT",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        body: JSON.stringify({
+          email: form.email,
+          fullName: form.fullName,
+          roleCode: "STUDENT",
+          githubUsername: form.githubUsername,
+          jiraEmail: form.jiraEmail,
+        }),
       });
-      fetchUsers(page);
-    } catch (err) {
-      console.error("Error deleting user:", err);
+    } else {
+      // CREATE
+      await fetch(API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          username: form.username,
+          email: form.email,
+          fullName: form.fullName,
+          password: form.password,
+          roleCode: "STUDENT",
+          githubUsername: form.githubUsername,
+          jiraEmail: form.jiraEmail,
+        }),
+      });
     }
+
+    resetForm();
+    fetchUsers(page);
   };
 
-  //  EDIT 
+  // ===== DELETE =====
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this user?")) return;
+    await fetch(`${API}/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    fetchUsers(page);
+  };
+
+  // ===== EDIT =====
   const handleEdit = (u) => {
     setForm({
-      id: u.id,
+      userId: u.userId,
       username: u.username,
       email: u.email,
       fullName: u.fullName,
-      role: u.role,
+      password: "",
+      roleCode: "STUDENT",
+      githubUsername: u.githubUsername,
+      jiraEmail: u.jiraEmail,
     });
   };
 
   const resetForm = () => {
     setForm({
-      id: null,
+      userId: null,
       username: "",
       email: "",
       fullName: "",
-      role: "USER",
+      password: "",
+      roleCode: "STUDENT",
+      githubUsername: "",
+      jiraEmail: "",
     });
   };
 
@@ -108,36 +123,59 @@ function AdminHome() {
     <div className="admin-container">
       <h2>User Management (Admin)</h2>
 
-      {/* FORM */}
+      {/* ===== FORM ===== */}
       <form className="user-form" onSubmit={handleSubmit}>
         <input
           placeholder="Username"
           value={form.username}
+          disabled={!!form.userId}
           onChange={(e) => setForm({ ...form, username: e.target.value })}
           required
         />
+        <input
+          placeholder="GitHub Username"
+          value={form.githubUsername}
+          onChange={(e) =>
+            setForm({ ...form, githubUsername: e.target.value })
+          }
+        />
+
+        <input
+          placeholder="Jira Email"
+          value={form.jiraEmail}
+          onChange={(e) =>
+            setForm({ ...form, jiraEmail: e.target.value })
+          }
+        />
+        
         <input
           placeholder="Email"
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           required
         />
+
         <input
           placeholder="Full name"
           value={form.fullName}
           onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+          required
         />
-        <select
-          value={form.role}
-          onChange={(e) => setForm({ ...form, role: e.target.value })}
-        >
-          <option value="ADMIN">ADMIN</option>
-          <option value="USER">USER</option>
-        </select>
+
+        {!form.userId && (
+          <input
+            type="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
+          />
+        )}
+        
 
         <div className="form-actions">
-          <button type="submit">{form.id ? "Update" : "Create"}</button>
-          {form.id && (
+          <button type="submit">{form.userId ? "Update" : "Create"}</button>
+          {form.userId && (
             <button type="button" className="cancel" onClick={resetForm}>
               Cancel
             </button>
@@ -145,13 +183,15 @@ function AdminHome() {
         </div>
       </form>
 
-      {/* TABLE */}
+      {/*  TABLE  */}
       <table className="user-table">
         <thead>
           <tr>
             <th>ID</th>
             <th>Username</th>
             <th>Email</th>
+            <th>GitHub Username</th>
+            <th>Jira Email</th>
             <th>Full Name</th>
             <th>Role</th>
             <th>Action</th>
@@ -159,22 +199,24 @@ function AdminHome() {
         </thead>
         <tbody>
           {users.map((u) => (
-            <tr key={u.id}>
-              <td>{u.id}</td>
+            <tr key={u.userId}>
+              <td>{u.userId}</td>
               <td>{u.username}</td>
               <td>{u.email}</td>
+              <td>{u.githubUsername}</td>
+              <td>{u.jiraEmail}</td> 
               <td>{u.fullName}</td>
-              <td>{u.role}</td>
+              <td>{u.roleCode}</td>
               <td>
                 <button onClick={() => handleEdit(u)}>Edit</button>
-                <button onClick={() => handleDelete(u.id)}>Delete</button>
+                <button onClick={() => handleDelete(u.userId)}>Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/*PAGINATION*/}
+      {/*  PAGINATION  */}
       <div className="pagination">
         {Array.from({ length: totalPages }, (_, i) => (
           <button
