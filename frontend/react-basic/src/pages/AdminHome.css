@@ -42,11 +42,20 @@ button.danger {
   color: white;
 }
 
-/* ===== TABLE ===== */
+/* TABLE */
 .user-table {
   width: 100%;
   border-collapse: collapse;
 }
+
+.user-table td button {
+  margin-right: 8px;
+}
+
+.user-table td button:last-child {
+  margin-right: 0;
+}
+
 
 .user-table th,
 .user-table td {

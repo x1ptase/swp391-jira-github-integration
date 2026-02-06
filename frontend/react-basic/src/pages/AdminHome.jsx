@@ -198,9 +198,9 @@ function AdminHome() {
           </tr>
         </thead>
         <tbody>
-          {users.map((u) => (
+          {users.map((u,index) => (
             <tr key={u.userId}>
-              <td>{u.userId}</td>
+              <td>{page * 7 + index + 1}</td>
               <td>{u.username}</td>
               <td>{u.email}</td>
               <td>{u.githubUsername}</td>
