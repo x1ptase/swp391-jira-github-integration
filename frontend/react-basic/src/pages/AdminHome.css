@@ -1,0 +1,67 @@
+.admin-container {
+  padding: 24px;
+  max-width: 1000px;
+  margin: auto;
+  font-family: Arial, sans-serif;
+}
+
+h2 {
+  margin-bottom: 16px;
+}
+
+/*FORM */
+.user-form {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.user-form input,
+.user-form select {
+  padding: 8px;
+}
+
+.form-actions {
+  grid-column: span 4;
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+button.cancel {
+  background: #ccc;
+}
+
+button.danger {
+  background: #e74c3c;
+  color: white;
+}
+
+/* ===== TABLE ===== */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-table th,
+.user-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.user-table th {
+  background: #f4f4f4;
+}
+
+/*  PAGINATION */
+.pagination {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
