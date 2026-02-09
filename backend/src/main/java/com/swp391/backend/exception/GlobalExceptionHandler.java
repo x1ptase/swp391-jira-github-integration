@@ -6,6 +6,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 
@@ -33,7 +34,8 @@ public class GlobalExceptionHandler {
         List<FieldError> errors = e.getBindingResult().getFieldErrors();
         for (int i = 0; i < errors.size(); i++) {
             FieldError fe = errors.get(i);
-            if (i > 0) sb.append("; ");
+            if (i > 0)
+                sb.append("; ");
             sb.append(fe.getField()).append(" ").append(fe.getDefaultMessage());
         }
 
@@ -41,9 +43,22 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(400, sb.toString()));
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResourceFound(NoResourceFoundException e) {
+        return ResponseEntity.status(404)
+                .body(ApiResponse.error(404, e.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception e) {
         return ResponseEntity.status(500)
                 .body(ApiResponse.error(500, "Internal Server Error: " + e.getMessage()));
+    }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(
+            org.springframework.dao.DataIntegrityViolationException e) {
+        return ResponseEntity.status(409)
+                .body(ApiResponse.error(409, "Conflict: Data integrity violation. Check for duplicate entries."));
     }
 }

@@ -51,6 +51,18 @@ public class AuthServiceImpl implements AuthService {
                 if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
                         throw new RuntimeException("Error: Username is already taken!");
                 }
+                if (userRepository.existsByEmailIgnoreCase(registerRequest.getEmail())) {
+                        throw new RuntimeException("Error: Email is already taken!");
+                }
+                if (registerRequest.getGithubUsername() != null && !registerRequest.getGithubUsername().trim().isEmpty()
+                                && userRepository.existsByGithubUsernameIgnoreCase(
+                                                registerRequest.getGithubUsername())) {
+                        throw new RuntimeException("Error: GitHub Username is already taken!");
+                }
+                if (registerRequest.getJiraEmail() != null && !registerRequest.getJiraEmail().trim().isEmpty()
+                                && userRepository.existsByJiraEmailIgnoreCase(registerRequest.getJiraEmail())) {
+                        throw new RuntimeException("Error: Jira Email is already taken!");
+                }
 
                 // Determine and validate role
                 String roleCode = registerRequest.getRoleCode();
