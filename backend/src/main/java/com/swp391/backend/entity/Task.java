@@ -2,26 +2,29 @@ package com.swp391.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
-@Table(name = "Requirement")
+@Table(name = "Task")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Requirement {
+public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "requirement_id")
-    private Integer requirementId;
+    @Column(name = "task_id")
+    private Integer taskId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "requirement_id", nullable = false)
+    private Requirement requirement;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
     private StudentGroup studentGroup;
-
-    @Column(name = "req_code", nullable = false, length = 50)
-    private String reqCode;
 
     @Column(name = "title", nullable = false, length = 200)
     private String title;
@@ -30,16 +33,24 @@ public class Requirement {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "priority_id", nullable = false)
-    private Priority priority;
+    @JoinColumn(name = "assignee_id")
+    private User assignee;
 
     @ManyToOne
     @JoinColumn(name = "status_id", nullable = false)
-    private RequirementStatus status;
+    private TaskStatus status;
 
-    @ManyToOne
-    @JoinColumn(name = "created_by", nullable = false)
-    private User createdBy;
+    @Column(name = "estimate_hours", precision = 6, scale = 2)
+    private BigDecimal estimateHours;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "due_date")
+    private LocalDate dueDate;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
