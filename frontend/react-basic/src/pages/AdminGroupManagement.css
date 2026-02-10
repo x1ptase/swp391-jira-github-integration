@@ -1,0 +1,76 @@
+.group-container {
+  margin-top: 32px;
+}
+
+.group-container h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+/* FILTER */
+.group-filter {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.group-filter input {
+  padding: 6px;
+}
+
+.group-filter button.cancel {
+  background: #ccc;
+}
+
+/* FORM */
+.group-form {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.group-form input {
+  padding: 8px;
+}
+
+.form-actions {
+  grid-column: span 4;
+  display: flex;
+  gap: 10px;
+}
+
+.error {
+  grid-column: span 4;
+  color: red;
+  margin-top: 4px;
+}
+
+/* TABLE */
+.group-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.group-table th,
+.group-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.group-table th {
+  background: #f4f4f4;
+}
+
+.group-table td button {
+  margin-right: 8px;
+}
+
+.group-table td button:last-child {
+  margin-right: 0;
+}
+
+button.danger {
+  background: #e74c3c;
+  color: white;
+}
