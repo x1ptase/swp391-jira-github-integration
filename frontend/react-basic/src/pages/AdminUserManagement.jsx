@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import "./AdminHome.css";
+import "./AdminUserManagement.css";
 
 const API = "/api/admin/users";
+const username = localStorage.getItem("username");
 
-function AdminHome() {
+
+function AdminUserManagement() {
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -51,7 +53,7 @@ function AdminHome() {
         body: JSON.stringify({
           email: form.email,
           fullName: form.fullName,
-          roleCode: "STUDENT",
+          roleCode: form.roleCode,
           githubUsername: form.githubUsername,
           jiraEmail: form.jiraEmail,
         }),
@@ -69,7 +71,7 @@ function AdminHome() {
           email: form.email,
           fullName: form.fullName,
           password: form.password,
-          roleCode: "STUDENT",
+          roleCode: form.roleCode,
           githubUsername: form.githubUsername,
           jiraEmail: form.jiraEmail,
         }),
@@ -100,7 +102,7 @@ function AdminHome() {
       email: u.email,
       fullName: u.fullName,
       password: "",
-      roleCode: "STUDENT",
+      roleCode: u.roleCode,
       githubUsername: u.githubUsername,
       jiraEmail: u.jiraEmail,
     });
@@ -121,9 +123,9 @@ function AdminHome() {
 
   return (
     <div className="admin-container">
-      <h2>User Management (Admin)</h2>
+      <h2>Welcome, {username}</h2>
 
-      {/* ===== FORM ===== */}
+      {/* FORM */}
       <form className="user-form" onSubmit={handleSubmit}>
         <input
           placeholder="Username"
@@ -147,7 +149,7 @@ function AdminHome() {
             setForm({ ...form, jiraEmail: e.target.value })
           }
         />
-        
+
         <input
           placeholder="Email"
           value={form.email}
@@ -171,7 +173,20 @@ function AdminHome() {
             required
           />
         )}
-        
+
+        <select
+          value={form.roleCode}
+          onChange={(e) =>
+            setForm({ ...form, roleCode: e.target.value })
+          }
+          required
+        >
+          <option value="STUDENT">STUDENT</option>
+          <option value="ADMIN">ADMIN</option>
+          <option value="LECTURER">LECTURER</option>
+        </select>
+
+
 
         <div className="form-actions">
           <button type="submit">{form.userId ? "Update" : "Create"}</button>
@@ -198,13 +213,13 @@ function AdminHome() {
           </tr>
         </thead>
         <tbody>
-          {users.map((u,index) => (
+          {users.map((u, index) => (
             <tr key={u.userId}>
               <td>{page * 7 + index + 1}</td>
               <td>{u.username}</td>
               <td>{u.email}</td>
               <td>{u.githubUsername}</td>
-              <td>{u.jiraEmail}</td> 
+              <td>{u.jiraEmail}</td>
               <td>{u.fullName}</td>
               <td>{u.roleCode}</td>
               <td>
@@ -232,4 +247,4 @@ function AdminHome() {
   );
 }
 
-export default AdminHome;
+export default AdminUserManagement;

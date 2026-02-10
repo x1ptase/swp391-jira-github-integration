@@ -27,7 +27,7 @@ function Login() {
       // Lưu token vào localStorage
       localStorage.setItem("token", data.data.token);
       const role = data.data.role;
-
+      localStorage.setItem("username", username);
       alert("Login thành công!");
       // Chuyển hướng dựa trên vai trò
        if (role === "ROLE_ADMIN") {
