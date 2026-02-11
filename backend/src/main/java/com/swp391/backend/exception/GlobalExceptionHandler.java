@@ -61,4 +61,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(409)
                 .body(ApiResponse.error(409, "Conflict: Data integrity violation. Check for duplicate entries."));
     }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
+        return ResponseEntity.status(403).body(ApiResponse.error(403, "Access Denied"));
+    }
+
 }
