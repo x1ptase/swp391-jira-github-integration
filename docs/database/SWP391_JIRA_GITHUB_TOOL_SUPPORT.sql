@@ -1,4 +1,4 @@
-﻿-- ============================
+-- ============================
 -- CREATE DATABASE
 -- ============================
 IF DB_ID(N'SWP391_JIRA_GITHUB_TOOL_SUPPORT') IS NULL
@@ -58,13 +58,21 @@ CREATE TABLE Users (
     username NVARCHAR(50) NOT NULL UNIQUE,
     full_name NVARCHAR(100) NOT NULL,
     email NVARCHAR(120) NOT NULL UNIQUE,
-    github_username NVARCHAR(100) NULL UNIQUE,
-    jira_email NVARCHAR(120) NULL UNIQUE,
+    github_username NVARCHAR(100) NULL,
+    jira_email NVARCHAR(120) NULL,
     password_hash NVARCHAR(255) NOT NULL,
     role_id INT NOT NULL,
     created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
     CONSTRAINT FK_User_Role FOREIGN KEY (role_id) REFERENCES Role(role_id)
 );
+
+CREATE UNIQUE INDEX UX_Users_github_username_notnull
+ON dbo.Users(github_username)
+WHERE github_username IS NOT NULL;
+
+CREATE UNIQUE INDEX UX_Users_jira_email_notnull
+ON dbo.Users(jira_email)
+WHERE jira_email IS NOT NULL;
 
 CREATE TABLE StudentGroup (
     group_id INT IDENTITY(1,1) PRIMARY KEY,
