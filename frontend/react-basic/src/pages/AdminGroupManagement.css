@@ -1,76 +1,309 @@
 .group-container {
-  margin-top: 32px;
+  background: white;
+  padding: 32px 40px;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: "Segoe UI", sans-serif;
 }
 
 .group-container h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
+  margin-bottom: 24px;
+  font-size: 24px;
 }
 
 /* FILTER */
 .group-filter {
   display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .group-filter input {
-  padding: 6px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 15px;
+  min-width: 180px;
+}
+
+.group-filter button {
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
 }
 
 .group-filter button.cancel {
-  background: #ccc;
+  background: #94a3b8;
 }
 
 /* FORM */
 .group-form {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .group-form input {
-  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 15px;
 }
 
 .form-actions {
-  grid-column: span 4;
+  grid-column: 1 / -1;
   display: flex;
-  gap: 10px;
+  gap: 12px;
+}
+
+.group-form button {
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+button.cancel {
+  background: #94a3b8;
+}
+
+button.danger {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+button.choose-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+button.choose-btn:hover {
+  background: #059669;
 }
 
 .error {
-  grid-column: span 4;
-  color: red;
-  margin-top: 4px;
+  color: #ef4444;
+  margin-top: 12px;
+  font-size: 14px;
+  grid-column: 1 / -1;
 }
 
 /* TABLE */
 .group-table {
   width: 100%;
+  margin-top: 30px;
   border-collapse: collapse;
-}
-
-.group-table th,
-.group-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 15px;
 }
 
 .group-table th {
-  background: #f4f4f4;
+  background: #f1f5f9;
+  font-weight: 600;
+  text-align: left;
+  padding: 14px 20px;
+  border-bottom: 2px solid #e2e8f0;
+  text-align: center;
 }
 
-.group-table td button {
-  margin-right: 8px;
+.group-table td {
+  padding: 12px 20px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.group-table td button:last-child {
-  margin-right: 0;
+.group-table tr:hover {
+  background: #f9fafb;
 }
 
-button.danger {
-  background: #e74c3c;
+.group-table button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #2563eb;
   color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.group-table button.danger, .group-table button.danger:hover {
+  background: #dd4a4a;
+}
+
+.group-table button:hover {
+  background: #1d4ed8;
+}
+
+
+.lecturer-badge {
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.no-lecturer {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #1e293b;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #64748b;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  max-height: calc(80vh - 80px);
+}
+
+/* LECTURER TABLE IN MODAL */
+.lecturer-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.lecturer-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  font-size: 14px;
+}
+
+.lecturer-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 14px;
+}
+
+.lecturer-table tr:hover {
+  background: #f9fafb;
+}
+
+.assign-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.assign-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.assign-btn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
 }

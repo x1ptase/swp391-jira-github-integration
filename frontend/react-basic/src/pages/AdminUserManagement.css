@@ -1,82 +1,49 @@
-html, body, #root {
-  margin: 0;
-  padding: 10px;
-  height: 100%;
-}
-
 .admin-container {
+  background: white;
   padding: 24px;
-  max-width: 1000px;
-  margin: 0px;
-  font-family: Arial, sans-serif;
-}
-
-h2 {
-  margin-bottom: 16px;
-}
-
-/*FORM */
-.user-form {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.05);
 }
 
 .user-form input,
 .user-form select {
-  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
 }
 
-.form-actions {
-  grid-column: span 4;
-  display: flex;
-  gap: 10px;
-}
-
-button {
-  padding: 6px 12px;
-  cursor: pointer;
-}
-
-button.cancel {
-  background: #ccc;
-}
-
-button.danger {
-  background: #e74c3c;
+.user-form button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #2563eb;
   color: white;
 }
 
-/* TABLE */
 .user-table {
-  width: 100%;
-  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.user-table td button {
-  margin-right: 8px;
+.user-table button {
+  margin: 0 4px;
 }
-
-.user-table td button:last-child {
-  margin-right: 0;
-}
-
-
-.user-table th,
-.user-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-}
-
 .user-table th {
-  background: #f4f4f4;
+  background: #f1f5f9;
+  padding: 14px 16px;
 }
 
-/*  PAGINATION */
-.pagination {
-  margin-top: 12px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
+.user-table tr:hover {
+  background: #f9fafb;
+}
+
+.pagination button {
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.pagination .active {
+  background: #2563eb;
+  color: white;
 }

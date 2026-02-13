@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import "./AdminLayout.css";
+import "./LecturerLayout.css";
 
-function AdminLayout() {
+function LecturerLayout() {
   const username = localStorage.getItem("username");
   const location = useLocation();
   
@@ -14,29 +14,22 @@ function AdminLayout() {
     <div className="layout">
       <aside className="sidebar">
         <div>
-          <h2 className="logo">Jira & Github Support Tool</h2>
+          <h2 className="logo">JiraSync</h2>
 
           <nav className="nav-menu">
-            <Link 
-              to="users" 
-              className={`nav-item ${location.pathname.includes('users') ? 'active' : ''}`}
-            >
-              <span className="nav-icon">👤</span>
-              Users
-            </Link>
             <Link 
               to="groups" 
               className={`nav-item ${location.pathname.includes('groups') ? 'active' : ''}`}
             >
               <span className="nav-icon">👥</span>
-              Groups
+              My Groups
             </Link>
           </nav>
         </div>
 
         <div className="sidebar-footer">
           <div className="user-info">
-            <span className="user-icon">👨‍💼</span>
+            <span className="user-icon">👨‍🏫</span>
             <span className="username">{username}</span>
           </div>
           <button className="logout-btn" onClick={handleLogout}>
@@ -52,4 +45,4 @@ function AdminLayout() {
   );
 }
 
-export default AdminLayout;
+export default LecturerLayout;
