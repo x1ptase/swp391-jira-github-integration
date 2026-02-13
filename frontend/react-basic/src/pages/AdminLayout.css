@@ -1,0 +1,111 @@
+.layout {
+  display: flex;
+  height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f8fafc;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: #1e293b;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+  height: 95vh;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  padding: 24px 20px;
+  margin: 0;
+  border-bottom: 1px solid #334155;
+  color: #60a5fa;
+}
+
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  gap: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+  background: #334155;
+  color: white;
+  border-left-color: #60a5fa;
+}
+
+.nav-item.active {
+  background: #334155;
+  color: white;
+  border-left-color: #60a5fa;
+}
+
+.nav-icon {
+  font-size: 18px;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid #334155;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: #334155;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.user-icon {
+  font-size: 20px;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 10px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+}
+
+.content {
+  flex: 1;
+  background-color: #f8fafc;
+  padding: 30px;
+  overflow-y: auto;
+}

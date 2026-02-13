@@ -32,8 +32,9 @@ function Login() {
       // Chuyển hướng dựa trên vai trò
        if (role === "ROLE_ADMIN") {
         navigate("/admin");
-      } else {
-        navigate("/");
+      } 
+      else if (role === "ROLE_LECTURER") {
+        navigate("/lecturer");
       }
     } catch (err) {
       setError("Sai tài khoản hoặc mật khẩu");

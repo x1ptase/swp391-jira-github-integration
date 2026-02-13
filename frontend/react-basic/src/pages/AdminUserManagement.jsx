@@ -123,7 +123,7 @@ function AdminUserManagement() {
 
   return (
     <div className="admin-container">
-      <h2>Welcome, {username}</h2>
+      <h2>User Management</h2>
 
       {/* FORM */}
       <form className="user-form" onSubmit={handleSubmit}>
@@ -185,8 +185,6 @@ function AdminUserManagement() {
           <option value="ADMIN">ADMIN</option>
           <option value="LECTURER">LECTURER</option>
         </select>
-
-
 
         <div className="form-actions">
           <button type="submit">{form.userId ? "Update" : "Create"}</button>

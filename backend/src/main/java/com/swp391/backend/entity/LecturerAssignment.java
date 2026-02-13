@@ -1,8 +1,13 @@
 package com.swp391.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "LecturerAssignment")
 public class LecturerAssignment {
@@ -21,25 +26,5 @@ public class LecturerAssignment {
 
     }
 
-    public Long getGroupId() {
-        return groupId;
-    }
-    public void setGroupId(Long groupId) {
-        this.groupId = groupId;
-    }
-
-    public Long getLecturerId() {
-        return lecturerId;
-    }
-    public void setLecturerId(Long lecturerId) {
-        this.lecturerId = lecturerId;
-    }
-
-    public LocalDateTime getAssignedAt() {
-        return assignedAt;
-    }
-    public void setAssignedAt(LocalDateTime assignedAt) {
-        this.assignedAt = assignedAt;
-    }
 }
 

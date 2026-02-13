@@ -1,11 +1,13 @@
-// src/pages/admin/AdminGroupManagement.jsx
 import { useEffect, useState } from "react";
 import "./AdminGroupManagement.css";
 
 const API_URL = "/api/student_group";
+const LECTURER_API = "/api/admin/users?roleCode=LECTURER";
+const ASSIGN_API = "/api/admin/groups";
 
 function AdminGroupManagement() {
   const [groups, setGroups] = useState([]);
+  const [lecturers, setLecturers] = useState([]);
   const [form, setForm] = useState({
     groupId: null,
     groupCode: "",
@@ -20,11 +22,14 @@ function AdminGroupManagement() {
   });
 
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState(null);
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     fetchGroups();
+    fetchLecturers();
   }, []);
 
   const fetchGroups = async () => {
@@ -41,6 +46,53 @@ function AdminGroupManagement() {
     });
     const data = await res.json();
     setGroups(data.data || []);
+  };
+
+  const fetchLecturers = async () => {
+    const res = await fetch(LECTURER_API, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+    // Nếu API trả về Page object
+    if (data.data && data.data.content) {
+      setLecturers(data.data.content);
+    } else {
+      setLecturers(data.data || []);
+    }
+  };
+
+  const handleOpenModal = (group) => {
+    setSelectedGroup(group);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedGroup(null);
+  };
+
+  const handleAssignLecturer = async (lecturerId) => {
+    if (!selectedGroup) return;
+
+    const res = await fetch(`${ASSIGN_API}/${selectedGroup.groupId}/lecturer`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ lecturerId: lecturerId }),
+    });
+
+    if (res.ok) {
+      alert("Lecturer assigned successfully!");
+      handleCloseModal();
+      fetchGroups(); // Refresh để cập nhật lecturer
+    } else {
+      const err = await res.json();
+      alert("Failed to assign lecturer: " + (err.message || "Unknown error"));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -130,15 +182,16 @@ function AdminGroupManagement() {
         <input
           placeholder="Semester"
           value={filter.semester}
-          onChange={(e) =>
-            setFilter({ ...filter, semester: e.target.value })
-          }
+          onChange={(e) => setFilter({ ...filter, semester: e.target.value })}
         />
         <button onClick={fetchGroups}>Filter</button>
-        <button className="cancel" onClick={() => {
-          setFilter({ courseCode: "", semester: "" });
-          fetchGroups();
-        }}>
+        <button
+          className="cancel"
+          onClick={() => {
+            setFilter({ courseCode: "", semester: "" });
+            fetchGroups();
+          }}
+        >
           Clear
         </button>
       </div>
@@ -149,36 +202,28 @@ function AdminGroupManagement() {
           placeholder="Group Code"
           value={form.groupCode}
           disabled={!!form.groupId}
-          onChange={(e) =>
-            setForm({ ...form, groupCode: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, groupCode: e.target.value })}
           required
         />
 
         <input
           placeholder="Group Name"
           value={form.groupName}
-          onChange={(e) =>
-            setForm({ ...form, groupName: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, groupName: e.target.value })}
           required
         />
 
         <input
           placeholder="Course Code"
           value={form.courseCode}
-          onChange={(e) =>
-            setForm({ ...form, courseCode: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, courseCode: e.target.value })}
           required
         />
 
         <input
           placeholder="Semester"
           value={form.semester}
-          onChange={(e) =>
-            setForm({ ...form, semester: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, semester: e.target.value })}
           required
         />
 
@@ -205,6 +250,7 @@ function AdminGroupManagement() {
             <th>Group Name</th>
             <th>Course Code</th>
             <th>Semester</th>
+            <th>Assigned Lecturer</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -217,7 +263,22 @@ function AdminGroupManagement() {
               <td>{g.courseCode}</td>
               <td>{g.semester}</td>
               <td>
+                {g.assignedLecturerName ? (
+                  <span className="lecturer-badge">
+                    {g.assignedLecturerName}
+                  </span>
+                ) : (
+                  <span className="no-lecturer">Not assigned</span>
+                )}
+              </td>
+              <td>
                 <button onClick={() => handleEdit(g)}>Edit</button>
+                <button
+                  className="choose-btn"
+                  onClick={() => handleOpenModal(g)}
+                >
+                  Choose
+                </button>
                 <button
                   className="danger"
                   onClick={() => handleDelete(g.groupId)}
@@ -229,13 +290,71 @@ function AdminGroupManagement() {
           ))}
           {groups.length === 0 && (
             <tr>
-              <td colSpan="6" style={{ textAlign: "center" }}>
+              <td colSpan="7" style={{ textAlign: "center" }}>
                 No data
               </td>
             </tr>
           )}
         </tbody>
       </table>
+
+      {/* MODAL - LECTURER SELECTION */}
+      {showModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Select Lecturer for {selectedGroup?.groupName}</h3>
+              <button className="close-btn" onClick={handleCloseModal}>
+                ×
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <table className="lecturer-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lecturers.map((lect, index) => (
+                    <tr key={lect.userId}>
+                      <td>{index + 1}</td>
+                      <td>{lect.fullName}</td>
+                      <td>{lect.username}</td>
+                      <td>{lect.email}</td>
+                      <td>
+                        <button
+                          className="assign-btn"
+                          onClick={() => handleAssignLecturer(lect.userId)}
+                          disabled={
+                            selectedGroup?.assignedLecturerId === lect.userId
+                          }
+                        >
+                          {selectedGroup?.assignedLecturerId === lect.userId
+                            ? "Assigned"
+                            : "Assign"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {lecturers.length === 0 && (
+                    <tr>
+                      <td colSpan="5" style={{ textAlign: "center" }}>
+                        No lecturers found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
