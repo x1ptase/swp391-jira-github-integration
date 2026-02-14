@@ -136,7 +136,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponse> listUsers(String keyword, Pageable pageable) {
-        Page<User> page = userRepository.search(keyword, pageable);
+        return listUsers(keyword, null, pageable);
+    }
+
+    @Override
+    public Page<UserResponse> listUsers(String keyword, String roleCode, Pageable pageable) {
+        Page<User> page = userRepository.searchWithRole(keyword, roleCode, pageable);
         List<User> users = page.getContent();
 
         List<UserResponse> dtoList = new ArrayList<UserResponse>();

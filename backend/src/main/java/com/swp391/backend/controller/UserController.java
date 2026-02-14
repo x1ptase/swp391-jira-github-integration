@@ -45,6 +45,7 @@ public class UserController {
     @GetMapping
     public ApiResponse<Page<UserResponse>> list(
             @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "roleCode", required = false) String roleCode,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {

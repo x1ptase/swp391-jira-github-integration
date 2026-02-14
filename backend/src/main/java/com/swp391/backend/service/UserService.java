@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
         UserResponse updateUser(Long userId, UpdateUserRequest request);
         UserResponse getUserById(Long userId);
         Page<UserResponse> listUsers(String keyword, Pageable pageable);
+        Page<UserResponse> listUsers(String keyword, String roleCode, Pageable pageable);
         void deleteUser(Long userId);
     }
 
