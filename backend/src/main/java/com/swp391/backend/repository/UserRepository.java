@@ -31,4 +31,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
                     ")"
     )
     Page<User> search(@Param("kw") String keyword, Pageable pageable);
+
+    // Dùng cho dropdown assign lecturer: /api/admin/users?roleCode=LECTURER
+    @Query(
+            "SELECT u FROM User u " +
+                    "WHERE (:roleCode IS NULL OR :roleCode = '' OR " +
+                    "LOWER(u.role.roleCode) = LOWER(:roleCode)) " +
+                    "AND (:kw IS NULL OR :kw = '' OR " +
+                    "LOWER(u.username) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
+                    "LOWER(u.email) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
+                    "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :kw, '%'))" +
+                    ")"
+    )
+    Page<User> searchWithRole(@Param("kw") String keyword,
+                              @Param("roleCode") String roleCode,
+                              Pageable pageable);
 }
