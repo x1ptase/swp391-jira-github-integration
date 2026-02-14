@@ -58,8 +58,48 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(
             org.springframework.dao.DataIntegrityViolationException e) {
+
+        String msg = null;
+        Throwable most = e.getMostSpecificCause();
+        if (most != null) {
+            msg = most.getMessage();
+        }
+        if (msg == null) {
+            msg = e.getMessage();
+        }
+        if (msg == null) {
+            msg = "";
+        }
+
+        // BR-01: Each student may join at most one group in the same course and semester
+        if (containsIgnoreCase(msg, "UQ_OneGroupPerStudentPerTerm")) {
+            return ResponseEntity.status(409)
+                    .body(ApiResponse.error(409,
+                            "BR-01 violated: Each student may join at most one group in the same course and semester."));
+        }
+
+        // BR-02: each group has at most 1 leader
+        if (containsIgnoreCase(msg, "UX_Group_OneLeader")) {
+            return ResponseEntity.status(409)
+                    .body(ApiResponse.error(409,
+                            "BR-02 violated: Each group has at most 1 leader."));
+        }
+
+        // Duplicate member in same group (PRIMARY KEY (group_id, user_id))
+        if (containsIgnoreCase(msg, "PRIMARY KEY")
+                && (containsIgnoreCase(msg, "GroupMember") || containsIgnoreCase(msg, "dbo.GroupMember"))) {
+            return ResponseEntity.status(409)
+                    .body(ApiResponse.error(409, "Member đã tồn tại trong group (duplicate group_id + user_id)."));
+        }
+
+        // fallback chung
         return ResponseEntity.status(409)
-                .body(ApiResponse.error(409, "Conflict: Data integrity violation. Check for duplicate entries."));
+                .body(ApiResponse.error(409, "Conflict: Data integrity violation."));
+    }
+
+    private boolean containsIgnoreCase(String text, String keyword) {
+        if (text == null || keyword == null) return false;
+        return text.toLowerCase().contains(keyword.toLowerCase());
     }
 
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
