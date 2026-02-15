@@ -50,7 +50,7 @@ public class UserController {
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<UserResponse> result = userService.listUsers(keyword, pageable);
+        Page<UserResponse> result = userService.listUsers(keyword, roleCode, pageable);
         return ApiResponse.success(result);
     }
 

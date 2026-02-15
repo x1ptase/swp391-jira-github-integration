@@ -2,12 +2,16 @@ import { useEffect, useState } from "react";
 import "./AdminGroupManagement.css";
 
 const API_URL = "/api/student_group";
-const LECTURER_API = "/api/admin/users?roleCode=LECTURER";
+const LECTURER_API = "/api/admin/users?roleCode=LECTURER&page=0&size=999";
+const STUDENT_API = "/api/admin/users?roleCode=STUDENT&page=0&size=999";
 const ASSIGN_API = "/api/admin/groups";
+const MEMBER_API = "/api/groups";
 
 function AdminGroupManagement() {
   const [groups, setGroups] = useState([]);
   const [lecturers, setLecturers] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [members, setMembers] = useState([]);
   const [form, setForm] = useState({
     groupId: null,
     groupCode: "",
@@ -22,7 +26,8 @@ function AdminGroupManagement() {
   });
 
   const [error, setError] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const [showLecturerModal, setShowLecturerModal] = useState(false);
+  const [showMemberModal, setShowMemberModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
 
   const token = localStorage.getItem("token");
@@ -30,6 +35,7 @@ function AdminGroupManagement() {
   useEffect(() => {
     fetchGroups();
     fetchLecturers();
+    fetchStudents();
   }, []);
 
   const fetchGroups = async () => {
@@ -58,19 +64,64 @@ function AdminGroupManagement() {
     // Nếu API trả về Page object
     if (data.data && data.data.content) {
       setLecturers(data.data.content);
+    } else if (Array.isArray(data.data)) {
+      setLecturers(data.data);
     } else {
-      setLecturers(data.data || []);
+      setLecturers([]);
+    }
+
+    //Debug để kiểm tra structure
+    console.log("Lecturers response:", data);
+  };
+  // Fetch danh sách students
+  const fetchStudents = async () => {
+    const res = await fetch(STUDENT_API, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+    if (data.data && data.data.content) {
+      setStudents(data.data.content);
+    } else if (Array.isArray(data.data)) {
+      setStudents(data.data);
+    } else {
+      setStudents([]);
     }
   };
 
-  const handleOpenModal = (group) => {
-    setSelectedGroup(group);
-    setShowModal(true);
+  //  Fetch members của group
+  const fetchMembers = async (groupId) => {
+    const res = await fetch(`${MEMBER_API}/${groupId}/members`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+    setMembers(data.data || []);
   };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
+
+  const handleOpenLecturerModal = (group) => {
+    setSelectedGroup(group);
+    setShowLecturerModal(true);
+  };
+
+  const handleCloseLecturerModal = () => {
+    setShowLecturerModal(false);
     setSelectedGroup(null);
+  };
+
+  const handleOpenMemberModal = async (group) => {
+    setSelectedGroup(group);
+    await fetchMembers(group.groupId);
+    setShowMemberModal(true);
+  };
+
+  const handleCloseMemberModal = () => {
+    setShowMemberModal(false);
+    setSelectedGroup(null);
+    setMembers([]);
   };
 
   const handleAssignLecturer = async (lecturerId) => {
@@ -87,11 +138,77 @@ function AdminGroupManagement() {
 
     if (res.ok) {
       alert("Lecturer assigned successfully!");
-      handleCloseModal();
+      handleCloseLecturerModal();
       fetchGroups(); // Refresh để cập nhật lecturer
     } else {
       const err = await res.json();
       alert("Failed to assign lecturer: " + (err.message || "Unknown error"));
+    }
+  };
+
+  // add member 
+  const handleAddMember = async (userId) => {
+    if (!selectedGroup) return;
+
+    const res = await fetch(`${MEMBER_API}/${selectedGroup.groupId}/members`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ userId: userId }),
+    });
+
+    if (res.ok) {
+      alert("Member added successfully!");
+      await fetchMembers(selectedGroup.groupId);
+    } else {
+      const err = await res.json();
+      alert("Failed to add member: " + (err.message || "Unknown error"));
+    }
+  };
+
+  //remove member
+  const handleRemoveMember = async (userId) => {
+    if (!selectedGroup) return;
+    if (!window.confirm("Remove this member?")) return;
+
+    const res = await fetch(`${MEMBER_API}/${selectedGroup.groupId}/members/${userId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      alert("Member removed successfully!");
+      await fetchMembers(selectedGroup.groupId);
+    } else {
+      const err = await res.json();
+      alert("Failed to remove member: " + (err.message || "Unknown error"));
+    }
+  };
+
+  //set leader
+  const handleSetLeader = async (userId) => {
+    if (!selectedGroup) return;
+    if (!window.confirm("Set this member as leader?")) return;
+
+    const res = await fetch(`${MEMBER_API}/${selectedGroup.groupId}/leader`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ userId: userId }),
+    });
+
+    if (res.ok) {
+      alert("Leader set successfully!");
+      await fetchMembers(selectedGroup.groupId);
+    } else {
+      const err = await res.json();
+      alert("Failed to set leader: " + (err.message || "Unknown error"));
     }
   };
 
@@ -273,9 +390,17 @@ function AdminGroupManagement() {
               </td>
               <td>
                 <button onClick={() => handleEdit(g)}>Edit</button>
+                {/*nút Members */}
+                <button
+                  className="members-btn"
+                  onClick={() => handleOpenMemberModal(g)}
+                >
+                  Members
+                </button>
+                  {/*nút Choose Lecturer */}
                 <button
                   className="choose-btn"
-                  onClick={() => handleOpenModal(g)}
+                  onClick={() => handleOpenLecturerModal(g)}
                 >
                   Choose
                 </button>
@@ -299,12 +424,12 @@ function AdminGroupManagement() {
       </table>
 
       {/* MODAL - LECTURER SELECTION */}
-      {showModal && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
+      {showLecturerModal && (
+        <div className="modal-overlay" onClick={handleCloseLecturerModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Select Lecturer for {selectedGroup?.groupName}</h3>
-              <button className="close-btn" onClick={handleCloseModal}>
+              <button className="close-btn" onClick={handleCloseLecturerModal}>
                 ×
               </button>
             </div>
@@ -351,6 +476,115 @@ function AdminGroupManagement() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL - MEMBER MANAGEMENT */}
+       {showMemberModal && (
+        <div className="modal-overlay" onClick={handleCloseMemberModal}>
+          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Manage Members - {selectedGroup?.groupName}</h3>
+              <button className="close-btn" onClick={handleCloseMemberModal}>
+                ×
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {/* Current Members */}
+              <div className="members-section">
+                <h4>Current Members ({members.length})</h4>
+                <table className="member-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Full Name</th>
+                      <th>Username</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {members.map((member, index) => (
+                      <tr key={member.userId}>
+                        <td>{index + 1}</td>
+                        <td>{member.fullName}</td>
+                        <td>{member.username}</td>
+                        <td>{member.email}</td>
+                        <td>
+                          {member.isLeader ? (
+                            <span className="leader-badge">Leader</span>
+                          ) : (
+                            <span className="member-badge">Member</span>
+                          )}
+                        </td>
+                        <td>
+                          {!member.isLeader && (
+                            <button
+                              className="leader-btn"
+                              onClick={() => handleSetLeader(member.userId)}
+                            >
+                              Set Leader
+                            </button>
+                          )}
+                          <button
+                            className="remove-btn"
+                            onClick={() => handleRemoveMember(member.userId)}
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {members.length === 0 && (
+                      <tr>
+                        <td colSpan="6" style={{ textAlign: "center" }}>
+                          No members yet
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Add Member */}
+              <div className="add-member-section">
+                <h4>Add Student</h4>
+                <table className="student-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Full Name</th>
+                      <th>Username</th>
+                      <th>Email</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {students
+                      .filter(s => !members.some(m => m.userId === s.userId))
+                      .map((student, index) => (
+                        <tr key={student.userId}>
+                          <td>{index + 1}</td>
+                          <td>{student.fullName}</td>
+                          <td>{student.username}</td>
+                          <td>{student.email}</td>
+                          <td>
+                            <button
+                              className="add-btn"
+                              onClick={() => handleAddMember(student.userId)}
+                            >
+                              Add
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
