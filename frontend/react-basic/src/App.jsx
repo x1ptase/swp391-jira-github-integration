@@ -1,32 +1,35 @@
 // src/App.jsx
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminGroupManagement from './pages/AdminGroupManagement';
 import AdminLayout from './pages/AdminLayout';
 import LecturerLayout from './pages/LecturerLayout';
 import LecturerGroupList from './pages/LecturerGroupList';
-import { Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 
 function App() {
   return (
-    <Router>
+     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/admin" element={<AdminLayout />} />
-        <Route path="/admin/groups" element={<AdminGroupManagement />} />
-        <Route path="/admin/users" element={<AdminUserManagement />} />
+        {/* Public Routes */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="users" replace />} />
+          <Route path="users" element={<AdminUserManagement />} />
+          <Route path="groups" element={<AdminGroupManagement />} />
+        </Route>
 
         {/* Lecturer Routes */}
         <Route path="/lecturer" element={<LecturerLayout />}>
           <Route index element={<Navigate to="groups" replace />} />
           <Route path="groups" element={<LecturerGroupList />} />
         </Route>
-        {/* Sau này thêm các route khác như /dashboard, /admin, /lecturer... */}
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
-
 export default App;
