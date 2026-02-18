@@ -3,7 +3,11 @@ package com.swp391.backend.dto.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 public class UpdateUserRequest {
 
     @NotBlank(message = "Email is required")
@@ -31,43 +35,4 @@ public class UpdateUserRequest {
     public UpdateUserRequest() {
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getRoleCode() {
-        return roleCode;
-    }
-
-    public void setRoleCode(String roleCode) {
-        this.roleCode = roleCode;
-    }
-
-    public String getGithubUsername() {
-        return githubUsername;
-    }
-
-    public void setGithubUsername(String githubUsername) {
-        this.githubUsername = githubUsername;
-    }
-
-    public String getJiraEmail() {
-        return jiraEmail;
-    }
-
-    public void setJiraEmail(String jiraEmail) {
-        this.jiraEmail = jiraEmail;
-    }
 }
