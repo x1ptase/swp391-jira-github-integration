@@ -22,7 +22,7 @@ public class GroupMemberController {
     }
 
     @PostMapping("/{groupId}/members")
-    @PreAuthorize("@securityService.hasAccessToGroup(#groupId)")
+    @PreAuthorize("@securityService.isGroupManager(#groupId)")
     public ApiResponse<Object> addMember(@PathVariable Long groupId,
             @Valid @RequestBody AddMemberRequest req) {
         groupMemberService.addMember(groupId, req.getUserId());
@@ -30,7 +30,7 @@ public class GroupMemberController {
     }
 
     @DeleteMapping("/{groupId}/members/{userId}")
-    @PreAuthorize("@securityService.hasAccessToGroup(#groupId)")
+    @PreAuthorize("@securityService.isGroupManager(#groupId)")
     public ApiResponse<Object> removeMember(@PathVariable Long groupId,
             @PathVariable Long userId) {
         groupMemberService.removeMember(groupId, userId);
@@ -38,7 +38,7 @@ public class GroupMemberController {
     }
 
     @PutMapping("/{groupId}/leader")
-    @PreAuthorize("@securityService.hasAccessToGroup(#groupId)")
+    @PreAuthorize("@securityService.isGroupManager(#groupId)")
     public ApiResponse<Object> setLeader(@PathVariable Long groupId,
             @Valid @RequestBody SetLeaderRequest req) {
         groupMemberService.setLeader(groupId, req.getUserId());
