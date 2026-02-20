@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin/users")
-@PreAuthorize("hasAnyRole('ADMIN', 'LECTURER')")
+@PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 
     private final UserService userService;
@@ -31,7 +31,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ApiResponse<UserResponse> update(@PathVariable("id") Long id,
-                                            @Valid @RequestBody UpdateUserRequest request) {
+            @Valid @RequestBody UpdateUserRequest request) {
         UserResponse updated = userService.updateUser(id, request);
         return ApiResponse.success(updated);
     }
@@ -47,8 +47,7 @@ public class UserController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "roleCode", required = false) String roleCode,
             @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size
-    ) {
+            @RequestParam(value = "size", defaultValue = "10") int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<UserResponse> result = userService.listUsers(keyword, roleCode, pageable);
         return ApiResponse.success(result);
