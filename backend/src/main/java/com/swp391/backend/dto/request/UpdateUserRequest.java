@@ -3,11 +3,7 @@ package com.swp391.backend.dto.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
 
-@Setter
-@Getter
 public class UpdateUserRequest {
 
     @NotBlank(message = "Email is required")
@@ -28,11 +24,49 @@ public class UpdateUserRequest {
     private String githubUsername;
 
 
-    @Email(message = "Jira email is invalid")
-    @Size(max = 120, message = "Jira email max length is 120")
-    private String jiraEmail;
+    @Size(max = 255)
+    private String jiraAccountId;
 
     public UpdateUserRequest() {
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getRoleCode() {
+        return roleCode;
+    }
+
+    public void setRoleCode(String roleCode) {
+        this.roleCode = roleCode;
+    }
+
+    public String getGithubUsername() {
+        return githubUsername;
+    }
+
+    public void setGithubUsername(String githubUsername) {
+        this.githubUsername = githubUsername;
+    }
+
+    public String getJiraAccountId() {
+        return jiraAccountId;
+    }
+
+    public void setJiraAccountId(String jiraAccountId) {
+        this.jiraAccountId = jiraAccountId;
+    }
 }

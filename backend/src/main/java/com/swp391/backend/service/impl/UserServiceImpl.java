@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
         String fullName = safeTrim(request.getFullName());
         String roleCode = safeTrim(request.getRoleCode()).toUpperCase();
         String githubUsername = safeTrim(request.getGithubUsername());
-        String jiraEmail = safeTrim(request.getJiraEmail());
+        String jiraAccountId = safeTrim(request.getJiraAccountId());
 
         if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new BusinessException("Username already exists: " + username, 409);
@@ -53,8 +53,8 @@ public class UserServiceImpl implements UserService {
         if (!githubUsername.isEmpty() && userRepository.existsByGithubUsernameIgnoreCase(githubUsername)) {
             throw new BusinessException("Github username already exists: " + githubUsername, 409);
         }
-        if (!jiraEmail.isEmpty() && userRepository.existsByJiraEmailIgnoreCase(jiraEmail)) {
-            throw new BusinessException("Jira email already exists: " + jiraEmail, 409);
+        if (!jiraAccountId.isEmpty() && userRepository.existsByJiraAccountIdIgnoreCase(jiraAccountId)) {
+            throw new BusinessException("Jira email already exists: " + jiraAccountId, 409);
         }
 
         String rawPassword = safeTrim(request.getPassword());
@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(email);
         user.setFullName(fullName);
         user.setGithubUsername(githubUsername.isEmpty() ? null : githubUsername);
-        user.setJiraEmail(jiraEmail.isEmpty() ? null : jiraEmail);
+        user.setJiraAccountId(jiraAccountId.isEmpty() ? null : jiraAccountId);
         user.setRole(role);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
 
@@ -92,7 +92,7 @@ public class UserServiceImpl implements UserService {
         String newFullName = safeTrim(request.getFullName());
         String newRoleCode = safeTrim(request.getRoleCode()).toUpperCase();
         String newGithub = safeTrim(request.getGithubUsername());
-        String newJira = safeTrim(request.getJiraEmail());
+        String newJira = safeTrim(request.getJiraAccountId());
 
         if (!newEmail.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmailIgnoreCase(newEmail)) {
             throw new BusinessException("Email already exists: " + newEmail, 409);
@@ -106,9 +106,9 @@ public class UserServiceImpl implements UserService {
         }
 
         if (!newJira.isEmpty()) {
-            String oldJira = user.getJiraEmail() == null ? "" : user.getJiraEmail();
-            if (!newJira.equalsIgnoreCase(oldJira) && userRepository.existsByJiraEmailIgnoreCase(newJira)) {
-                throw new BusinessException("Jira email already exists: " + newJira, 409);
+            String oldJira = user.getJiraAccountId() == null ? "" : user.getJiraAccountId();
+            if (!newJira.equalsIgnoreCase(oldJira) && userRepository.existsByJiraAccountIdIgnoreCase(newJira)) {
+                throw new BusinessException("Jira account id already exists: " + newJira, 409);
             }
         }
 
@@ -118,7 +118,7 @@ public class UserServiceImpl implements UserService {
         user.setFullName(newFullName);
         user.setRole(role);
         user.setGithubUsername(newGithub.isEmpty() ? null : newGithub);
-        user.setJiraEmail(newJira.isEmpty() ? null : newJira);
+        user.setJiraAccountId(newJira.isEmpty() ? null : newJira);
 
         try {
             User saved = userRepository.save(user);
@@ -186,7 +186,7 @@ public class UserServiceImpl implements UserService {
         r.setFullName(u.getFullName());
         r.setEmail(u.getEmail());
         r.setGithubUsername(u.getGithubUsername());
-        r.setJiraEmail(u.getJiraEmail());
+        r.setJiraAccountId(u.getJiraAccountId());
         if (u.getRole() != null) {
             r.setRoleCode(u.getRole().getRoleCode());
         }

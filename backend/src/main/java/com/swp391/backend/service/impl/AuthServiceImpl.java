@@ -59,9 +59,9 @@ public class AuthServiceImpl implements AuthService {
                                                 registerRequest.getGithubUsername())) {
                         throw new RuntimeException("Error: GitHub Username is already taken!");
                 }
-                if (registerRequest.getJiraEmail() != null && !registerRequest.getJiraEmail().trim().isEmpty()
-                                && userRepository.existsByJiraEmailIgnoreCase(registerRequest.getJiraEmail())) {
-                        throw new RuntimeException("Error: Jira Email is already taken!");
+                if (registerRequest.getJiraAccountId() != null && !registerRequest.getJiraAccountId().trim().isEmpty()
+                                && userRepository.existsByJiraAccountIdIgnoreCase(registerRequest.getJiraAccountId())) {
+                        throw new RuntimeException("Error: Jira Account Id is already taken!");
                 }
 
                 // Determine and validate role
@@ -88,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
                                 .fullName(registerRequest.getFullName())
                                 .email(registerRequest.getEmail())
                                 .githubUsername(registerRequest.getGithubUsername())
-                                .jiraEmail(registerRequest.getJiraEmail())
+                                .jiraAccountId(registerRequest.getJiraAccountId())
                                 .role(userRole)
                                 .build();
 

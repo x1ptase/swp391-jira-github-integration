@@ -7,7 +7,7 @@ public class UserResponse {
     private String fullName;
     private String email;
     private String githubUsername;
-    private String jiraEmail;
+    private String jiraAccountId;
     private String roleCode;
     private LocalDateTime createdAt;
 
@@ -54,12 +54,12 @@ public class UserResponse {
         this.githubUsername = githubUsername;
     }
 
-    public String getJiraEmail() {
-        return jiraEmail;
+    public String getJiraAccountId() {
+        return jiraAccountId;
     }
 
-    public void setJiraEmail(String jiraEmail) {
-        this.jiraEmail = jiraEmail;
+    public void setJiraAccountId(String jiraAccountId) {
+        this.jiraAccountId = jiraAccountId;
     }
 
     public String getRoleCode() {
