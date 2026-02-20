@@ -29,4 +29,9 @@ public class AuthController {
         authService.register(registerRequest);
         return ApiResponse.success("User registered successfully!");
     }
+
+    @PostMapping("/logout")
+    public ApiResponse<String> logout() {
+        return ApiResponse.success("Logged out successfully!");
+    }
 }

@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import "./AdminUserManagement.css";
 
 const API = "/api/admin/users";
-const username = localStorage.getItem("username");
-
 
 function AdminUserManagement() {
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [error, setError] = useState("");
 
   const [form, setForm] = useState({
     userId: null,
@@ -23,15 +22,19 @@ function AdminUserManagement() {
 
   // ===== FETCH USERS =====
   const fetchUsers = async (p = 0) => {
-    const res = await fetch(`${API}?page=${p}&size=7`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    const json = await res.json();
-    setUsers(json.data.content);
-    setTotalPages(json.data.totalPages);
-    setPage(p);
+    try {
+      const res = await fetch(`${API}?page=${p}&size=7`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const json = await res.json();
+      setUsers(json.data.content);
+      setTotalPages(json.data.totalPages);
+      setPage(p);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
   };
 
   useEffect(() => {
@@ -41,61 +44,101 @@ function AdminUserManagement() {
   // ===== CREATE / UPDATE =====
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    
+    try {
+      let res;
 
-    if (form.userId) {
-      // UPDATE (không đổi password)
-      await fetch(`${API}/${form.userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          email: form.email,
-          fullName: form.fullName,
-          roleCode: form.roleCode,
-          githubUsername: form.githubUsername,
-          jiraEmail: form.jiraEmail,
-        }),
-      });
-    } else {
-      // CREATE
-      await fetch(API, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          username: form.username,
-          email: form.email,
-          fullName: form.fullName,
-          password: form.password,
-          roleCode: form.roleCode,
-          githubUsername: form.githubUsername,
-          jiraEmail: form.jiraEmail,
-        }),
-      });
+      if (form.userId) {
+        // UPDATE
+        res = await fetch(`${API}/${form.userId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            email: form.email,
+            fullName: form.fullName,
+            roleCode: form.roleCode,
+            githubUsername: form.githubUsername,
+            jiraEmail: form.jiraEmail,
+          }),
+        });
+      } else {
+        // CREATE
+        res = await fetch(API, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            username: form.username,
+            email: form.email,
+            fullName: form.fullName,
+            password: form.password,
+            roleCode: form.roleCode,
+            githubUsername: form.githubUsername,
+            jiraEmail: form.jiraEmail,
+          }),
+        });
+      }
+
+      //  Parse response
+      const data = await res.json();
+
+      // Kiểm tra lỗi và hiển thị message từ BE
+      if (!res.ok) {
+        // Lấy message từ backend
+        const errorMessage = data.message || "An error occurred";
+        setError(errorMessage);
+        return;
+      }
+
+      //  Thành công
+      alert(form.userId ? "User updated successfully!" : "User created successfully!");
+      resetForm();
+      fetchUsers(page);
+
+    } catch (err) {
+      console.error("Submit error:", err);
+      setError("Network error. Please try again.");
     }
-
-    resetForm();
-    fetchUsers(page);
   };
 
   // ===== DELETE =====
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this user?")) return;
-    await fetch(`${API}/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    fetchUsers(page);
+    setError("");
+    
+    try {
+      const res = await fetch(`${API}/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      // Kiểm tra response
+      if (!res.ok) {
+        const errorData = await res.json();
+        setError(errorData.message || "Failed to delete user");
+        return;
+      }
+
+      alert("User deleted successfully!");
+      fetchUsers(page);
+      
+    } catch (err) {
+      console.error("Delete error:", err);
+      setError("Network error. Please try again.");
+    }
   };
 
   // ===== EDIT =====
   const handleEdit = (u) => {
+    setError("");
     setForm({
       userId: u.userId,
       username: u.username,
@@ -103,12 +146,13 @@ function AdminUserManagement() {
       fullName: u.fullName,
       password: "",
       roleCode: u.roleCode,
-      githubUsername: u.githubUsername,
-      jiraEmail: u.jiraEmail,
+      githubUsername: u.githubUsername || "",
+      jiraEmail: u.jiraEmail || "",
     });
   };
 
   const resetForm = () => {
+    setError("");
     setForm({
       userId: null,
       username: "",
@@ -124,6 +168,15 @@ function AdminUserManagement() {
   return (
     <div className="admin-container">
       <h2>User Management</h2>
+      
+      {/*Error Banner */}
+      {error && (
+        <div className="error-banner">
+          <span className="error-icon">⚠️</span>
+          <span>{error}</span>
+          <button className="error-close" onClick={() => setError("")}>×</button>
+        </div>
+      )}
 
       {/* FORM */}
       <form className="user-form" onSubmit={handleSubmit}>
@@ -216,8 +269,8 @@ function AdminUserManagement() {
               <td>{page * 7 + index + 1}</td>
               <td>{u.username}</td>
               <td>{u.email}</td>
-              <td>{u.githubUsername}</td>
-              <td>{u.jiraEmail}</td>
+              <td>{u.githubUsername || "-"}</td>
+              <td>{u.jiraEmail || "-"}</td>
               <td>{u.fullName}</td>
               <td>{u.roleCode}</td>
               <td>
