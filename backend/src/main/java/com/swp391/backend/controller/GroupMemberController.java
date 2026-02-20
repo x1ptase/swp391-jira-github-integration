@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/groups")
-@PreAuthorize("hasAnyRole('ADMIN','LECTURER')")
 public class GroupMemberController {
 
     private final GroupMemberService groupMemberService;
@@ -23,27 +22,31 @@ public class GroupMemberController {
     }
 
     @PostMapping("/{groupId}/members")
+    @PreAuthorize("@securityService.hasAccessToGroup(#groupId)")
     public ApiResponse<Object> addMember(@PathVariable Long groupId,
-                                         @Valid @RequestBody AddMemberRequest req) {
+            @Valid @RequestBody AddMemberRequest req) {
         groupMemberService.addMember(groupId, req.getUserId());
         return ApiResponse.success(null);
     }
 
     @DeleteMapping("/{groupId}/members/{userId}")
+    @PreAuthorize("@securityService.hasAccessToGroup(#groupId)")
     public ApiResponse<Object> removeMember(@PathVariable Long groupId,
-                                            @PathVariable Long userId) {
+            @PathVariable Long userId) {
         groupMemberService.removeMember(groupId, userId);
         return ApiResponse.success(null);
     }
 
     @PutMapping("/{groupId}/leader")
+    @PreAuthorize("@securityService.hasAccessToGroup(#groupId)")
     public ApiResponse<Object> setLeader(@PathVariable Long groupId,
-                                         @Valid @RequestBody SetLeaderRequest req) {
+            @Valid @RequestBody SetLeaderRequest req) {
         groupMemberService.setLeader(groupId, req.getUserId());
         return ApiResponse.success(null);
     }
 
     @GetMapping("/{groupId}/members")
+    @PreAuthorize("@securityService.hasAccessToGroup(#groupId)")
     public ApiResponse<List<GroupMemberResponse>> list(@PathVariable Long groupId) {
         return ApiResponse.success(groupMemberService.listMembers(groupId));
     }
