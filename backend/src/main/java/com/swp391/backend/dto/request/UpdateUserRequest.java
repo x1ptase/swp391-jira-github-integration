@@ -24,9 +24,8 @@ public class UpdateUserRequest {
     private String githubUsername;
 
 
-    @Email(message = "Jira email is invalid")
-    @Size(max = 120, message = "Jira email max length is 120")
-    private String jiraEmail;
+    @Size(max = 255)
+    private String jiraAccountId;
 
     public UpdateUserRequest() {
     }
@@ -63,11 +62,7 @@ public class UpdateUserRequest {
         this.githubUsername = githubUsername;
     }
 
-    public String getJiraEmail() {
-        return jiraEmail;
-    }
+    public String getJiraAccountId() { return jiraAccountId; }
 
-    public void setJiraEmail(String jiraEmail) {
-        this.jiraEmail = jiraEmail;
-    }
+    public void setJiraAccountId(String jiraAccountId) { this.jiraAccountId = jiraAccountId; }
 }

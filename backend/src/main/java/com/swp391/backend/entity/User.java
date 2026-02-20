@@ -28,8 +28,8 @@ public class User {
     @Column(name = "github_username", unique = true, length = 100)
     private String githubUsername;
 
-    @Column(name = "jira_email", unique = true, length = 120)
-    private String jiraEmail;
+    @Column(name = "jira_account_id", unique = true, length = 255)
+    private String jiraAccountId;
 
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;

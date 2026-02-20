@@ -33,9 +33,8 @@ public class RegisterRequest {
     @Size(max = 100)
     private String githubUsername;
 
-    @Size(max = 120)
-    @Email
-    private String jiraEmail;
+    @Size(max = 255)
+    private String jiraAccountId;
 
     private String roleCode;
 }
