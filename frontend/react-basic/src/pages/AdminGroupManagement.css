@@ -39,8 +39,16 @@
   cursor: pointer;
 }
 
+.group-filter button:hover {
+  background: #1d4ed8;
+}
+
 .group-filter button.cancel {
   background: #94a3b8;
+}
+
+.group-filter button.cancel:hover {
+  background: #7e8a9f;
 }
 
 /* FORM */
@@ -74,34 +82,16 @@
   cursor: pointer;
 }
 
-button.cancel {
+.group-form button:hover {
+  background: #1d4ed8;
+}
+
+.group-form button.cancel {
   background: #94a3b8;
 }
 
-button.danger {
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-left: 8px;
-}
-
-button.choose-btn {
-  background: #10b981;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-left: 8px;
-}
-
-button.choose-btn:hover {
-  background: #059669;
+.group-form button.cancel:hover {
+  background: #7e8a9f;
 }
 
 .error {
@@ -128,37 +118,79 @@ button.choose-btn:hover {
   text-align: center;
   padding: 14px 20px;
   border-bottom: 2px solid #e2e8f0;
-  text-align: center;
 }
 
 .group-table td {
   padding: 12px 20px;
   border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.group-table td:last-child {
+  display: grid;
+  grid-template-columns: repeat(2, 95px);
+  grid-template-rows: repeat(2, 36px);
+  gap: 6px;
+  padding: 12px;
+  justify-content: center;
+  align-content: center;
 }
 
 .group-table tr:hover {
   background: #f9fafb;
 }
 
+/* Tất cả buttons có style đồng nhất */
 .group-table button {
-  padding: 8px 14px;
+  padding: 0;
   border-radius: 6px;
   border: none;
   background: #2563eb;
   color: white;
   cursor: pointer;
-  font-size: 14px;
-}
-
-.group-table button.danger, .group-table button.danger:hover {
-  background: #dd4a4a;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .group-table button:hover {
   background: #1d4ed8;
 }
 
+/* ✅ Button Members - màu tím */
+.group-table .members-btn {
+  background: #8b5cf6;
+}
 
+.group-table .members-btn:hover {
+  background: #7c3aed;
+}
+
+/* ✅ Button Choose - màu xanh lá */
+.group-table .choose-btn {
+  background: #10b981;
+}
+
+.group-table .choose-btn:hover {
+  background: #059669;
+}
+
+/* ✅ Button Delete - màu đỏ */
+.group-table .danger {
+  background: #ef4444;
+}
+
+.group-table .danger:hover {
+  background: #dc2626;
+}
+
+/* Badges */
 .lecturer-badge {
   background: #dbeafe;
   color: #1e40af;
@@ -220,6 +252,11 @@ button.choose-btn:hover {
   }
 }
 
+.modal-large {
+  max-width: 1000px;
+  max-height: 90vh;
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -258,7 +295,7 @@ button.choose-btn:hover {
 .modal-body {
   padding: 24px;
   overflow-y: auto;
-  max-height: calc(80vh - 80px);
+  max-height: calc(90vh - 80px);
 }
 
 /* LECTURER TABLE IN MODAL */
@@ -281,6 +318,7 @@ button.choose-btn:hover {
   padding: 12px 16px;
   border-bottom: 1px solid #e2e8f0;
   font-size: 14px;
+  text-align: center;
 }
 
 .lecturer-table tr:hover {
@@ -308,23 +346,7 @@ button.choose-btn:hover {
   cursor: not-allowed;
 }
 
-/*  Button Members */
-.group-table .members-btn {
-  background: #8b5cf6;
-  margin-left: 8px;
-}
-
-.group-table .members-btn:hover {
-  background: #7c3aed;
-}
-
-/*  Modal large cho member management */
-.modal-large {
-  max-width: 1000px;
-  max-height: 90vh;
-}
-
-/*  Members section */
+/* MEMBER MANAGEMENT */
 .members-section {
   margin-bottom: 32px;
 }
@@ -338,7 +360,7 @@ button.choose-btn:hover {
   border-bottom: 2px solid #e2e8f0;
 }
 
-/* Member table */
+/* Member & Student Tables */
 .member-table,
 .student-table {
   width: 100%;
@@ -362,6 +384,7 @@ button.choose-btn:hover {
   padding: 10px 14px;
   border-bottom: 1px solid #e2e8f0;
   font-size: 13px;
+  text-align: center;
 }
 
 .member-table tr:hover,
@@ -369,7 +392,7 @@ button.choose-btn:hover {
   background: #f9fafb;
 }
 
-/* Badges */
+/* Role Badges */
 .leader-badge {
   background: #fef3c7;
   color: #92400e;
@@ -388,7 +411,7 @@ button.choose-btn:hover {
   font-weight: 500;
 }
 
-/* Action buttons trong member table */
+/* Action Buttons in Member Table */
 .leader-btn {
   background: #f59e0b;
   color: white;
@@ -398,6 +421,7 @@ button.choose-btn:hover {
   cursor: pointer;
   font-size: 12px;
   margin-right: 6px;
+  transition: background 0.2s ease;
 }
 
 .leader-btn:hover {
@@ -412,6 +436,7 @@ button.choose-btn:hover {
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
+  transition: background 0.2s ease;
 }
 
 .remove-btn:hover {
@@ -426,13 +451,14 @@ button.choose-btn:hover {
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
+  transition: background 0.2s ease;
 }
 
 .add-btn:hover {
   background: #059669;
 }
 
-/* ✅ THÊM: Add member section */
+/* Add Member Section */
 .add-member-section {
   max-height: 300px;
   overflow-y: auto;
