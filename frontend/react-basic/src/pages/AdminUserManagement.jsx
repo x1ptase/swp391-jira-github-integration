@@ -14,7 +14,7 @@ function AdminUserManagement() {
     username: "",
     email: "",
     githubUsername: "",
-    jiraEmail: "",
+    jiraAccountId: "",
     fullName: "",
     password: "",
     roleCode: "STUDENT",
@@ -62,7 +62,7 @@ function AdminUserManagement() {
             fullName: form.fullName,
             roleCode: form.roleCode,
             githubUsername: form.githubUsername,
-            jiraEmail: form.jiraEmail,
+            jiraAccountId: form.jiraAccountId,
           }),
         });
       } else {
@@ -80,7 +80,7 @@ function AdminUserManagement() {
             password: form.password,
             roleCode: form.roleCode,
             githubUsername: form.githubUsername,
-            jiraEmail: form.jiraEmail,
+            jiraAccountId: form.jiraAccountId,
           }),
         });
       }
@@ -147,7 +147,7 @@ function AdminUserManagement() {
       password: "",
       roleCode: u.roleCode,
       githubUsername: u.githubUsername || "",
-      jiraEmail: u.jiraEmail || "",
+      jiraAccountId: u.jiraAccountId || "",
     });
   };
 
@@ -161,7 +161,7 @@ function AdminUserManagement() {
       password: "",
       roleCode: "STUDENT",
       githubUsername: "",
-      jiraEmail: "",
+      jiraAccountId: "",
     });
   };
 
@@ -196,10 +196,10 @@ function AdminUserManagement() {
         />
 
         <input
-          placeholder="Jira Email"
-          value={form.jiraEmail}
+          placeholder="Jira Account ID"
+          value={form.jiraAccountId}
           onChange={(e) =>
-            setForm({ ...form, jiraEmail: e.target.value })
+            setForm({ ...form,jiraAccountId: e.target.value })
           }
         />
 
@@ -257,7 +257,7 @@ function AdminUserManagement() {
             <th>Username</th>
             <th>Email</th>
             <th>GitHub Username</th>
-            <th>Jira Email</th>
+            <th>Jira Account ID</th>
             <th>Full Name</th>
             <th>Role</th>
             <th>Action</th>
@@ -270,7 +270,7 @@ function AdminUserManagement() {
               <td>{u.username}</td>
               <td>{u.email}</td>
               <td>{u.githubUsername || "-"}</td>
-              <td>{u.jiraEmail || "-"}</td>
+              <td>{u.jiraAccountId|| "-"}</td>
               <td>{u.fullName}</td>
               <td>{u.roleCode}</td>
               <td>

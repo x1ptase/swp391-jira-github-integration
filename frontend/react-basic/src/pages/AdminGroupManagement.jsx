@@ -228,9 +228,9 @@ function AdminGroupManagement() {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        group_code: form.groupCode,
-        group_name: form.groupName,
-        course_code: form.courseCode,
+        groupCode: form.groupCode,      
+        groupName: form.groupName,      
+        courseCode: form.courseCode, 
         semester: form.semester,
       }),
     });
@@ -397,7 +397,7 @@ function AdminGroupManagement() {
                 >
                   Members
                 </button>
-                  {/*nút Choose Lecturer */}
+                {/*nút Choose Lecturer */}
                 <button
                   className="choose-btn"
                   onClick={() => handleOpenLecturerModal(g)}
@@ -482,7 +482,7 @@ function AdminGroupManagement() {
       )}
 
       {/* MODAL - MEMBER MANAGEMENT */}
-       {showMemberModal && (
+      {showMemberModal && (
         <div className="modal-overlay" onClick={handleCloseMemberModal}>
           <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
