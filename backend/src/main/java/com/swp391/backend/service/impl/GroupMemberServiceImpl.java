@@ -135,6 +135,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
             r.setUserId(gm.getUser().getUserId());
             r.setUsername(gm.getUser().getUsername());
             r.setFullName(gm.getUser().getFullName());
+            r.setEmail(gm.getUser().getEmail());
             r.setMemberRole(gm.getMemberRole() == null ? null : gm.getMemberRole().getCode());
             result.add(r);
         }

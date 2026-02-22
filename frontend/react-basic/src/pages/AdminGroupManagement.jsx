@@ -515,14 +515,14 @@ function AdminGroupManagement() {
                         <td>{member.username}</td>
                         <td>{member.email}</td>
                         <td>
-                          {member.isLeader ? (
+                          {member.memberRole==="LEADER" ? (
                             <span className="leader-badge">Leader</span>
                           ) : (
                             <span className="member-badge">Member</span>
                           )}
                         </td>
                         <td>
-                          {!member.isLeader && (
+                          {member.memberRole !== "LEADER" && (
                             <button
                               className="leader-btn"
                               onClick={() => handleSetLeader(member.userId)}
