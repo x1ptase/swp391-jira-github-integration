@@ -1,10 +1,14 @@
 package com.swp391.backend.service.impl;
 
 import com.swp391.backend.dto.response.GroupMemberResponse;
+import com.swp391.backend.dto.response.UserResponse;
 import com.swp391.backend.entity.*;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.repository.*;
 import com.swp391.backend.service.GroupMemberService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -141,6 +145,43 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         }
 
         return result;
+    }
+
+    @Override
+    public Page<UserResponse> searchEligibleStudents(Long groupId, String keyword, Pageable pageable) {
+        User actor = currentUser();
+        requireCanManageGroup(actor, groupId);
+
+        StudentGroup group = requireGroup(groupId);
+
+        Page<User> page = userRepository.searchEligibleStudentsForGroup(
+                keyword,
+                groupId,
+                group.getCourseCode(),
+                group.getSemester(),
+                pageable
+        );
+
+        List<User> users = page.getContent();
+        List<UserResponse> dtoList = new ArrayList<UserResponse>();
+        for (int i = 0; i < users.size(); i++) {
+            dtoList.add(toUserResponse(users.get(i)));
+        }
+
+        return new PageImpl<UserResponse>(dtoList, pageable, page.getTotalElements());
+    }
+
+    private UserResponse toUserResponse(User u) {
+        UserResponse r = new UserResponse();
+        r.setUserId(u.getUserId());
+        r.setUsername(u.getUsername());
+        r.setFullName(u.getFullName());
+        r.setEmail(u.getEmail());
+        r.setGithubUsername(u.getGithubUsername());
+        r.setJiraAccountId(u.getJiraAccountId());
+        if (u.getRole() != null) r.setRoleCode(u.getRole().getRoleCode());
+        r.setCreatedAt(u.getCreatedAt());
+        return r;
     }
 
     // ===== helpers =====

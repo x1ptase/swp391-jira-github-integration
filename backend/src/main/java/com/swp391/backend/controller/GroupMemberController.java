@@ -4,8 +4,12 @@ import com.swp391.backend.common.ApiResponse;
 import com.swp391.backend.dto.request.AddMemberRequest;
 import com.swp391.backend.dto.request.SetLeaderRequest;
 import com.swp391.backend.dto.response.GroupMemberResponse;
+import com.swp391.backend.dto.response.UserResponse;
 import com.swp391.backend.service.GroupMemberService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +23,18 @@ public class GroupMemberController {
 
     public GroupMemberController(GroupMemberService groupMemberService) {
         this.groupMemberService = groupMemberService;
+    }
+
+    @GetMapping("/{groupId}/members/search")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('LECTURER') and @securityService.isLecturerAssigned(#groupId))")
+    public ApiResponse<Page<UserResponse>> searchEligibleStudents(
+            @PathVariable Long groupId,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
+    ) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("fullName").ascending());
+        return ApiResponse.success(groupMemberService.searchEligibleStudents(groupId, keyword, pageable));
     }
 
     @PostMapping("/{groupId}/members")
