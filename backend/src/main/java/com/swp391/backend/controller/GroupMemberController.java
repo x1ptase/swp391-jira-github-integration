@@ -22,7 +22,7 @@ public class GroupMemberController {
     }
 
     @PostMapping("/{groupId}/members")
-    @PreAuthorize("@securityService.isGroupManager(#groupId)")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('LECTURER') and @securityService.isLecturerAssigned(#groupId))")
     public ApiResponse<Object> addMember(@PathVariable Long groupId,
             @Valid @RequestBody AddMemberRequest req) {
         groupMemberService.addMember(groupId, req.getUserId());
