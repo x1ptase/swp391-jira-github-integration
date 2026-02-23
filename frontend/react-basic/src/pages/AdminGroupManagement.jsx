@@ -380,9 +380,9 @@ function AdminGroupManagement() {
               <td>{g.courseCode}</td>
               <td>{g.semester}</td>
               <td>
-                {g.assignedLecturerName ? (
+                {g.lecturerName ? (
                   <span className="lecturer-badge">
-                    {g.assignedLecturerName}
+                    {g.lecturerName}
                   </span>
                 ) : (
                   <span className="no-lecturer">Not assigned</span>
@@ -457,10 +457,10 @@ function AdminGroupManagement() {
                           className="assign-btn"
                           onClick={() => handleAssignLecturer(lect.userId)}
                           disabled={
-                            selectedGroup?.assignedLecturerId === lect.userId
+                            selectedGroup?.lecturerId === lect.userId
                           }
                         >
-                          {selectedGroup?.assignedLecturerId === lect.userId
+                          {selectedGroup?.lecturerId === lect.userId
                             ? "Assigned"
                             : "Assign"}
                         </button>

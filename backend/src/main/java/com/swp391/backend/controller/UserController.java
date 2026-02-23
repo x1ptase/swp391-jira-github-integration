@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin/users")
-@PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 
     private final UserService userService;
