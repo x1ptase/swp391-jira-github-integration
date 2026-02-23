@@ -83,6 +83,13 @@ public class SecurityService {
         return false;
     }
 
+    public boolean isLecturerAssigned(Long groupId) {
+        Long userId = getCurrentUserId();
+        if (userId == null || groupId == null) return false;
+
+        return lecturerAssignmentRepository.existsByGroupIdAndLecturerId(groupId, userId);
+    }
+
     @Deprecated
     public boolean isGroupLeader(Long groupId) {
         return isGroupManager(groupId);
