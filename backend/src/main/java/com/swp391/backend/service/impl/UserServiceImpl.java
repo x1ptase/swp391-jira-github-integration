@@ -141,6 +141,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponse> listUsers(String keyword, String roleCode, Pageable pageable) {
+        if (keyword != null) {
+            keyword = keyword.trim();
+            if (keyword.isEmpty()) {
+                keyword = null;   // coi như không search
+            }
+        }
+
         Page<User> page = userRepository.searchWithRole(keyword, roleCode, pageable);
         List<User> users = page.getContent();
 

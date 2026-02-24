@@ -2,29 +2,30 @@ import { useEffect, useState } from "react";
 import "./LecturerGroupList.css";
 
 const API_URL = "/api/lecturer/groups";
-const STUDENT_API = "/api/admin/users?roleCode=STUDENT&page=0&size=999";
 const MEMBER_API = "/api/groups";
 
 function LecturerGroupList() {
   const [groups, setGroups] = useState([]);
-  const [students, setStudents] = useState([]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [studentKeyword, setStudentKeyword] = useState("");
+  const [eligibleStudents, setEligibleStudents] = useState([]);
+  const [studentPage, setStudentPage] = useState(0);
+  const [studentTotalPages, setStudentTotalPages] = useState(0);
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     fetchMyGroups();
-    fetchStudents();
   }, []);
 
   const fetchMyGroups = async () => {
     setLoading(true);
     setError("");
-    
+
     try {
       const res = await fetch(API_URL, {
         headers: {
@@ -42,26 +43,6 @@ function LecturerGroupList() {
       setError(err.message || "Error occurred");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchStudents = async () => {
-    try {
-      const res = await fetch(STUDENT_API, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await res.json();
-      if (data.data && data.data.content) {
-        setStudents(data.data.content);
-      } else if (Array.isArray(data.data)) {
-        setStudents(data.data);
-      } else {
-        setStudents([]);
-      }
-    } catch (err) {
-      console.error("Error fetching students:", err);
     }
   };
 
@@ -88,18 +69,41 @@ function LecturerGroupList() {
 
   const handleOpenMemberModal = async (group) => {
     setSelectedGroup(group);
-    try {
-      await fetchMembers(group.groupId);
-      setShowMemberModal(true);
-    } catch (err) {
-      console.error("Cannot open member modal:", err);
-    }
+    await fetchMembers(group.groupId);
+    await fetchEligibleStudents(group.groupId);
+    setShowMemberModal(true);
   };
 
   const handleCloseMemberModal = () => {
     setShowMemberModal(false);
     setSelectedGroup(null);
     setMembers([]);
+  };
+
+  const fetchEligibleStudents = async (groupId, keyword = "", p = 0) => {
+    try {
+      const res = await fetch(
+        `/api/groups/${groupId}/members/search?keyword=${keyword}&page=${p}&size=5`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to search students");
+      }
+
+      const data = await res.json();
+
+      setEligibleStudents(data.data.content || []);
+      setStudentTotalPages(data.data.totalPages || 0);
+      setStudentPage(p);
+
+    } catch (err) {
+      console.error("Search students error:", err);
+    }
   };
 
   const handleAddMember = async (userId) => {
@@ -118,6 +122,7 @@ function LecturerGroupList() {
       if (res.ok) {
         alert("Member added successfully!");
         await fetchMembers(selectedGroup.groupId);
+        await fetchEligibleStudents(selectedGroup.groupId, studentKeyword, studentPage);
       } else {
         const err = await res.json();
         alert("Failed to add member: " + (err.message || "Unknown error"));
@@ -142,6 +147,7 @@ function LecturerGroupList() {
       if (res.ok) {
         alert("Member removed successfully!");
         await fetchMembers(selectedGroup.groupId);
+        await fetchEligibleStudents(selectedGroup.groupId, studentKeyword, studentPage);
       } else {
         const err = await res.json();
         alert("Failed to remove member: " + (err.message || "Unknown error"));
@@ -224,8 +230,8 @@ function LecturerGroupList() {
                   <span className="detail-value">{group.semester}</span>
                 </div>
               </div>
-              <button 
-                className="view-btn" 
+              <button
+                className="view-btn"
                 onClick={() => handleOpenMemberModal(group)}
               >
                 Manage Members
@@ -307,6 +313,19 @@ function LecturerGroupList() {
               {/* Add Member */}
               <div className="add-member-section">
                 <h4>Add Student</h4>
+
+                <input
+                  type="text"
+                  placeholder="Search student..."
+                  value={studentKeyword}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setStudentKeyword(value);
+                    fetchEligibleStudents(selectedGroup.groupId, value.trim(), 0);
+                  }}
+                  className="search-input"
+                />
+
                 <table className="student-table">
                   <thead>
                     <tr>
@@ -318,8 +337,7 @@ function LecturerGroupList() {
                     </tr>
                   </thead>
                   <tbody>
-                    {students
-                      .filter(s => !members.some(m => m.userId === s.userId))
+                    {eligibleStudents
                       .map((student, index) => (
                         <tr key={student.userId}>
                           <td>{index + 1}</td>
@@ -338,6 +356,21 @@ function LecturerGroupList() {
                       ))}
                   </tbody>
                 </table>
+
+                <div className="pagination">
+                  {Array.from({ length: studentTotalPages }, (_, i) => (
+                    <button
+                      key={i}
+                      className={i === studentPage ? "active" : ""}
+                      onClick={() =>
+                        fetchEligibleStudents(selectedGroup.groupId, studentKeyword, i)
+                      }
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+
               </div>
             </div>
           </div>
