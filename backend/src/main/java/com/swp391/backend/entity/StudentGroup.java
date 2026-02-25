@@ -19,9 +19,9 @@ public class StudentGroup {
     private Long groupId;
 
     @NotBlank
-    @JsonAlias("group_code")
-    @Column(name="group_code" , nullable = false , length = 50 )
-    private String groupCode;
+    @JsonAlias("class_code")
+    @Column(name="class_code" , nullable = false , length = 50 )
+    private String classCode;
 
     @NotBlank
     @JsonAlias("group_name")

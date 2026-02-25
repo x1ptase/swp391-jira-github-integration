@@ -12,9 +12,7 @@ public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long
 
     List<StudentGroup> findByGroupId(Long groupId);
 
-    boolean existsByGroupCode(String groupCode);
-
-    boolean existsByGroupCodeAndGroupIdNot(String groupCode, Long groupId);
+    boolean existsByClassCodeAndGroupIdNot(String groupCode, Long groupId);
 
     List<StudentGroup> findByCourseCode(String courseCode);
 

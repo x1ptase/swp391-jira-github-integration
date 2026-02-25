@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class CreateGroupRequest {
     @NotBlank
-    private String groupCode;
+    private String classCode;
 
     @NotBlank
     private String groupName;

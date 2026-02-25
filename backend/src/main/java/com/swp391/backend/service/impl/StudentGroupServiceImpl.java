@@ -40,12 +40,9 @@ public class StudentGroupServiceImpl implements StudentGroupService {
     @Override
     @Transactional
     public StudentGroupResponse addStudentGroup(CreateGroupRequest request) {
-        if (studentGroupRepository.existsByGroupCodeAndGroupIdNot(request.getGroupCode(), -1L)) {
-            throw new BusinessException("Group Code already exists: " + request.getGroupCode(), 409);
-        }
 
         StudentGroup studentGroup = new StudentGroup();
-        studentGroup.setGroupCode(request.getGroupCode());
+        studentGroup.setClassCode(request.getClassCode());
         studentGroup.setGroupName(request.getGroupName());
         studentGroup.setCourseCode(request.getCourseCode());
         studentGroup.setSemester(request.getSemester());
@@ -73,8 +70,8 @@ public class StudentGroupServiceImpl implements StudentGroupService {
         StudentGroup existing = studentGroupRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("StudentGroup not found: " + id, 404));
 
-        if (studentGroupRepository.existsByGroupCodeAndGroupIdNot(studentGroup.getGroupCode(), id)) {
-            throw new BusinessException("StudentGroup groupCode already exists: " + studentGroup.getGroupCode(), 409);
+        if (studentGroupRepository.existsByClassCodeAndGroupIdNot(studentGroup.getClassCode(), id)) {
+            throw new BusinessException("StudentGroup groupCode already exists: " + studentGroup.getClassCode(), 409);
         }
 
         existing.setGroupName(studentGroup.getGroupName());
@@ -115,7 +112,7 @@ public class StudentGroupServiceImpl implements StudentGroupService {
     private StudentGroupResponse mapToResponse(StudentGroup group) {
         StudentGroupResponse resp = StudentGroupResponse.builder()
                 .groupId(group.getGroupId())
-                .groupCode(group.getGroupCode())
+                .classCode(group.getClassCode())
                 .groupName(group.getGroupName())
                 .courseCode(group.getCourseCode())
                 .semester(group.getSemester())
