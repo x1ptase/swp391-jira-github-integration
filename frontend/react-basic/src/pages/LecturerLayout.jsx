@@ -14,7 +14,7 @@ function LecturerLayout() {
     <div className="layout">
       <aside className="sidebar">
         <div>
-          <h2 className="logo">JiraSync</h2>
+          <h2 className="logo">Jira & Github Support</h2>
 
           <nav className="nav-menu">
             <Link 

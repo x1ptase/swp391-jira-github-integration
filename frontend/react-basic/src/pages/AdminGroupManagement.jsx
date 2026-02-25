@@ -3,15 +3,17 @@ import "./AdminGroupManagement.css";
 
 const API_URL = "/api/student_group";
 const LECTURER_API = "/api/admin/users?roleCode=LECTURER&page=0&size=999";
-const STUDENT_API = "/api/admin/users?roleCode=STUDENT&page=0&size=999";
 const ASSIGN_API = "/api/admin/groups";
 const MEMBER_API = "/api/groups";
 
 function AdminGroupManagement() {
   const [groups, setGroups] = useState([]);
   const [lecturers, setLecturers] = useState([]);
-  const [students, setStudents] = useState([]);
   const [members, setMembers] = useState([]);
+  const [eligibleStudents, setEligibleStudents] = useState([]);
+  const [studentKeyword, setStudentKeyword] = useState("");
+  const [studentPage, setStudentPage] = useState(0);
+  const [studentTotalPages, setStudentTotalPages] = useState(0);
   const [form, setForm] = useState({
     groupId: null,
     groupCode: "",
@@ -35,7 +37,6 @@ function AdminGroupManagement() {
   useEffect(() => {
     fetchGroups();
     fetchLecturers();
-    fetchStudents();
   }, []);
 
   const fetchGroups = async () => {
@@ -61,7 +62,6 @@ function AdminGroupManagement() {
       },
     });
     const data = await res.json();
-    // Nếu API trả về Page object
     if (data.data && data.data.content) {
       setLecturers(data.data.content);
     } else if (Array.isArray(data.data)) {
@@ -69,28 +69,8 @@ function AdminGroupManagement() {
     } else {
       setLecturers([]);
     }
-
-    //Debug để kiểm tra structure
-    console.log("Lecturers response:", data);
-  };
-  // Fetch danh sách students
-  const fetchStudents = async () => {
-    const res = await fetch(STUDENT_API, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const data = await res.json();
-    if (data.data && data.data.content) {
-      setStudents(data.data.content);
-    } else if (Array.isArray(data.data)) {
-      setStudents(data.data);
-    } else {
-      setStudents([]);
-    }
   };
 
-  //  Fetch members của group
   const fetchMembers = async (groupId) => {
     const res = await fetch(`${MEMBER_API}/${groupId}/members`, {
       headers: {
@@ -100,7 +80,6 @@ function AdminGroupManagement() {
     const data = await res.json();
     setMembers(data.data || []);
   };
-
 
   const handleOpenLecturerModal = (group) => {
     setSelectedGroup(group);
@@ -115,6 +94,7 @@ function AdminGroupManagement() {
   const handleOpenMemberModal = async (group) => {
     setSelectedGroup(group);
     await fetchMembers(group.groupId);
+    await fetchEligibleStudents(group.groupId);
     setShowMemberModal(true);
   };
 
@@ -122,6 +102,7 @@ function AdminGroupManagement() {
     setShowMemberModal(false);
     setSelectedGroup(null);
     setMembers([]);
+    setStudentKeyword("");
   };
 
   const handleAssignLecturer = async (lecturerId) => {
@@ -139,14 +120,13 @@ function AdminGroupManagement() {
     if (res.ok) {
       alert("Lecturer assigned successfully!");
       handleCloseLecturerModal();
-      fetchGroups(); // Refresh để cập nhật lecturer
+      fetchGroups();
     } else {
       const err = await res.json();
       alert("Failed to assign lecturer: " + (err.message || "Unknown error"));
     }
   };
 
-  // add member 
   const handleAddMember = async (userId) => {
     if (!selectedGroup) return;
 
@@ -162,13 +142,38 @@ function AdminGroupManagement() {
     if (res.ok) {
       alert("Member added successfully!");
       await fetchMembers(selectedGroup.groupId);
+      setStudentKeyword("");
+      await fetchEligibleStudents(selectedGroup.groupId);
     } else {
       const err = await res.json();
       alert("Failed to add member: " + (err.message || "Unknown error"));
     }
   };
 
-  //remove member
+  const fetchEligibleStudents = async (groupId, keyword = "", p = 0) => {
+    try {
+      const res = await fetch(
+        `/api/groups/${groupId}/members/search?keyword=${keyword}&page=${p}&size=5`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to search students");
+      }
+
+      const data = await res.json();
+      setEligibleStudents(data.data.content);
+      setStudentTotalPages(data.data.totalPages);
+      setStudentPage(p);
+    } catch (err) {
+      console.error("Search students error:", err);
+    }
+  };
+
   const handleRemoveMember = async (userId) => {
     if (!selectedGroup) return;
     if (!window.confirm("Remove this member?")) return;
@@ -189,7 +194,6 @@ function AdminGroupManagement() {
     }
   };
 
-  //set leader
   const handleSetLeader = async (userId) => {
     if (!selectedGroup) return;
     if (!window.confirm("Set this member as leader?")) return;
@@ -228,9 +232,9 @@ function AdminGroupManagement() {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        groupCode: form.groupCode,      
-        groupName: form.groupName,      
-        courseCode: form.courseCode, 
+        groupCode: form.groupCode,
+        groupName: form.groupName,
+        courseCode: form.courseCode,
         semester: form.semester,
       }),
     });
@@ -245,6 +249,7 @@ function AdminGroupManagement() {
       return;
     }
 
+    alert(form.groupId ? "Group updated successfully!" : "Group created successfully!");
     resetForm();
     fetchGroups();
   };
@@ -257,6 +262,7 @@ function AdminGroupManagement() {
       courseCode: g.courseCode,
       semester: g.semester,
     });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id) => {
@@ -285,7 +291,7 @@ function AdminGroupManagement() {
 
   return (
     <div className="group-container">
-      <h3>Group Management</h3>
+      <h3>👥 Group Management</h3>
 
       {/* FILTER */}
       <div className="group-filter">
@@ -344,9 +350,11 @@ function AdminGroupManagement() {
           required
         />
 
+        {error && <p className="error">{error}</p>}
+
         <div className="form-actions">
           <button type="submit">
-            {form.groupId ? "Update" : "Create"}
+            {form.groupId ? "Update Group" : "Create Group"}
           </button>
           {form.groupId && (
             <button type="button" className="cancel" onClick={resetForm}>
@@ -354,8 +362,6 @@ function AdminGroupManagement() {
             </button>
           )}
         </div>
-
-        {error && <p className="error">{error}</p>}
       </form>
 
       {/* TABLE */}
@@ -365,58 +371,46 @@ function AdminGroupManagement() {
             <th>#</th>
             <th>Group Code</th>
             <th>Group Name</th>
-            <th>Course Code</th>
+            <th>Course</th>
             <th>Semester</th>
-            <th>Assigned Lecturer</th>
-            <th>Action</th>
+            <th>Lecturer</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {groups.map((g, index) => (
-            <tr key={g.groupId}>
-              <td>{index + 1}</td>
-              <td>{g.groupCode}</td>
-              <td>{g.groupName}</td>
-              <td>{g.courseCode}</td>
-              <td>{g.semester}</td>
-              <td>
-                {g.lecturerName ? (
-                  <span className="lecturer-badge">
-                    {g.lecturerName}
-                  </span>
-                ) : (
-                  <span className="no-lecturer">Not assigned</span>
-                )}
-              </td>
-              <td>
-                <button onClick={() => handleEdit(g)}>Edit</button>
-                {/*nút Members */}
-                <button
-                  className="members-btn"
-                  onClick={() => handleOpenMemberModal(g)}
-                >
-                  Members
-                </button>
-                {/*nút Choose Lecturer */}
-                <button
-                  className="choose-btn"
-                  onClick={() => handleOpenLecturerModal(g)}
-                >
-                  Choose
-                </button>
-                <button
-                  className="danger"
-                  onClick={() => handleDelete(g.groupId)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-          {groups.length === 0 && (
+          {groups.length > 0 ? (
+            groups.map((g, index) => (
+              <tr key={g.groupId}>
+                <td>{index + 1}</td>
+                <td><strong>{g.groupCode}</strong></td>
+                <td>{g.groupName}</td>
+                <td>{g.courseCode}</td>
+                <td>{g.semester}</td>
+                <td>
+                  {g.lecturerName ? (
+                    <span className="lecturer-badge">{g.lecturerName}</span>
+                  ) : (
+                    <span className="no-lecturer">Not assigned</span>
+                  )}
+                </td>
+                <td>
+                  <button onClick={() => handleEdit(g)}>Edit</button>
+                  <button className="members-btn" onClick={() => handleOpenMemberModal(g)}>
+                    Members
+                  </button>
+                  <button className="choose-btn" onClick={() => handleOpenLecturerModal(g)}>
+                    Lecturer
+                  </button>
+                  <button className="danger" onClick={() => handleDelete(g.groupId)}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
             <tr>
-              <td colSpan="7" style={{ textAlign: "center" }}>
-                No data
+              <td colSpan="7" style={{ textAlign: "center", padding: "32px", color: "var(--text-tertiary)" }}>
+                No groups found
               </td>
             </tr>
           )}
@@ -428,7 +422,7 @@ function AdminGroupManagement() {
         <div className="modal-overlay" onClick={handleCloseLecturerModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Select Lecturer for {selectedGroup?.groupName}</h3>
+              <h3>Assign Lecturer - {selectedGroup?.groupName}</h3>
               <button className="close-btn" onClick={handleCloseLecturerModal}>
                 ×
               </button>
@@ -446,30 +440,29 @@ function AdminGroupManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {lecturers.map((lect, index) => (
-                    <tr key={lect.userId}>
-                      <td>{index + 1}</td>
-                      <td>{lect.fullName}</td>
-                      <td>{lect.username}</td>
-                      <td>{lect.email}</td>
-                      <td>
-                        <button
-                          className="assign-btn"
-                          onClick={() => handleAssignLecturer(lect.userId)}
-                          disabled={
-                            selectedGroup?.lecturerId === lect.userId
-                          }
-                        >
-                          {selectedGroup?.lecturerId === lect.userId
-                            ? "Assigned"
-                            : "Assign"}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {lecturers.length === 0 && (
+                  {lecturers.length > 0 ? (
+                    lecturers.map((lect, index) => (
+                      <tr key={lect.userId}>
+                        <td>{index + 1}</td>
+                        <td>{lect.fullName}</td>
+                        <td>{lect.username}</td>
+                        <td>{lect.email}</td>
+                        <td>
+                          <button
+                            className="assign-btn"
+                            onClick={() => handleAssignLecturer(lect.userId)}
+                            disabled={selectedGroup?.lecturerId === lect.userId}
+                          >
+                            {selectedGroup?.lecturerId === lect.userId
+                              ? "Assigned"
+                              : "Assign"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
                     <tr>
-                      <td colSpan="5" style={{ textAlign: "center" }}>
+                      <td colSpan="5" style={{ textAlign: "center", padding: "32px" }}>
                         No lecturers found
                       </td>
                     </tr>
@@ -504,44 +497,45 @@ function AdminGroupManagement() {
                       <th>Username</th>
                       <th>Email</th>
                       <th>Role</th>
-                      <th>Action</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {members.map((member, index) => (
-                      <tr key={member.userId}>
-                        <td>{index + 1}</td>
-                        <td>{member.fullName}</td>
-                        <td>{member.username}</td>
-                        <td>{member.email}</td>
-                        <td>
-                          {member.memberRole==="LEADER" ? (
-                            <span className="leader-badge">Leader</span>
-                          ) : (
-                            <span className="member-badge">Member</span>
-                          )}
-                        </td>
-                        <td>
-                          {member.memberRole !== "LEADER" && (
+                    {members.length > 0 ? (
+                      members.map((member, index) => (
+                        <tr key={member.userId}>
+                          <td>{index + 1}</td>
+                          <td>{member.fullName}</td>
+                          <td>{member.username}</td>
+                          <td>{member.email}</td>
+                          <td>
+                            {member.memberRole === "LEADER" ? (
+                              <span className="leader-badge">👑 Leader</span>
+                            ) : (
+                              <span className="member-badge">Member</span>
+                            )}
+                          </td>
+                          <td>
+                            {member.memberRole !== "LEADER" && (
+                              <button
+                                className="leader-btn"
+                                onClick={() => handleSetLeader(member.userId)}
+                              >
+                                Set Leader
+                              </button>
+                            )}
                             <button
-                              className="leader-btn"
-                              onClick={() => handleSetLeader(member.userId)}
+                              className="remove-btn"
+                              onClick={() => handleRemoveMember(member.userId)}
                             >
-                              Set Leader
+                              Remove
                             </button>
-                          )}
-                          <button
-                            className="remove-btn"
-                            onClick={() => handleRemoveMember(member.userId)}
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {members.length === 0 && (
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
                       <tr>
-                        <td colSpan="6" style={{ textAlign: "center" }}>
+                        <td colSpan="6" style={{ textAlign: "center", padding: "24px" }}>
                           No members yet
                         </td>
                       </tr>
@@ -553,6 +547,19 @@ function AdminGroupManagement() {
               {/* Add Member */}
               <div className="add-member-section">
                 <h4>Add Student</h4>
+
+                <input
+                  type="text"
+                  placeholder="🔍 Search by name or username..."
+                  value={studentKeyword}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setStudentKeyword(value);
+                    fetchEligibleStudents(selectedGroup.groupId, value.trim(), 0);
+                  }}
+                  className="search-input"
+                />
+
                 <table className="student-table">
                   <thead>
                     <tr>
@@ -564,9 +571,8 @@ function AdminGroupManagement() {
                     </tr>
                   </thead>
                   <tbody>
-                    {students
-                      .filter(s => !members.some(m => m.userId === s.userId))
-                      .map((student, index) => (
+                    {eligibleStudents.length > 0 ? (
+                      eligibleStudents.map((student, index) => (
                         <tr key={student.userId}>
                           <td>{index + 1}</td>
                           <td>{student.fullName}</td>
@@ -581,9 +587,32 @@ function AdminGroupManagement() {
                             </button>
                           </td>
                         </tr>
-                      ))}
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: "center", padding: "24px" }}>
+                          No eligible students
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
+
+                {studentTotalPages > 1 && (
+                  <div className="pagination">
+                    {Array.from({ length: studentTotalPages }, (_, i) => (
+                      <button
+                        key={i}
+                        className={i === studentPage ? "active" : ""}
+                        onClick={() =>
+                          fetchEligibleStudents(selectedGroup.groupId, studentKeyword, i)
+                        }
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

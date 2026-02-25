@@ -14,7 +14,7 @@ function AdminLayout() {
     <div className="layout">
       <aside className="sidebar">
         <div>
-          <h2 className="logo">Jira & Github Support Tool</h2>
+          <h2 className="logo">Admin Panel</h2>
 
           <nav className="nav-menu">
             <Link 
@@ -22,14 +22,14 @@ function AdminLayout() {
               className={`nav-item ${location.pathname.includes('users') ? 'active' : ''}`}
             >
               <span className="nav-icon">👤</span>
-              Users
+              <span>Users</span>
             </Link>
             <Link 
               to="groups" 
               className={`nav-item ${location.pathname.includes('groups') ? 'active' : ''}`}
             >
               <span className="nav-icon">👥</span>
-              Groups
+              <span>Groups</span>
             </Link>
           </nav>
         </div>
@@ -37,7 +37,7 @@ function AdminLayout() {
         <div className="sidebar-footer">
           <div className="user-info">
             <span className="user-icon">👨‍💼</span>
-            <span className="username">{username}</span>
+            <span className="username">{username || "Admin"}</span>
           </div>
           <button className="logout-btn" onClick={handleLogout}>
             Logout

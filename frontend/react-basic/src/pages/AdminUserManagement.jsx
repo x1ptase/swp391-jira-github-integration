@@ -39,6 +39,7 @@ function AdminUserManagement() {
       setPage(p);
     } catch (err) {
       console.error("Fetch error:", err);
+      setError("Failed to fetch users");
     }
   };
 
@@ -90,18 +91,14 @@ function AdminUserManagement() {
         });
       }
 
-      //  Parse response
       const data = await res.json();
 
-      // Kiểm tra lỗi và hiển thị message từ BE
       if (!res.ok) {
-        // Lấy message từ backend
         const errorMessage = data.message || "An error occurred";
         setError(errorMessage);
         return;
       }
 
-      //  Thành công
       alert(form.userId ? "User updated successfully!" : "User created successfully!");
       resetForm();
       fetchUsers(page);
@@ -125,7 +122,6 @@ function AdminUserManagement() {
         },
       });
 
-      // Kiểm tra response
       if (!res.ok) {
         const errorData = await res.json();
         setError(errorData.message || "Failed to delete user");
@@ -154,6 +150,7 @@ function AdminUserManagement() {
       githubUsername: u.githubUsername || "",
       jiraAccountId: u.jiraAccountId || "",
     });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const resetForm = () => {
@@ -172,9 +169,8 @@ function AdminUserManagement() {
 
   return (
     <div className="admin-container">
-      <h2>User Management</h2>
+      <h2>👤 User Management</h2>
 
-      {/*Error Banner */}
       {error && (
         <div className="error-banner">
           <span className="error-icon">⚠️</span>
@@ -193,33 +189,40 @@ function AdminUserManagement() {
           required
         />
         <input
-          placeholder="GitHub Username"
-          value={form.githubUsername}
-          onChange={(e) =>
-            setForm({ ...form, githubUsername: e.target.value })
-          }
-        />
-
-        <input
-          placeholder="Jira Account ID"
-          value={form.jiraAccountId}
-          onChange={(e) =>
-            setForm({ ...form, jiraAccountId: e.target.value })
-          }
-        />
-
-        <input
           placeholder="Email"
+          type="email"
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           required
         />
 
         <input
-          placeholder="Full name"
+          placeholder="Full Name"
           value={form.fullName}
           onChange={(e) => setForm({ ...form, fullName: e.target.value })}
           required
+        />
+
+        <select
+          value={form.roleCode}
+          onChange={(e) => setForm({ ...form, roleCode: e.target.value })}
+          required
+        >
+          <option value="STUDENT">STUDENT</option>
+          <option value="ADMIN">ADMIN</option>
+          <option value="LECTURER">LECTURER</option>
+        </select>
+
+        <input
+          placeholder="GitHub Username"
+          value={form.githubUsername}
+          onChange={(e) => setForm({ ...form, githubUsername: e.target.value })}
+        />
+
+        <input
+          placeholder="Jira Account ID"
+          value={form.jiraAccountId}
+          onChange={(e) => setForm({ ...form, jiraAccountId: e.target.value })}
         />
 
         {!form.userId && (
@@ -232,20 +235,10 @@ function AdminUserManagement() {
           />
         )}
 
-        <select
-          value={form.roleCode}
-          onChange={(e) =>
-            setForm({ ...form, roleCode: e.target.value })
-          }
-          required
-        >
-          <option value="STUDENT">STUDENT</option>
-          <option value="ADMIN">ADMIN</option>
-          <option value="LECTURER">LECTURER</option>
-        </select>
+        <div style={{ gridColumn: "1 / -1" }} />
 
         <div className="form-actions">
-          <button type="submit">{form.userId ? "Update" : "Create"}</button>
+          <button type="submit">{form.userId ? "Update User" : "Create User"}</button>
           {form.userId && (
             <button type="button" className="cancel" onClick={resetForm}>
               Cancel
@@ -254,13 +247,11 @@ function AdminUserManagement() {
         </div>
       </form>
 
-
-
       {/* SEARCH + FILTER */}
       <div className="search-bar">
         <input
           type="text"
-          placeholder="Search username or email"
+          placeholder="🔍 Search username or email"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
         />
@@ -280,53 +271,72 @@ function AdminUserManagement() {
         </button>
       </div>
 
-
-
-      {/*  TABLE  */}
+      {/* TABLE */}
       <table className="user-table">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>#</th>
             <th>Username</th>
             <th>Email</th>
-            <th>GitHub Username</th>
-            <th>Jira Account ID</th>
             <th>Full Name</th>
+            <th>GitHub</th>
+            <th>Jira ID</th>
             <th>Role</th>
-            <th>Action</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((u, index) => (
-            <tr key={u.userId}>
-              <td>{page * 7 + index + 1}</td>
-              <td>{u.username}</td>
-              <td>{u.email}</td>
-              <td>{u.githubUsername || "-"}</td>
-              <td>{u.jiraAccountId || "-"}</td>
-              <td>{u.fullName}</td>
-              <td>{u.roleCode}</td>
-              <td>
-                <button onClick={() => handleEdit(u)}>Edit</button>
-                <button onClick={() => handleDelete(u.userId)}>Delete</button>
+          {users.length > 0 ? (
+            users.map((u, index) => (
+              <tr key={u.userId}>
+                <td>{page * 7 + index + 1}</td>
+                <td>{u.username}</td>
+                <td>{u.email}</td>
+                <td>{u.fullName}</td>
+                <td>{u.githubUsername || "-"}</td>
+                <td>{u.jiraAccountId || "-"}</td>
+                <td>
+                  <span style={{
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    background: u.roleCode === "ADMIN" ? "#fee2e2" : u.roleCode === "LECTURER" ? "#dbeafe" : "#f0fdf4",
+                    color: u.roleCode === "ADMIN" ? "#991b1b" : u.roleCode === "LECTURER" ? "#1e40af" : "#166534"
+                  }}>
+                    {u.roleCode}
+                  </span>
+                </td>
+                <td>
+                  <button onClick={() => handleEdit(u)}>Edit</button>
+                  <button onClick={() => handleDelete(u.userId)}>Delete</button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="8" style={{ textAlign: "center", padding: "32px", color: "var(--text-tertiary)" }}>
+                No users found
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
-      {/*  PAGINATION  */}
-      <div className="pagination">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            className={i === page ? "active" : ""}
-            onClick={() => fetchUsers(i)}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+      {/* PAGINATION */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              className={i === page ? "active" : ""}
+              onClick={() => fetchUsers(i)}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
