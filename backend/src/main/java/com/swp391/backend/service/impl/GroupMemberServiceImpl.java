@@ -149,6 +149,11 @@ public class GroupMemberServiceImpl implements GroupMemberService {
 
     @Override
     public Page<UserResponse> searchEligibleStudents(Long groupId, String keyword, Pageable pageable) {
+        if (keyword == null) {
+            keyword = "";
+        }
+        keyword = keyword.trim();
+
         User actor = currentUser();
         requireCanManageGroup(actor, groupId);
 

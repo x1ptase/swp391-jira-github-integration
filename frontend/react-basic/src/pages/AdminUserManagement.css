@@ -60,3 +60,18 @@
   background: #2563eb;
   color: white;
 }
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 8px;
+}
+
+.search-bar select {
+  text-align: center;
+}

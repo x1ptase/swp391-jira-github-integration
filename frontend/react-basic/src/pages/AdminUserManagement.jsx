@@ -8,6 +8,8 @@ function AdminUserManagement() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [error, setError] = useState("");
+  const [keyword, setKeyword] = useState("");
+  const [filterRole, setFilterRole] = useState("");
 
   const [form, setForm] = useState({
     userId: null,
@@ -21,13 +23,16 @@ function AdminUserManagement() {
   });
 
   // ===== FETCH USERS =====
-  const fetchUsers = async (p = 0) => {
+  const fetchUsers = async (p = 0, search = keyword, role = filterRole) => {
     try {
-      const res = await fetch(`${API}?page=${p}&size=7`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const res = await fetch(
+        `${API}?page=${p}&size=7&keyword=${search}&roleCode=${role}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       const json = await res.json();
       setUsers(json.data.content);
       setTotalPages(json.data.totalPages);
@@ -45,7 +50,7 @@ function AdminUserManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    
+
     try {
       let res;
 
@@ -111,7 +116,7 @@ function AdminUserManagement() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this user?")) return;
     setError("");
-    
+
     try {
       const res = await fetch(`${API}/${id}`, {
         method: "DELETE",
@@ -129,7 +134,7 @@ function AdminUserManagement() {
 
       alert("User deleted successfully!");
       fetchUsers(page);
-      
+
     } catch (err) {
       console.error("Delete error:", err);
       setError("Network error. Please try again.");
@@ -168,7 +173,7 @@ function AdminUserManagement() {
   return (
     <div className="admin-container">
       <h2>User Management</h2>
-      
+
       {/*Error Banner */}
       {error && (
         <div className="error-banner">
@@ -199,7 +204,7 @@ function AdminUserManagement() {
           placeholder="Jira Account ID"
           value={form.jiraAccountId}
           onChange={(e) =>
-            setForm({ ...form,jiraAccountId: e.target.value })
+            setForm({ ...form, jiraAccountId: e.target.value })
           }
         />
 
@@ -249,6 +254,34 @@ function AdminUserManagement() {
         </div>
       </form>
 
+
+
+      {/* SEARCH + FILTER */}
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search username or email"
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+        />
+
+        <select
+          value={filterRole}
+          onChange={(e) => setFilterRole(e.target.value)}
+        >
+          <option value="">All Roles</option>
+          <option value="STUDENT">STUDENT</option>
+          <option value="ADMIN">ADMIN</option>
+          <option value="LECTURER">LECTURER</option>
+        </select>
+
+        <button onClick={() => fetchUsers(0)}>
+          Search
+        </button>
+      </div>
+
+
+
       {/*  TABLE  */}
       <table className="user-table">
         <thead>
@@ -270,7 +303,7 @@ function AdminUserManagement() {
               <td>{u.username}</td>
               <td>{u.email}</td>
               <td>{u.githubUsername || "-"}</td>
-              <td>{u.jiraAccountId|| "-"}</td>
+              <td>{u.jiraAccountId || "-"}</td>
               <td>{u.fullName}</td>
               <td>{u.roleCode}</td>
               <td>
