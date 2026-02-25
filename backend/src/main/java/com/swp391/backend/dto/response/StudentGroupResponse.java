@@ -17,7 +17,7 @@ public class StudentGroupResponse {
     private Long groupId;
 
 
-    private String groupCode;
+    private String classCode;
 
 
     private String groupName;
