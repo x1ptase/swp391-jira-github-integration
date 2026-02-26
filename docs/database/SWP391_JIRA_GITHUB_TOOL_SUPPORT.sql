@@ -59,7 +59,7 @@ CREATE TABLE Users (
     full_name NVARCHAR(100) NOT NULL,
     email NVARCHAR(120) NOT NULL UNIQUE,
     github_username NVARCHAR(100) NULL,
-    jira_email NVARCHAR(120) NULL,
+    jira_account_id NVARCHAR(255) NULL,
     password_hash NVARCHAR(255) NOT NULL,
     role_id INT NOT NULL,
     created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
@@ -70,19 +70,19 @@ CREATE UNIQUE INDEX UX_Users_github_username_notnull
 ON dbo.Users(github_username)
 WHERE github_username IS NOT NULL;
 
-CREATE UNIQUE INDEX UX_Users_jira_email_notnull
-ON dbo.Users(jira_email)
-WHERE jira_email IS NOT NULL;
+CREATE UNIQUE INDEX UX_Users_jira_account_id_notnull
+ON dbo.Users(jira_account_id)
+WHERE jira_account_id IS NOT NULL;
 
 CREATE TABLE StudentGroup (
     group_id INT IDENTITY(1,1) PRIMARY KEY,
-    group_code NVARCHAR(50) NOT NULL UNIQUE,
+    class_code NVARCHAR(50) NOT NULL,
     group_name NVARCHAR(120) NOT NULL,
     course_code NVARCHAR(30) NOT NULL,
     semester NVARCHAR(30) NOT NULL,
     created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-
-    CONSTRAINT UQ_Group_GroupCourseSemester UNIQUE (group_id, course_code, semester)
+	CONSTRAINT UQ_Group_GroupCourseSemester UNIQUE (group_id, course_code, semester),
+    CONSTRAINT UQ_StudentGroup_Class_Group_Term UNIQUE (class_code, group_name, course_code, semester)
 );
 
 CREATE TABLE GroupMember (
@@ -130,9 +130,12 @@ CREATE TABLE IntegrationConfig (
     config_id INT IDENTITY(1,1) PRIMARY KEY,
     group_id INT NOT NULL,
     integration_type_id INT NOT NULL,
-    base_url NVARCHAR(255) NULL,        -- Jira
-    project_key NVARCHAR(50) NULL,      -- Jira
-    repo_full_name NVARCHAR(200) NULL,  -- GitHub
+	-- Jira config
+    base_url NVARCHAR(255) NULL,        
+    project_key NVARCHAR(50) NULL,      
+	jira_email NVARCHAR(120) NULL,	
+	-- GitHub config
+    repo_full_name NVARCHAR(200) NULL,  
     token_encrypted VARBINARY(MAX) NULL,
     created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
     CONSTRAINT FK_Config_Group FOREIGN KEY (group_id) REFERENCES StudentGroup(group_id) ON DELETE CASCADE,
@@ -143,7 +146,6 @@ CREATE TABLE IntegrationConfig (
 CREATE TABLE Requirement (
     requirement_id INT IDENTITY(1,1) PRIMARY KEY,
     group_id INT NOT NULL,
-    req_code NVARCHAR(50) NOT NULL,
     title NVARCHAR(200) NOT NULL,
     description NVARCHAR(MAX) NULL,
     priority_id INT NOT NULL,
@@ -158,7 +160,6 @@ CREATE TABLE Requirement (
     CONSTRAINT FK_Req_Status FOREIGN KEY (status_id) REFERENCES RequirementStatus(status_id),
     CONSTRAINT FK_Req_CreatedBy FOREIGN KEY (created_by) REFERENCES Users(user_id),
 
-    CONSTRAINT UX_Req_Code UNIQUE (group_id, req_code),
     CONSTRAINT UX_Req_Jira UNIQUE (jira_issue_key)
 );
 
@@ -233,10 +234,18 @@ CREATE TABLE SyncLog (
     source NVARCHAR(20) NOT NULL, -- JIRA/GITHUB
     started_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
     ended_at DATETIME2 NULL,
-    status NVARCHAR(20) NOT NULL, -- SUCCESS/FAILED
+    status NVARCHAR(20) NOT NULL, -- RUNNING/SUCCESS/FAILED
     detail_message NVARCHAR(MAX) NULL,
     CONSTRAINT FK_Sync_Group FOREIGN KEY (group_id) REFERENCES StudentGroup(group_id) ON DELETE CASCADE
 );
+
+ALTER TABLE dbo.SyncLog
+ADD CONSTRAINT CK_SyncLog_Status
+CHECK (status IN ('RUNNING','SUCCESS','FAILED'));
+
+CREATE UNIQUE INDEX UX_SyncLog_OneRunningPerSource
+ON dbo.SyncLog(group_id, source)
+WHERE status = 'RUNNING';
 
 -- Helpful indexes
 CREATE INDEX IX_Task_GroupStatus ON Task(group_id, status_id);
