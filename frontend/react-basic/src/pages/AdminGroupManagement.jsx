@@ -16,7 +16,7 @@ function AdminGroupManagement() {
   const [studentTotalPages, setStudentTotalPages] = useState(0);
   const [form, setForm] = useState({
     groupId: null,
-    groupCode: "",
+    classCode: "",
     groupName: "",
     courseCode: "",
     semester: "",
@@ -232,7 +232,7 @@ function AdminGroupManagement() {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        groupCode: form.groupCode,
+        classCode: form.classCode,
         groupName: form.groupName,
         courseCode: form.courseCode,
         semester: form.semester,
@@ -242,7 +242,7 @@ function AdminGroupManagement() {
     if (!res.ok) {
       const err = await res.json();
       if (res.status === 409) {
-        setError("Group Code already exists");
+        setError("Class Code already exists");
       } else {
         setError(err.message || "Error occurred");
       }
@@ -257,7 +257,7 @@ function AdminGroupManagement() {
   const handleEdit = (g) => {
     setForm({
       groupId: g.groupId,
-      groupCode: g.groupCode,
+      classCode: g.classCode,
       groupName: g.groupName,
       courseCode: g.courseCode,
       semester: g.semester,
@@ -281,7 +281,7 @@ function AdminGroupManagement() {
   const resetForm = () => {
     setForm({
       groupId: null,
-      groupCode: "",
+      classCode: "",
       groupName: "",
       courseCode: "",
       semester: "",
@@ -322,10 +322,10 @@ function AdminGroupManagement() {
       {/* FORM */}
       <form className="group-form" onSubmit={handleSubmit}>
         <input
-          placeholder="Group Code"
-          value={form.groupCode}
+          placeholder="Class Code"
+          value={form.classCode}
           disabled={!!form.groupId}
-          onChange={(e) => setForm({ ...form, groupCode: e.target.value })}
+          onChange={(e) => setForm({ ...form, classCode: e.target.value })}
           required
         />
 
@@ -369,7 +369,7 @@ function AdminGroupManagement() {
         <thead>
           <tr>
             <th>#</th>
-            <th>Group Code</th>
+            <th>Class Code</th>
             <th>Group Name</th>
             <th>Course</th>
             <th>Semester</th>
@@ -382,7 +382,7 @@ function AdminGroupManagement() {
             groups.map((g, index) => (
               <tr key={g.groupId}>
                 <td>{index + 1}</td>
-                <td><strong>{g.groupCode}</strong></td>
+                <td><strong>{g.classCode}</strong></td>
                 <td>{g.groupName}</td>
                 <td>{g.courseCode}</td>
                 <td>{g.semester}</td>
