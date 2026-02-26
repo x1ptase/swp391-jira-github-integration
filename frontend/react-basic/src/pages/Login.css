@@ -30,6 +30,11 @@
   text-align: center;
 }
 
+.login-box h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
 
 form {
   display: flex;
