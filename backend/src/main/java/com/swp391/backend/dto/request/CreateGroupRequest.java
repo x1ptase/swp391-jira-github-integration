@@ -16,8 +16,4 @@ public class CreateGroupRequest {
 
     @NotBlank
     private String semester;
-
-    private Long lecturerId;
-
-    private String lecturerName;
 }
