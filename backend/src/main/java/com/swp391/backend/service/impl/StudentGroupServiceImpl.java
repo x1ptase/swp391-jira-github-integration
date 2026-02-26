@@ -4,14 +4,11 @@ import com.swp391.backend.dto.request.CreateGroupRequest;
 import com.swp391.backend.dto.response.StudentGroupResponse;
 import com.swp391.backend.entity.LecturerAssignment;
 import com.swp391.backend.entity.StudentGroup;
-import com.swp391.backend.entity.User;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.repository.LecturerAssignmentRepository;
 import com.swp391.backend.repository.StudentGroupRepository;
 import com.swp391.backend.repository.UserRepository;
-import com.swp391.backend.service.LecturerAssignmentService;
 import com.swp391.backend.service.StudentGroupService;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -23,16 +20,13 @@ import java.util.stream.Collectors;
 @Service
 public class StudentGroupServiceImpl implements StudentGroupService {
     private final StudentGroupRepository studentGroupRepository;
-    private final LecturerAssignmentService lecturerAssignmentService;
     private final UserRepository userRepository;
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
 
     public StudentGroupServiceImpl(StudentGroupRepository studentGroupRepository,
-            LecturerAssignmentService lecturerAssignmentService,
-            UserRepository userRepository,
-            LecturerAssignmentRepository lecturerAssignmentRepository) {
+                                   UserRepository userRepository,
+                                   LecturerAssignmentRepository lecturerAssignmentRepository) {
         this.studentGroupRepository = studentGroupRepository;
-        this.lecturerAssignmentService = lecturerAssignmentService;
         this.userRepository = userRepository;
         this.lecturerAssignmentRepository = lecturerAssignmentRepository;
     }
@@ -48,19 +42,6 @@ public class StudentGroupServiceImpl implements StudentGroupService {
         studentGroup.setSemester(request.getSemester());
 
         StudentGroup savedGroup = studentGroupRepository.save(studentGroup);
-
-        Long fid = request.getLecturerId();
-        if (fid == null && StringUtils.hasText(request.getLecturerName())) {
-            var users = userRepository.searchWithRole(request.getLecturerName().trim(), "LECTURER",
-                    PageRequest.of(0, 1));
-            if (!users.isEmpty()) {
-                fid = users.getContent().get(0).getUserId();
-            }
-        }
-
-        if (fid != null) {
-            lecturerAssignmentService.assignLecturer(savedGroup.getGroupId(), fid);
-        }
 
         return mapToResponse(savedGroup);
     }
