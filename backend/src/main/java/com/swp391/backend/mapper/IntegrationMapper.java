@@ -48,12 +48,12 @@ public class IntegrationMapper {
             return null;
         }
 
-        boolean hasToken = config.getTokenEncrypted() != null && !config.getTokenEncrypted().isEmpty();
+        boolean hasToken = config.getTokenEncrypted() != null && config.getTokenEncrypted().length > 0;
         String tokenMasked = null;
 
         if (hasToken) {
             try {
-                String decryptedToken = tokenHelper.decrypt(config.getTokenEncrypted());
+                String decryptedToken = tokenHelper.decryptFromBytes(config.getTokenEncrypted());
                 tokenMasked = tokenHelper.maskToken(decryptedToken);
             } catch (Exception e) {
                 tokenMasked = "********";

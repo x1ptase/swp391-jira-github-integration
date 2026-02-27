@@ -30,6 +30,11 @@ public class TokenHelper {
     }
 
     public String encrypt(String rawToken) {
+        byte[] encrypted = encryptToBytes(rawToken);
+        return encrypted != null ? Base64.getEncoder().encodeToString(encrypted) : null;
+    }
+
+    public byte[] encryptToBytes(String rawToken) {
         if (rawToken == null)
             return null;
         try {
@@ -44,17 +49,22 @@ public class TokenHelper {
             System.arraycopy(iv, 0, ivAndCipher, 0, IV_LENGTH);
             System.arraycopy(cipherText, 0, ivAndCipher, IV_LENGTH, cipherText.length);
 
-            return Base64.getEncoder().encodeToString(ivAndCipher);
+            return ivAndCipher;
         } catch (GeneralSecurityException e) {
             throw new RuntimeException("Encryption failed", e);
         }
     }
 
-    public String decrypt(String encryptedToken) {
-        if (encryptedToken == null)
+    public String decrypt(String encryptedTokenBase64) {
+        if (encryptedTokenBase64 == null)
+            return null;
+        return decryptFromBytes(Base64.getDecoder().decode(encryptedTokenBase64));
+    }
+
+    public String decryptFromBytes(byte[] ivAndCipher) {
+        if (ivAndCipher == null)
             return null;
         try {
-            byte[] ivAndCipher = Base64.getDecoder().decode(encryptedToken);
             if (ivAndCipher.length <= IV_LENGTH) {
                 throw new IllegalArgumentException("Invalid encrypted token");
             }

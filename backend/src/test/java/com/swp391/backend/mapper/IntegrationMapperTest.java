@@ -84,13 +84,14 @@ class IntegrationMapperTest {
 
     @Test
     void toResponse_ConfigWithToken_ShouldMaskCorrectly() {
+        byte[] encryptedToken = "encrypted_token".getBytes();
         IntegrationConfig config = IntegrationConfig.builder()
                 .id(1L)
                 .repoFullName("owner/repo")
-                .tokenEncrypted("encrypted_token")
+                .tokenEncrypted(encryptedToken)
                 .build();
 
-        when(tokenHelper.decrypt("encrypted_token")).thenReturn("ghp_123456789");
+        when(tokenHelper.decryptFromBytes(encryptedToken)).thenReturn("ghp_123456789");
         when(tokenHelper.maskToken("ghp_123456789")).thenReturn("****6789");
 
         IntegrationResponse response = integrationMapper.toResponse(config);
