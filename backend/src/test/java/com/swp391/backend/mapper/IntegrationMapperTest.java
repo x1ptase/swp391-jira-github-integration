@@ -1,8 +1,11 @@
 package com.swp391.backend.mapper;
 
+import com.swp391.backend.dto.response.IntegrationResponse;
 import com.swp391.backend.dto.response.IntegrationResponseDTO;
 import com.swp391.backend.entity.Integration;
+import com.swp391.backend.entity.IntegrationConfig;
 import com.swp391.backend.service.TokenCryptoService;
+import com.swp391.backend.service.TokenHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -16,6 +19,9 @@ class IntegrationMapperTest {
 
     @Mock
     private TokenCryptoService tokenCryptoService;
+
+    @Mock
+    private TokenHelper tokenHelper;
 
     @InjectMocks
     private IntegrationMapper integrationMapper;
@@ -74,5 +80,40 @@ class IntegrationMapperTest {
         IntegrationResponseDTO responseDTO = integrationMapper.toResponseDTO(integration);
 
         assertEquals("****", responseDTO.getTokenMasked());
+    }
+
+    @Test
+    void toResponse_ConfigWithToken_ShouldMaskCorrectly() {
+        IntegrationConfig config = IntegrationConfig.builder()
+                .id(1L)
+                .repoFullName("owner/repo")
+                .tokenEncrypted("encrypted_token")
+                .build();
+
+        when(tokenHelper.decrypt("encrypted_token")).thenReturn("ghp_123456789");
+        when(tokenHelper.maskToken("ghp_123456789")).thenReturn("****6789");
+
+        IntegrationResponse response = integrationMapper.toResponse(config);
+
+        assertNotNull(response);
+        assertEquals("owner/repo", response.getRepoFullName());
+        assertTrue(response.isHasToken());
+        assertEquals("****6789", response.getTokenMasked());
+    }
+
+    @Test
+    void toResponse_ConfigWithoutToken_ShouldSetHasTokenFalse() {
+        IntegrationConfig config = IntegrationConfig.builder()
+                .id(2L)
+                .repoFullName("owner/repo2")
+                .tokenEncrypted(null)
+                .build();
+
+        IntegrationResponse response = integrationMapper.toResponse(config);
+
+        assertNotNull(response);
+        assertEquals("owner/repo2", response.getRepoFullName());
+        assertFalse(response.isHasToken());
+        assertNull(response.getTokenMasked());
     }
 }

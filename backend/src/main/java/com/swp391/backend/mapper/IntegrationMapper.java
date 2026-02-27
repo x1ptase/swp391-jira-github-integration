@@ -1,8 +1,11 @@
 package com.swp391.backend.mapper;
 
+import com.swp391.backend.dto.response.IntegrationResponse;
 import com.swp391.backend.dto.response.IntegrationResponseDTO;
 import com.swp391.backend.entity.Integration;
+import com.swp391.backend.entity.IntegrationConfig;
 import com.swp391.backend.service.TokenCryptoService;
+import com.swp391.backend.service.TokenHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class IntegrationMapper {
 
     private final TokenCryptoService tokenCryptoService;
+    private final TokenHelper tokenHelper;
 
     public IntegrationResponseDTO toResponseDTO(Integration integration) {
         if (integration == null) {
@@ -34,6 +38,30 @@ public class IntegrationMapper {
                 .id(integration.getId())
                 .name(integration.getName())
                 .source(integration.getSource())
+                .hasToken(hasToken)
+                .tokenMasked(tokenMasked)
+                .build();
+    }
+
+    public IntegrationResponse toResponse(IntegrationConfig config) {
+        if (config == null) {
+            return null;
+        }
+
+        boolean hasToken = config.getTokenEncrypted() != null && !config.getTokenEncrypted().isEmpty();
+        String tokenMasked = null;
+
+        if (hasToken) {
+            try {
+                String decryptedToken = tokenHelper.decrypt(config.getTokenEncrypted());
+                tokenMasked = tokenHelper.maskToken(decryptedToken);
+            } catch (Exception e) {
+                tokenMasked = "********";
+            }
+        }
+
+        return IntegrationResponse.builder()
+                .repoFullName(config.getRepoFullName())
                 .hasToken(hasToken)
                 .tokenMasked(tokenMasked)
                 .build();
