@@ -38,7 +38,7 @@ class IntegrationServiceTest {
         String token = "raw-token";
 
         when(repository.findByGroupId(groupId)).thenReturn(Optional.empty());
-        when(tokenHelper.encrypt(token)).thenReturn("encrypted-token");
+        when(tokenHelper.encryptToBytes(token)).thenReturn("encrypted-token".getBytes());
         when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
 
         IntegrationConfig result = integrationService.saveOrUpdate(groupId, repo, token);
@@ -46,7 +46,7 @@ class IntegrationServiceTest {
         assertNotNull(result);
         assertEquals(groupId, result.getGroupId());
         assertEquals(repo, result.getRepoFullName());
-        assertEquals("encrypted-token", result.getTokenEncrypted());
+        assertArrayEquals("encrypted-token".getBytes(), result.getTokenEncrypted());
         verify(repository).save(any(IntegrationConfig.class));
     }
 
@@ -70,18 +70,18 @@ class IntegrationServiceTest {
         IntegrationConfig existing = IntegrationConfig.builder()
                 .groupId(groupId)
                 .repoFullName("old/repo")
-                .tokenEncrypted("old-encrypted")
+                .tokenEncrypted("old-encrypted".getBytes())
                 .build();
 
         when(repository.findByGroupId(groupId)).thenReturn(Optional.of(existing));
-        when(tokenHelper.encrypt(newToken)).thenReturn("new-encrypted");
+        when(tokenHelper.encryptToBytes(newToken)).thenReturn("new-encrypted".getBytes());
         when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
 
         IntegrationConfig result = integrationService.saveOrUpdate(groupId, newRepo, newToken);
 
         assertEquals(newRepo, result.getRepoFullName());
-        assertEquals("new-encrypted", result.getTokenEncrypted());
-        verify(tokenHelper).encrypt(newToken);
+        assertArrayEquals("new-encrypted".getBytes(), result.getTokenEncrypted());
+        verify(tokenHelper).encryptToBytes(newToken);
     }
 
     @Test
@@ -91,7 +91,7 @@ class IntegrationServiceTest {
         IntegrationConfig existing = IntegrationConfig.builder()
                 .groupId(groupId)
                 .repoFullName("old/repo")
-                .tokenEncrypted("old-encrypted")
+                .tokenEncrypted("old-encrypted".getBytes())
                 .build();
 
         when(repository.findByGroupId(groupId)).thenReturn(Optional.of(existing));
@@ -100,7 +100,7 @@ class IntegrationServiceTest {
         IntegrationConfig result = integrationService.saveOrUpdate(groupId, newRepo, null);
 
         assertEquals(newRepo, result.getRepoFullName());
-        assertEquals("old-encrypted", result.getTokenEncrypted());
-        verify(tokenHelper, never()).encrypt(anyString());
+        assertArrayEquals("old-encrypted".getBytes(), result.getTokenEncrypted());
+        verify(tokenHelper, never()).encryptToBytes(anyString());
     }
 }

@@ -37,7 +37,7 @@ public class IntegrationServiceImpl implements IntegrationService {
 
             // Only update token if a new one is provided
             if (token != null && !token.trim().isEmpty()) {
-                config.setTokenEncrypted(tokenHelper.encrypt(token));
+                config.setTokenEncrypted(tokenHelper.encryptToBytes(token));
             }
 
             return repository.save(config);
@@ -49,8 +49,9 @@ public class IntegrationServiceImpl implements IntegrationService {
 
             IntegrationConfig newConfig = IntegrationConfig.builder()
                     .groupId(groupId)
+                    .integrationTypeId(2) // 2 for GITHUB
                     .repoFullName(repoFullName)
-                    .tokenEncrypted(tokenHelper.encrypt(token))
+                    .tokenEncrypted(tokenHelper.encryptToBytes(token))
                     .build();
 
             return repository.save(newConfig);
