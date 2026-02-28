@@ -1,7 +1,10 @@
 package com.swp391.backend.controller;
 
+import com.swp391.backend.common.IntegrationTypeIds;
 import com.swp391.backend.dto.request.GitHubConfigRequest;
+import com.swp391.backend.dto.request.JiraConfigRequest;
 import com.swp391.backend.dto.response.IntegrationResponse;
+import com.swp391.backend.dto.response.JiraIntegrationResponse;
 import com.swp391.backend.entity.IntegrationConfig;
 import com.swp391.backend.entity.User;
 import com.swp391.backend.mapper.IntegrationMapper;
@@ -30,6 +33,8 @@ public class IntegrationController {
     private final GroupService groupService;
     private final UserRepository userRepository;
 
+    // ── GitHub config endpoints ───────────────────────────────────────────────
+
     @PostMapping("/{groupId}/github-config")
     public ResponseEntity<IntegrationResponse> saveGitHubConfig(
             @PathVariable Long groupId,
@@ -50,10 +55,41 @@ public class IntegrationController {
 
         checkAuthority(groupId);
 
-        return repository.findByGroupId(groupId)
+        return repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
                 .map(config -> ResponseEntity.ok(integrationMapper.toResponse(config)))
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    // ── Jira config endpoints ─────────────────────────────────────────────────
+
+    @PostMapping("/{groupId}/jira-config")
+    public ResponseEntity<JiraIntegrationResponse> saveJiraConfig(
+            @PathVariable Long groupId,
+            @Valid @RequestBody JiraConfigRequest request) {
+
+        checkAuthority(groupId);
+
+        IntegrationConfig config = integrationService.saveOrUpdateJira(
+                groupId,
+                request.getBaseUrl(),
+                request.getProjectKey(),
+                request.getJiraEmail(),
+                request.getToken());
+
+        return ResponseEntity.ok(integrationMapper.toJiraResponse(config));
+    }
+
+    @GetMapping("/{groupId}/jira-config")
+    public ResponseEntity<JiraIntegrationResponse> getJiraConfig(@PathVariable Long groupId) {
+
+        checkAuthority(groupId);
+
+        return repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
+                .map(config -> ResponseEntity.ok(integrationMapper.toJiraResponse(config)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // ── Shared authority check ────────────────────────────────────────────────
 
     private void checkAuthority(Long groupId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
