@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./AdminGroupManagement.css";
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = "/api/student_group";
 const LECTURER_API = "/api/admin/users?roleCode=LECTURER&page=0&size=999";
@@ -14,6 +15,7 @@ function AdminGroupManagement() {
   const [studentKeyword, setStudentKeyword] = useState("");
   const [studentPage, setStudentPage] = useState(0);
   const [studentTotalPages, setStudentTotalPages] = useState(0);
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     groupId: null,
     classCode: "",
@@ -401,6 +403,21 @@ function AdminGroupManagement() {
                   <button className="choose-btn" onClick={() => handleOpenLecturerModal(g)}>
                     Lecturer
                   </button>
+
+                  <button
+                    className="github-btn"
+                    onClick={() => navigate(`/admin/groups/${g.groupId}/github-config`)}
+                  >
+                    GitHub
+                  </button>
+
+                  <button
+                    className="jira-btn"
+                    onClick={() => navigate(`/admin/groups/${g.groupId}/jira-config`)}
+                  >
+                    Jira
+                  </button>
+
                   <button className="danger" onClick={() => handleDelete(g.groupId)}>
                     Delete
                   </button>
