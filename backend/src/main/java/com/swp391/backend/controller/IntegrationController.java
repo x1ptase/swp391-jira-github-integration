@@ -60,6 +60,15 @@ public class IntegrationController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/{groupId}/github/test-connection")
+    public ResponseEntity<com.swp391.backend.dto.response.GitHubRepoResponse> testGitHubConnection(
+            @PathVariable Long groupId) {
+
+        checkAuthority(groupId);
+
+        return ResponseEntity.ok(integrationService.testGitHubConnection(groupId));
+    }
+
     // ── Jira config endpoints ─────────────────────────────────────────────────
 
     @PostMapping("/{groupId}/jira-config")
