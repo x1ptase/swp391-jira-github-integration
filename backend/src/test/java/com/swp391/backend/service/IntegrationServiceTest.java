@@ -1,8 +1,10 @@
 package com.swp391.backend.service;
 
 import com.swp391.backend.common.IntegrationTypeIds;
+import com.swp391.backend.dto.response.JiraProjectResponse;
 import com.swp391.backend.entity.IntegrationConfig;
 import com.swp391.backend.exception.BusinessException;
+import com.swp391.backend.integration.jira.JiraClient;
 import com.swp391.backend.repository.IntegrationConfigRepository;
 import com.swp391.backend.service.impl.IntegrationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,201 +22,278 @@ import static org.mockito.Mockito.*;
 
 class IntegrationServiceTest {
 
-    @Mock
-    private IntegrationConfigRepository repository;
+        @Mock
+        private IntegrationConfigRepository repository;
 
-    @Mock
-    private TokenHelper tokenHelper;
+        @Mock
+        private TokenHelper tokenHelper;
 
-    @InjectMocks
-    private IntegrationServiceImpl integrationService;
+        @Mock
+        private TokenCryptoService tokenCryptoService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+        @Mock
+        private com.swp391.backend.integration.GitHubClient gitHubClient;
 
-    // ── GitHub: saveOrUpdate ──────────────────────────────────────────────────
+        @Mock
+        private JiraClient jiraClient;
 
-    @Test
-    void saveOrUpdate_NewValid_ShouldEncryptAndSave() {
-        Long groupId = 1L;
-        String repo = "owner/repo";
-        String token = "raw-token";
+        @InjectMocks
+        private IntegrationServiceImpl integrationService;
 
-        when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
-                .thenReturn(Optional.empty());
-        when(tokenHelper.encryptToBytes(token)).thenReturn("encrypted-token".getBytes());
-        when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
+        @BeforeEach
+        void setUp() {
+                MockitoAnnotations.openMocks(this);
+        }
 
-        IntegrationConfig result = integrationService.saveOrUpdate(groupId, repo, token);
+        // ── GitHub: saveOrUpdate ──────────────────────────────────────────────────
 
-        assertNotNull(result);
-        assertEquals(groupId, result.getGroupId());
-        assertEquals(repo, result.getRepoFullName());
-        assertArrayEquals("encrypted-token".getBytes(), result.getTokenEncrypted());
-        verify(repository).save(any(IntegrationConfig.class));
-    }
+        @Test
+        void saveOrUpdate_NewValid_ShouldEncryptAndSave() {
+                Long groupId = 1L;
+                String repo = "owner/repo";
+                String token = "raw-token";
 
-    @Test
-    void saveOrUpdate_NewMissingToken_ShouldThrow400() {
-        when(repository.findByGroupIdAndIntegrationTypeId(anyLong(), eq(IntegrationTypeIds.GITHUB)))
-                .thenReturn(Optional.empty());
+                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
+                                .thenReturn(Optional.empty());
+                when(tokenHelper.encryptToBytes(token)).thenReturn("encrypted-token".getBytes());
+                when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        BusinessException ex1 = assertThrows(BusinessException.class,
-                () -> integrationService.saveOrUpdate(1L, "owner/repo", null));
-        assertEquals(400, ex1.getStatus());
+                IntegrationConfig result = integrationService.saveOrUpdate(groupId, repo, token);
 
-        BusinessException ex2 = assertThrows(BusinessException.class,
-                () -> integrationService.saveOrUpdate(1L, "owner/repo", "  "));
-        assertEquals(400, ex2.getStatus());
-    }
+                assertNotNull(result);
+                assertEquals(groupId, result.getGroupId());
+                assertEquals(repo, result.getRepoFullName());
+                assertArrayEquals("encrypted-token".getBytes(), result.getTokenEncrypted());
+                verify(repository).save(any(IntegrationConfig.class));
+        }
 
-    @Test
-    void saveOrUpdate_InvalidRepoFormat_ShouldThrow400() {
-        BusinessException ex = assertThrows(BusinessException.class,
-                () -> integrationService.saveOrUpdate(1L, "invalid-repo", "token"));
-        assertEquals(400, ex.getStatus());
-    }
+        @Test
+        void saveOrUpdate_NewMissingToken_ShouldThrow400() {
+                when(repository.findByGroupIdAndIntegrationTypeId(anyLong(), eq(IntegrationTypeIds.GITHUB)))
+                                .thenReturn(Optional.empty());
 
-    @Test
-    void saveOrUpdate_UpdateWithToken_ShouldUpdateRepoAndToken() {
-        Long groupId = 1L;
-        String newRepo = "new/repo";
-        String newToken = "new-token";
-        IntegrationConfig existing = IntegrationConfig.builder()
-                .groupId(groupId)
-                .repoFullName("old/repo")
-                .tokenEncrypted("old-encrypted".getBytes())
-                .build();
+                BusinessException ex1 = assertThrows(BusinessException.class,
+                                () -> integrationService.saveOrUpdate(1L, "owner/repo", null));
+                assertEquals(400, ex1.getStatus());
 
-        when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
-                .thenReturn(Optional.of(existing));
-        when(tokenHelper.encryptToBytes(newToken)).thenReturn("new-encrypted".getBytes());
-        when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
+                BusinessException ex2 = assertThrows(BusinessException.class,
+                                () -> integrationService.saveOrUpdate(1L, "owner/repo", "  "));
+                assertEquals(400, ex2.getStatus());
+        }
 
-        IntegrationConfig result = integrationService.saveOrUpdate(groupId, newRepo, newToken);
+        @Test
+        void saveOrUpdate_InvalidRepoFormat_ShouldThrow400() {
+                BusinessException ex = assertThrows(BusinessException.class,
+                                () -> integrationService.saveOrUpdate(1L, "invalid-repo", "token"));
+                assertEquals(400, ex.getStatus());
+        }
 
-        assertEquals(newRepo, result.getRepoFullName());
-        assertArrayEquals("new-encrypted".getBytes(), result.getTokenEncrypted());
-        verify(tokenHelper).encryptToBytes(newToken);
-    }
+        @Test
+        void saveOrUpdate_UpdateWithToken_ShouldUpdateRepoAndToken() {
+                Long groupId = 1L;
+                String newRepo = "new/repo";
+                String newToken = "new-token";
+                IntegrationConfig existing = IntegrationConfig.builder()
+                                .groupId(groupId)
+                                .repoFullName("old/repo")
+                                .tokenEncrypted("old-encrypted".getBytes())
+                                .build();
 
-    @Test
-    void saveOrUpdate_UpdateWithoutToken_ShouldKeepOldToken() {
-        Long groupId = 1L;
-        String newRepo = "new/repo";
-        IntegrationConfig existing = IntegrationConfig.builder()
-                .groupId(groupId)
-                .repoFullName("old/repo")
-                .tokenEncrypted("old-encrypted".getBytes())
-                .build();
+                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
+                                .thenReturn(Optional.of(existing));
+                when(tokenHelper.encryptToBytes(newToken)).thenReturn("new-encrypted".getBytes());
+                when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
-                .thenReturn(Optional.of(existing));
-        when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
+                IntegrationConfig result = integrationService.saveOrUpdate(groupId, newRepo, newToken);
 
-        IntegrationConfig result = integrationService.saveOrUpdate(groupId, newRepo, null);
+                assertEquals(newRepo, result.getRepoFullName());
+                assertArrayEquals("new-encrypted".getBytes(), result.getTokenEncrypted());
+                verify(tokenHelper).encryptToBytes(newToken);
+        }
 
-        assertEquals(newRepo, result.getRepoFullName());
-        assertArrayEquals("old-encrypted".getBytes(), result.getTokenEncrypted());
-        verify(tokenHelper, never()).encryptToBytes(anyString());
-    }
+        @Test
+        void saveOrUpdate_UpdateWithoutToken_ShouldKeepOldToken() {
+                Long groupId = 1L;
+                String newRepo = "new/repo";
+                IntegrationConfig existing = IntegrationConfig.builder()
+                                .groupId(groupId)
+                                .repoFullName("old/repo")
+                                .tokenEncrypted("old-encrypted".getBytes())
+                                .build();
 
-    // ── Jira: saveOrUpdateJira ────────────────────────────────────────────────
+                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
+                                .thenReturn(Optional.of(existing));
+                when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
 
-    @Test
-    void saveOrUpdateJira_NewValid_ShouldEncryptAndSave() {
-        Long groupId = 2L;
-        String baseUrl = "https://myorg.atlassian.net";
-        String projectKey = "SWP391";
-        String jiraEmail = "leader@gmail.com";
-        String token = "ATATTxxxxxxx";
+                IntegrationConfig result = integrationService.saveOrUpdate(groupId, newRepo, null);
 
-        when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
-                .thenReturn(Optional.empty());
-        when(tokenHelper.encryptToBytes(token)).thenReturn("jira-encrypted".getBytes());
-        when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
+                assertEquals(newRepo, result.getRepoFullName());
+                assertArrayEquals("old-encrypted".getBytes(), result.getTokenEncrypted());
+                verify(tokenHelper, never()).encryptToBytes(anyString());
+        }
 
-        IntegrationConfig result = integrationService.saveOrUpdateJira(groupId, baseUrl, projectKey, jiraEmail, token);
+        // ── Jira: saveOrUpdateJira ────────────────────────────────────────────────
 
-        assertNotNull(result);
-        assertEquals(groupId, result.getGroupId());
-        assertEquals(IntegrationTypeIds.JIRA, result.getIntegrationTypeId());
-        assertEquals(baseUrl, result.getBaseUrl());
-        assertEquals(projectKey, result.getProjectKey());
-        assertEquals(jiraEmail, result.getJiraEmail());
-        assertArrayEquals("jira-encrypted".getBytes(), result.getTokenEncrypted());
-    }
+        @Test
+        void saveOrUpdateJira_NewValid_ShouldEncryptAndSave() {
+                Long groupId = 2L;
+                String baseUrl = "https://myorg.atlassian.net";
+                String projectKey = "SWP391";
+                String jiraEmail = "leader@gmail.com";
+                String token = "ATATTxxxxxxx";
 
-    @Test
-    void saveOrUpdateJira_NewMissingToken_ShouldThrow400() {
-        when(repository.findByGroupIdAndIntegrationTypeId(anyLong(), eq(IntegrationTypeIds.JIRA)))
-                .thenReturn(Optional.empty());
+                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                                .thenReturn(Optional.empty());
+                when(tokenHelper.encryptToBytes(token)).thenReturn("jira-encrypted".getBytes());
+                when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        BusinessException ex = assertThrows(BusinessException.class,
-                () -> integrationService.saveOrUpdateJira(2L,
-                        "https://org.atlassian.net", "PROJ", "leader@gmail.com", null));
-        assertEquals(400, ex.getStatus());
-    }
+                IntegrationConfig result = integrationService.saveOrUpdateJira(groupId, baseUrl, projectKey, jiraEmail,
+                                token);
 
-    @Test
-    void saveOrUpdateJira_InvalidBaseUrl_ShouldThrow400() {
-        when(repository.findByGroupIdAndIntegrationTypeId(anyLong(), eq(IntegrationTypeIds.JIRA)))
-                .thenReturn(Optional.empty());
+                assertNotNull(result);
+                assertEquals(groupId, result.getGroupId());
+                assertEquals(IntegrationTypeIds.JIRA, result.getIntegrationTypeId());
+                assertEquals(baseUrl, result.getBaseUrl());
+                assertEquals(projectKey, result.getProjectKey());
+                assertEquals(jiraEmail, result.getJiraEmail());
+                assertArrayEquals("jira-encrypted".getBytes(), result.getTokenEncrypted());
+        }
 
-        BusinessException ex = assertThrows(BusinessException.class,
-                () -> integrationService.saveOrUpdateJira(2L,
-                        "not-a-url", "PROJ", "leader@gmail.com", "token"));
-        assertEquals(400, ex.getStatus());
-    }
+        @Test
+        void saveOrUpdateJira_NewMissingToken_ShouldThrow400() {
+                when(repository.findByGroupIdAndIntegrationTypeId(anyLong(), eq(IntegrationTypeIds.JIRA)))
+                                .thenReturn(Optional.empty());
 
-    @Test
-    void saveOrUpdateJira_UpdateKeepsOldTokenWhenNotProvided() {
-        Long groupId = 2L;
-        IntegrationConfig existing = IntegrationConfig.builder()
-                .groupId(groupId)
-                .integrationTypeId(IntegrationTypeIds.JIRA)
-                .baseUrl("https://old.atlassian.net")
-                .projectKey("OLD")
-                .jiraEmail("old@gmail.com")
-                .tokenEncrypted("old-jira-encrypted".getBytes())
-                .build();
+                BusinessException ex = assertThrows(BusinessException.class,
+                                () -> integrationService.saveOrUpdateJira(2L,
+                                                "https://org.atlassian.net", "PROJ", "leader@gmail.com", null));
+                assertEquals(400, ex.getStatus());
+        }
 
-        when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
-                .thenReturn(Optional.of(existing));
-        when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
+        @Test
+        void saveOrUpdateJira_InvalidBaseUrl_ShouldThrow400() {
+                when(repository.findByGroupIdAndIntegrationTypeId(anyLong(), eq(IntegrationTypeIds.JIRA)))
+                                .thenReturn(Optional.empty());
 
-        IntegrationConfig result = integrationService.saveOrUpdateJira(
-                groupId, "https://new.atlassian.net", "NEW", "new@gmail.com", null);
+                BusinessException ex = assertThrows(BusinessException.class,
+                                () -> integrationService.saveOrUpdateJira(2L,
+                                                "not-a-url", "PROJ", "leader@gmail.com", "token"));
+                assertEquals(400, ex.getStatus());
+        }
 
-        assertEquals("https://new.atlassian.net", result.getBaseUrl());
-        assertEquals("NEW", result.getProjectKey());
-        assertArrayEquals("old-jira-encrypted".getBytes(), result.getTokenEncrypted());
-        verify(tokenHelper, never()).encryptToBytes(anyString());
-    }
+        @Test
+        void saveOrUpdateJira_UpdateKeepsOldTokenWhenNotProvided() {
+                Long groupId = 2L;
+                IntegrationConfig existing = IntegrationConfig.builder()
+                                .groupId(groupId)
+                                .integrationTypeId(IntegrationTypeIds.JIRA)
+                                .baseUrl("https://old.atlassian.net")
+                                .projectKey("OLD")
+                                .jiraEmail("old@gmail.com")
+                                .tokenEncrypted("old-jira-encrypted".getBytes())
+                                .build();
 
-    @Test
-    void saveOrUpdateJira_UpdateWithNewToken_ShouldReEncrypt() {
-        Long groupId = 2L;
-        IntegrationConfig existing = IntegrationConfig.builder()
-                .groupId(groupId)
-                .integrationTypeId(IntegrationTypeIds.JIRA)
-                .baseUrl("https://old.atlassian.net")
-                .projectKey("OLD")
-                .jiraEmail("old@gmail.com")
-                .tokenEncrypted("old-jira-encrypted".getBytes())
-                .build();
+                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                                .thenReturn(Optional.of(existing));
+                when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
-                .thenReturn(Optional.of(existing));
-        when(tokenHelper.encryptToBytes("new-token")).thenReturn("new-jira-encrypted".getBytes());
-        when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
+                IntegrationConfig result = integrationService.saveOrUpdateJira(
+                                groupId, "https://new.atlassian.net", "NEW", "new@gmail.com", null);
 
-        IntegrationConfig result = integrationService.saveOrUpdateJira(
-                groupId, "https://new.atlassian.net", "NEW", "new@gmail.com", "new-token");
+                assertEquals("https://new.atlassian.net", result.getBaseUrl());
+                assertEquals("NEW", result.getProjectKey());
+                assertArrayEquals("old-jira-encrypted".getBytes(), result.getTokenEncrypted());
+                verify(tokenHelper, never()).encryptToBytes(anyString());
+        }
 
-        assertArrayEquals("new-jira-encrypted".getBytes(), result.getTokenEncrypted());
-        verify(tokenHelper).encryptToBytes("new-token");
-    }
+        @Test
+        void saveOrUpdateJira_UpdateWithNewToken_ShouldReEncrypt() {
+                Long groupId = 2L;
+                IntegrationConfig existing = IntegrationConfig.builder()
+                                .groupId(groupId)
+                                .integrationTypeId(IntegrationTypeIds.JIRA)
+                                .baseUrl("https://old.atlassian.net")
+                                .projectKey("OLD")
+                                .jiraEmail("old@gmail.com")
+                                .tokenEncrypted("old-jira-encrypted".getBytes())
+                                .build();
+
+                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                                .thenReturn(Optional.of(existing));
+                when(tokenHelper.encryptToBytes("new-token")).thenReturn("new-jira-encrypted".getBytes());
+                when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
+
+                IntegrationConfig result = integrationService.saveOrUpdateJira(
+                                groupId, "https://new.atlassian.net", "NEW", "new@gmail.com", "new-token");
+
+                assertArrayEquals("new-jira-encrypted".getBytes(), result.getTokenEncrypted());
+                verify(tokenHelper).encryptToBytes("new-token");
+        }
+
+        // ── Jira: testJiraConnection ─────────────────────────────────────────
+
+        @Test
+        void testJiraConnection_Success() throws Exception {
+                Long groupId = 3L;
+                byte[] encryptedToken = "encrypted".getBytes();
+
+                IntegrationConfig config = IntegrationConfig.builder()
+                                .groupId(groupId)
+                                .integrationTypeId(IntegrationTypeIds.JIRA)
+                                .baseUrl("https://myorg.atlassian.net")
+                                .projectKey("SWP391")
+                                .jiraEmail("leader@gmail.com")
+                                .tokenEncrypted(encryptedToken)
+                                .build();
+
+                JiraProjectResponse expected = new JiraProjectResponse("SWP391", "SWP391 Jira Project");
+
+                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                                .thenReturn(Optional.of(config));
+                when(tokenCryptoService.decryptFromBytes(encryptedToken)).thenReturn("raw-token");
+                when(jiraClient.getProjectInfo(
+                                "https://myorg.atlassian.net", "SWP391", "leader@gmail.com", "raw-token"))
+                                .thenReturn(expected);
+
+                JiraProjectResponse result = integrationService.testJiraConnection(groupId);
+
+                assertNotNull(result);
+                assertEquals("SWP391", result.getKey());
+                assertEquals("SWP391 Jira Project", result.getName());
+                verify(jiraClient).getProjectInfo(
+                                "https://myorg.atlassian.net", "SWP391", "leader@gmail.com", "raw-token");
+        }
+
+        @Test
+        void testJiraConnection_ConfigNotFound_ShouldThrow404() {
+                Long groupId = 99L;
+
+                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                                .thenReturn(Optional.empty());
+
+                BusinessException ex = assertThrows(BusinessException.class,
+                                () -> integrationService.testJiraConnection(groupId));
+                assertEquals(404, ex.getStatus());
+        }
+
+        @Test
+        void testJiraConnection_TokenMissing_ShouldThrow400() {
+                Long groupId = 3L;
+
+                IntegrationConfig config = IntegrationConfig.builder()
+                                .groupId(groupId)
+                                .integrationTypeId(IntegrationTypeIds.JIRA)
+                                .baseUrl("https://myorg.atlassian.net")
+                                .projectKey("SWP391")
+                                .jiraEmail("leader@gmail.com")
+                                .tokenEncrypted(null) // token bị thiếu
+                                .build();
+
+                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                                .thenReturn(Optional.of(config));
+
+                BusinessException ex = assertThrows(BusinessException.class,
+                                () -> integrationService.testJiraConnection(groupId));
+                assertEquals(400, ex.getStatus());
+        }
 }

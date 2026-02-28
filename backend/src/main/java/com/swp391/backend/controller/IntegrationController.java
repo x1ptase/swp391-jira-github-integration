@@ -5,6 +5,7 @@ import com.swp391.backend.dto.request.GitHubConfigRequest;
 import com.swp391.backend.dto.request.JiraConfigRequest;
 import com.swp391.backend.dto.response.IntegrationResponse;
 import com.swp391.backend.dto.response.JiraIntegrationResponse;
+import com.swp391.backend.dto.response.JiraProjectResponse;
 import com.swp391.backend.entity.IntegrationConfig;
 import com.swp391.backend.entity.User;
 import com.swp391.backend.mapper.IntegrationMapper;
@@ -96,6 +97,14 @@ public class IntegrationController {
         return repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
                 .map(config -> ResponseEntity.ok(integrationMapper.toJiraResponse(config)))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/{groupId}/jira/test-connection")
+    public ResponseEntity<JiraProjectResponse> testJiraConnection(@PathVariable Long groupId) {
+
+        checkAuthority(groupId);
+
+        return ResponseEntity.ok(integrationService.testJiraConnection(groupId));
     }
 
     // ── Shared authority check ────────────────────────────────────────────────
