@@ -14,4 +14,12 @@ public interface IntegrationService {
      */
     IntegrationConfig saveOrUpdateJira(Long groupId, String baseUrl, String projectKey,
             String jiraEmail, String token);
+
+    /**
+     * Tests the GitHub connection for a specific group.
+     * 
+     * @param groupId the ID of the group
+     * @return repository information (full name and default branch)
+     */
+    com.swp391.backend.dto.response.GitHubRepoResponse testGitHubConnection(Long groupId);
 }

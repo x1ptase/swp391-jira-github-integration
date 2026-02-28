@@ -1,6 +1,7 @@
 package com.swp391.backend.service.impl;
 
 import com.swp391.backend.common.IntegrationTypeIds;
+import com.swp391.backend.dto.response.GitHubRepoResponse;
 import com.swp391.backend.entity.IntegrationConfig;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.repository.IntegrationConfigRepository;
@@ -21,6 +22,8 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     private final IntegrationConfigRepository repository;
     private final TokenHelper tokenHelper;
+    private final com.swp391.backend.service.TokenCryptoService tokenCryptoService;
+    private final com.swp391.backend.integration.GitHubClient gitHubClient;
 
     // ── GitHub ──────────────────────────────────────────────────────────────
 
@@ -145,5 +148,29 @@ public class IntegrationServiceImpl implements IntegrationService {
         } catch (MalformedURLException e) {
             throw new BusinessException("baseUrl is not a valid URL", 400);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public GitHubRepoResponse testGitHubConnection(Long groupId) {
+        // 1. Get IntegrationConfig from DB
+        IntegrationConfig config = repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
+                .orElseThrow(() -> new BusinessException(
+                        "GitHub integration configuration not found for group: " + groupId, 404));
+
+        if (config.getTokenEncrypted() == null) {
+            throw new BusinessException("GitHub token is missing in configuration", 400);
+        }
+
+        // 2. Decrypt token
+        String rawToken;
+        try {
+            rawToken = tokenCryptoService.decryptFromBytes(config.getTokenEncrypted());
+        } catch (Exception e) {
+            throw new BusinessException("Failed to decrypt GitHub token", 500);
+        }
+
+        // 3. Call GitHubClient (no logging of rawToken as required)
+        return gitHubClient.getRepositoryInfo(config.getRepoFullName(), rawToken);
     }
 }

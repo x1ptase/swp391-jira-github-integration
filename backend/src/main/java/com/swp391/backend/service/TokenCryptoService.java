@@ -84,6 +84,26 @@ public class TokenCryptoService {
     public String decrypt(String encryptedToken) {
         try {
             byte[] ivAndCipher = Base64.getDecoder().decode(encryptedToken);
+            return decryptFromBytes(ivAndCipher);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid Base64 format for token", e);
+        }
+    }
+
+    /**
+     * Decrypts a byte array produced by {@link #encryptToBytes(String)}
+     * (hypothetically, if it existed).
+     * In this project, TokenHelper provides encryptToBytes.
+     *
+     * @param ivAndCipher the byte array containing IV + ciphertext
+     * @return original plaintext token
+     * @throws RuntimeException wrapping any {@link GeneralSecurityException}
+     */
+    public String decryptFromBytes(byte[] ivAndCipher) {
+        try {
+            if (ivAndCipher == null) {
+                return null;
+            }
 
             if (ivAndCipher.length <= IV_LENGTH) {
                 throw new IllegalArgumentException("Encrypted token is too short to contain a valid IV.");
