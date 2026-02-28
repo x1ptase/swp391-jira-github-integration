@@ -5,6 +5,7 @@ import com.swp391.backend.dto.request.GitHubConfigRequest;
 import com.swp391.backend.dto.request.JiraConfigRequest;
 import com.swp391.backend.dto.response.IntegrationResponse;
 import com.swp391.backend.dto.response.JiraIntegrationResponse;
+import com.swp391.backend.dto.response.JiraProjectResponse;
 import com.swp391.backend.entity.IntegrationConfig;
 import com.swp391.backend.entity.User;
 import com.swp391.backend.mapper.IntegrationMapper;
@@ -173,5 +174,33 @@ class IntegrationControllerTest {
         ResponseEntity<JiraIntegrationResponse> result = integrationController.getJiraConfig(groupId);
 
         assertEquals(404, result.getStatusCode().value());
+    }
+
+    // ── Jira test-connection ──────────────────────────────────────────────────
+
+    @Test
+    void testJiraConnection_Authorized_ShouldReturn200() {
+        Long groupId = 100L;
+        JiraProjectResponse jiraResponse = new JiraProjectResponse("SWP391", "SWP391 Jira Project");
+
+        when(groupService.isUserAuthorized(eq(1L), eq(groupId), anyList())).thenReturn(true);
+        when(integrationService.testJiraConnection(groupId)).thenReturn(jiraResponse);
+
+        ResponseEntity<JiraProjectResponse> result = integrationController.testJiraConnection(groupId);
+
+        assertEquals(200, result.getStatusCode().value());
+        assertNotNull(result.getBody());
+        assertEquals("SWP391", result.getBody().getKey());
+        assertEquals("SWP391 Jira Project", result.getBody().getName());
+    }
+
+    @Test
+    void testJiraConnection_Unauthorized_ShouldThrowAccessDenied() {
+        Long groupId = 100L;
+
+        when(groupService.isUserAuthorized(eq(1L), eq(groupId), anyList())).thenReturn(false);
+
+        assertThrows(AccessDeniedException.class,
+                () -> integrationController.testJiraConnection(groupId));
     }
 }
