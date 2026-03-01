@@ -1,5 +1,6 @@
 package com.swp391.backend.service;
 
+import com.swp391.backend.dto.response.JiraProjectResponse;
 import com.swp391.backend.entity.IntegrationConfig;
 
 public interface IntegrationService {
@@ -14,4 +15,20 @@ public interface IntegrationService {
      */
     IntegrationConfig saveOrUpdateJira(Long groupId, String baseUrl, String projectKey,
             String jiraEmail, String token);
+
+    /**
+     * Tests the GitHub connection for a specific group.
+     * 
+     * @param groupId the ID of the group
+     * @return repository information (full name and default branch)
+     */
+    com.swp391.backend.dto.response.GitHubRepoResponse testGitHubConnection(Long groupId);
+
+    /**
+     * Tests the Jira connection for a specific group using the saved Jira config.
+     *
+     * @param groupId the ID of the group
+     * @return Jira project information (key and name)
+     */
+    JiraProjectResponse testJiraConnection(Long groupId);
 }

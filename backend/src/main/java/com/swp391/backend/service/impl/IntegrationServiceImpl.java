@@ -1,8 +1,11 @@
 package com.swp391.backend.service.impl;
 
 import com.swp391.backend.common.IntegrationTypeIds;
+import com.swp391.backend.dto.response.GitHubRepoResponse;
+import com.swp391.backend.dto.response.JiraProjectResponse;
 import com.swp391.backend.entity.IntegrationConfig;
 import com.swp391.backend.exception.BusinessException;
+import com.swp391.backend.integration.jira.JiraClient;
 import com.swp391.backend.repository.IntegrationConfigRepository;
 import com.swp391.backend.service.IntegrationService;
 import com.swp391.backend.service.TokenHelper;
@@ -21,6 +24,9 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     private final IntegrationConfigRepository repository;
     private final TokenHelper tokenHelper;
+    private final com.swp391.backend.service.TokenCryptoService tokenCryptoService;
+    private final com.swp391.backend.integration.GitHubClient gitHubClient;
+    private final JiraClient jiraClient;
 
     // ── GitHub ──────────────────────────────────────────────────────────────
 
@@ -145,5 +151,68 @@ public class IntegrationServiceImpl implements IntegrationService {
         } catch (MalformedURLException e) {
             throw new BusinessException("baseUrl is not a valid URL", 400);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JiraProjectResponse testJiraConnection(Long groupId) {
+        // 1. Load Jira config từ DB
+        IntegrationConfig config = repository
+                .findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
+                .orElseThrow(() -> new BusinessException(
+                        "Jira integration configuration not found for group: " + groupId, 404));
+
+        // 2. Validate các trường bắt buộc
+        if (config.getTokenEncrypted() == null) {
+            throw new BusinessException("Jira token is missing in configuration", 400);
+        }
+        if (config.getBaseUrl() == null || config.getBaseUrl().isBlank()) {
+            throw new BusinessException("Jira baseUrl is missing in configuration", 400);
+        }
+        if (config.getProjectKey() == null || config.getProjectKey().isBlank()) {
+            throw new BusinessException("Jira projectKey is missing in configuration", 400);
+        }
+        if (config.getJiraEmail() == null || config.getJiraEmail().isBlank()) {
+            throw new BusinessException("Jira email is missing in configuration", 400);
+        }
+
+        // 3. Decrypt token (không log token)
+        String rawToken;
+        try {
+            rawToken = tokenCryptoService.decryptFromBytes(config.getTokenEncrypted());
+        } catch (Exception e) {
+            throw new BusinessException("Failed to decrypt Jira token", 500);
+        }
+
+        // 4. Gọi Jira API
+        return jiraClient.getProjectInfo(
+                config.getBaseUrl(),
+                config.getProjectKey(),
+                config.getJiraEmail(),
+                rawToken);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public GitHubRepoResponse testGitHubConnection(Long groupId) {
+        // 1. Get IntegrationConfig from DB
+        IntegrationConfig config = repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
+                .orElseThrow(() -> new BusinessException(
+                        "GitHub integration configuration not found for group: " + groupId, 404));
+
+        if (config.getTokenEncrypted() == null) {
+            throw new BusinessException("GitHub token is missing in configuration", 400);
+        }
+
+        // 2. Decrypt token
+        String rawToken;
+        try {
+            rawToken = tokenCryptoService.decryptFromBytes(config.getTokenEncrypted());
+        } catch (Exception e) {
+            throw new BusinessException("Failed to decrypt GitHub token", 500);
+        }
+
+        // 3. Call GitHubClient (no logging of rawToken as required)
+        return gitHubClient.getRepositoryInfo(config.getRepoFullName(), rawToken);
     }
 }
