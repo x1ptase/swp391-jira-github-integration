@@ -31,7 +31,6 @@ function App() {
         <Route path="/lecturer" element={<LecturerLayout />}>
           <Route index element={<Navigate to="groups" replace />} />
           <Route path="groups" element={<LecturerGroupList />} />
-          <Route path="groups/:groupId/github-config" element={<GitHubConfig />} />
         </Route>
       </Routes>
     </BrowserRouter>

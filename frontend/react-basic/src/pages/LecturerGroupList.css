@@ -411,3 +411,36 @@
   color: white;
   border-color: #2563eb;
 }
+
+.group-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.config-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.github-btn {
+  background-color: #24292e;
+  color: white;
+}
+
+.github-btn:hover {
+  background-color: #000;
+}
+
+.jira-btn {
+  background-color: #0052cc;
+  color: white;
+}
+
+.jira-btn:hover {
+  background-color: #003d99;
+}

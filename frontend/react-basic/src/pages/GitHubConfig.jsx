@@ -16,6 +16,8 @@ function GitHubConfig({ onSuccess }) {
   const [showTokenInput, setShowTokenInput] = useState(false);
   const [tokenInputValue, setTokenInputValue] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [testResult, setTestResult] = useState("");
+  const [isTesting, setIsTesting] = useState(false);
   const { groupId } = useParams();
   useEffect(() => {
     if (groupId) {
@@ -172,6 +174,47 @@ function GitHubConfig({ onSuccess }) {
     setShowTokenInput(false);
     setError("");
   };
+  const handleTestConnection = async () => {
+    setTestResult("");
+    try {
+      setIsTesting(true);
+
+      const res = await fetch(
+        `${API_URL}/${groupId}/github/test-connection`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (res.status === 404) {
+        setTestResult(" GitHub configuration not found.");
+        return;
+      }
+
+      if (res.status === 403) {
+        setTestResult(" You are not authorized.");
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setTestResult((data.message || "Connection failed"));
+        return;
+      }
+
+      setTestResult(
+        `Connected! Repo: ${data.fullName} ⭐ ${data.stars} stars`
+      );
+    } catch (err) {
+      setTestResult("Network error.");
+    } finally {
+      setIsTesting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -189,7 +232,7 @@ function GitHubConfig({ onSuccess }) {
       {/* HEADER */}
       <div className="config-header">
         <div className="header-left">
-          <h2>🔐 GitHub Integration</h2>
+          <h2>GitHub Integration</h2>
           <p className="header-desc">
             {config && !isEditing
               ? "Your GitHub repository configuration"
@@ -198,7 +241,7 @@ function GitHubConfig({ onSuccess }) {
         </div>
         {config && !isEditing && (
           <span className={`status ${hasToken ? "connected" : "warning"}`}>
-            {hasToken ? "✓ Connected" : "⚠ No Token"}
+            {hasToken ? "Connected" : "No Token"}
           </span>
         )}
       </div>
@@ -206,7 +249,7 @@ function GitHubConfig({ onSuccess }) {
       {/* ALERTS */}
       {error && (
         <div className="alert alert-error">
-          <span className="alert-icon">⚠️</span>
+          <span className="alert-icon">!!</span>
           <span className="alert-text">{error}</span>
           <button className="alert-close" onClick={() => setError("")}>×</button>
         </div>
@@ -222,6 +265,7 @@ function GitHubConfig({ onSuccess }) {
       {/* CONFIG DISPLAY (READ MODE) */}
       {config && !isEditing && (
         <div className="config-display">
+
           <div className="config-item">
             <span className="config-label">Repository</span>
             <div className="config-value-wrapper">
@@ -247,7 +291,7 @@ function GitHubConfig({ onSuccess }) {
                 </div>
               ) : (
                 <div className="token-missing">
-                  <span>⚠️ No token configured</span>
+                  <span>No token configured</span>
                 </div>
               )}
             </div>
@@ -260,14 +304,34 @@ function GitHubConfig({ onSuccess }) {
             </span>
           </div>
 
+          {/* ACTION BUTTONS */}
           <div className="config-actions">
-            <button className="btn btn-primary" onClick={handleEdit} disabled={isSaving}>
+            <button
+              className="btn btn-primary"
+              onClick={handleEdit}
+              disabled={isSaving}
+            >
               ✎ Edit Configuration
             </button>
+
+            <button
+              className="btn btn-secondary"
+              onClick={handleTestConnection}
+              disabled={isTesting}
+            >
+              {isTesting ? "Testing..." : "🔍 Test Connection"}
+            </button>
           </div>
+
+          {/* TEST RESULT */}
+          {testResult && (
+            <div className="test-result">
+              {testResult}
+            </div>
+          )}
+
         </div>
       )}
-
       {/* EDIT FORM */}
       {(isEditing || !config) && (
         <form className="config-form" onSubmit={handleSubmit}>
@@ -326,7 +390,7 @@ function GitHubConfig({ onSuccess }) {
                   className="input-field token-input"
                 />
                 <p className="input-help security-note">
-                  🔒 Encrypted AES-256 and never displayed in plain text
+                  Encrypted AES-256 and never displayed in plain text
                 </p>
 
                 {showTokenInput && config && (
@@ -344,7 +408,7 @@ function GitHubConfig({ onSuccess }) {
 
             {/* TOKEN GUIDE */}
             <details className="token-guide">
-              <summary>📖 How to create a GitHub token?</summary>
+              <summary>How to create a GitHub token?</summary>
               <div className="guide-content">
                 <ol>
                   <li>GitHub Settings → Developer settings</li>
