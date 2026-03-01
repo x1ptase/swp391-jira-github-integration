@@ -6,6 +6,8 @@ import AdminLayout from './pages/AdminLayout';
 import LecturerLayout from './pages/LecturerLayout';
 import LecturerGroupList from './pages/LecturerGroupList';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import GitHubConfig from './pages/GitHubConfig';
+import JiraConfig from './pages/JiraConfig';
 
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
           <Route index element={<Navigate to="users" replace />} />
           <Route path="users" element={<AdminUserManagement />} />
           <Route path="groups" element={<AdminGroupManagement />} />
+          <Route path="groups/:groupId/github-config" element={<GitHubConfig />} />
+          <Route path="groups/:groupId/jira-config" element={<JiraConfig />} />
         </Route>
 
         {/* Lecturer Routes */}

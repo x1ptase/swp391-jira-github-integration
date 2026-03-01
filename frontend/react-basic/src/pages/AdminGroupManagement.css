@@ -301,6 +301,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -324,6 +325,7 @@
     transform: translateY(20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -650,4 +652,26 @@
   .add-member-section h4 {
     font-size: 14px;
   }
+
+}
+
+
+ /* GitHub Config Button */
+  .group-table .github-btn {
+    background: #0ea5e9;
+  }
+
+  .group-table .github-btn:hover {
+    background: #0284c7;
+    box-shadow: var(--shadow-md);
+  }
+
+/* Jira Config Button */
+  .group-table .jira-btn {
+  background: rgb(216, 181, 64);
+  color: white;
+}
+
+.group-table .jira-btn:hover {
+  background: #ffcc00;
 }
