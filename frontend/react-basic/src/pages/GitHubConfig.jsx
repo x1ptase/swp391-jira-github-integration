@@ -207,7 +207,7 @@ function GitHubConfig({ onSuccess }) {
       }
 
       setTestResult(
-        `Connected! Repo: ${data.fullName} ⭐ ${data.stars} stars`
+        `Connected! Repo: ${data.full_name} || Branch: ${data.default_branch}`
       );
     } catch (err) {
       setTestResult("Network error.");
@@ -319,13 +319,19 @@ function GitHubConfig({ onSuccess }) {
               onClick={handleTestConnection}
               disabled={isTesting}
             >
-              {isTesting ? "Testing..." : "🔍 Test Connection"}
+              {isTesting ? "Testing..." : "Test Connection"}
             </button>
           </div>
 
           {/* TEST RESULT */}
           {testResult && (
-            <div className="test-result">
+            <div
+              className={
+                testResult.startsWith("Connected")
+                  ? "test-result success-text"
+                  : "test-result error-text"
+              }
+            >
               {testResult}
             </div>
           )}
