@@ -1,12 +1,17 @@
 package com.swp391.backend.integration;
 
+import com.swp391.backend.dto.response.GitHubCommitDTO;
 import com.swp391.backend.dto.response.GitHubRepoResponse;
 import com.swp391.backend.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -41,6 +46,47 @@ public class GitHubClient {
         } catch (Exception e) {
             throw new BusinessException("GitHub Connection Error: " + e.getMessage(), 500);
         }
+    }
+
+    public List<GitHubCommitDTO> fetchAllCommits(String repoFullName, String token) {
+        List<GitHubCommitDTO> allCommits = new ArrayList<>();
+        int page = 1;
+        int perPage = 100;
+
+        while (true) {
+            String url = String.format("https://api.github.com/repos/%s/commits?per_page=%d&page=%d",
+                    repoFullName, perPage, page);
+
+            HttpEntity<Void> entity = new HttpEntity<>(buildHeaders(token));
+
+            try {
+                ResponseEntity<List<GitHubCommitDTO>> response = restTemplate.exchange(
+                        url,
+                        HttpMethod.GET,
+                        entity,
+                        new ParameterizedTypeReference<List<GitHubCommitDTO>>() {
+                        });
+
+                List<GitHubCommitDTO> commits = response.getBody();
+
+                if (commits == null || commits.isEmpty()) {
+                    break;
+                }
+
+                allCommits.addAll(commits);
+                page++;
+            } catch (HttpClientErrorException e) {
+                String message = e.getResponseBodyAsString();
+                if (message == null || message.isEmpty()) {
+                    message = e.getStatusText();
+                }
+                throw new BusinessException("GitHub API Error: " + message, e.getStatusCode().value());
+            } catch (Exception e) {
+                throw new BusinessException("GitHub Connection Error: " + e.getMessage(), 500);
+            }
+        }
+
+        return allCommits;
     }
 
     private HttpHeaders buildHeaders(String token) {
