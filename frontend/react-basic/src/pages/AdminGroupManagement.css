@@ -166,11 +166,13 @@
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   margin-bottom: var(--spacing-2xl);
+  text-align: center;
 }
 
 .group-table thead {
   background: var(--bg-tertiary);
   border-bottom: 2px solid var(--border);
+
 }
 
 .group-table th {
@@ -201,6 +203,7 @@
 .group-table tbody tr:last-child td {
   border-bottom: none;
 }
+
 
 /* Badges */
 .lecturer-badge {
@@ -607,6 +610,10 @@
   background: var(--primary);
   color: white;
   border-color: var(--primary);
+}
+
+.group-container h3{
+  text-align: center;
 }
 
 /* Responsive */

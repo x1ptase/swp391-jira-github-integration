@@ -8,6 +8,7 @@ import LecturerGroupList from './pages/LecturerGroupList';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import GitHubConfig from './pages/GitHubConfig';
 import JiraConfig from './pages/JiraConfig';
+import JiraIssuesPreview from "./pages/JiraIssuesPreview";
 
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
         <Route path="/lecturer" element={<LecturerLayout />}>
           <Route index element={<Navigate to="groups" replace />} />
           <Route path="groups" element={<LecturerGroupList />} />
+          <Route path="groups/:groupId/jira-issues" element={<JiraIssuesPreview />} />
         </Route>
       </Routes>
     </BrowserRouter>
