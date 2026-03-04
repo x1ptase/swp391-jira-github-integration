@@ -213,6 +213,6 @@ public class IntegrationServiceImpl implements IntegrationService {
         }
 
         // 3. Call GitHubClient (no logging of rawToken as required)
-        return gitHubClient.getRepositoryInfo(config.getRepoFullName(), rawToken);
+        return gitHubClient.getRepoInfo(config.getRepoFullName(), rawToken);
     }
 }

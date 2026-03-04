@@ -14,15 +14,10 @@ public class GitHubClient {
 
     private final RestTemplate restTemplate;
 
-    public GitHubRepoResponse getRepositoryInfo(String repoFullName, String token) {
+    public GitHubRepoResponse getRepoInfo(String repoFullName, String token) {
         String url = "https://api.github.com/repos/" + repoFullName;
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.set(HttpHeaders.ACCEPT, "application/vnd.github+json");
-        headers.set("X-GitHub-Api-Version", "2022-11-28");
-
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        HttpEntity<Void> entity = new HttpEntity<>(buildHeaders(token));
 
         try {
             ResponseEntity<GitHubRepoResponse> response = restTemplate.exchange(
@@ -46,5 +41,14 @@ public class GitHubClient {
         } catch (Exception e) {
             throw new BusinessException("GitHub Connection Error: " + e.getMessage(), 500);
         }
+    }
+
+    private HttpHeaders buildHeaders(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.set(HttpHeaders.ACCEPT, "application/vnd.github+json");
+        headers.set("X-GitHub-Api-Version", "2022-11-28");
+        headers.set(HttpHeaders.USER_AGENT, "SWP391-Project-Team");
+        return headers;
     }
 }
