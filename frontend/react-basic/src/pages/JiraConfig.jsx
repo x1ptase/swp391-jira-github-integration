@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./JiraConfig.css";
+import JiraIssuesPreview from "./JiraIssuesPreview";
 
 const API_URL = "/api/groups";
 
@@ -50,19 +51,19 @@ function JiraConfig() {
             );
 
             if (res.status === 403) {
-                setTestResult("❌ You are not authorized to test this integration.");
+                setTestResult("You are not authorized to test this integration.");
                 return;
             }
 
             if (res.status === 404) {
-                setTestResult("❌ Jira configuration not found.");
+                setTestResult("Jira configuration not found.");
                 return;
             }
 
             const data = await res.json();
 
             if (!res.ok) {
-                setTestResult("❌ " + (data.message || "Connection failed"));
+                setTestResult((data.message || "Connection failed"));
                 return;
             }
 
@@ -250,6 +251,10 @@ function JiraConfig() {
                         {isSaving ? "Saving..." : config ? "Update" : "Create"}
                     </button>
                 </form>
+            )}
+
+            {config && hasToken && (
+                <JiraIssuesPreview groupId={groupId} />
             )}
         </div>
     );

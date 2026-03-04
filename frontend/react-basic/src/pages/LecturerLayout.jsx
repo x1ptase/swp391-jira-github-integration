@@ -29,7 +29,7 @@ function LecturerLayout() {
 
         <div className="sidebar-footer">
           <div className="user-info">
-            <span className="user-icon">👨‍🏫</span>
+            <span className="user-icon">🧑🏻‍🏫</span>
             <span className="username">{username}</span>
           </div>
           <button className="logout-btn" onClick={handleLogout}>

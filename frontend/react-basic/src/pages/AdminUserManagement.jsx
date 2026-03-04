@@ -137,7 +137,7 @@ function AdminUserManagement() {
     }
   };
 
-  // ===== EDIT =====
+  // EDIT 
   const handleEdit = (u) => {
     setError("");
     setForm({
@@ -169,11 +169,11 @@ function AdminUserManagement() {
 
   return (
     <div className="admin-container">
-      <h2>👤 User Management</h2>
+      <h2>User Management</h2>
 
       {error && (
         <div className="error-banner">
-          <span className="error-icon">⚠️</span>
+          <span className="error-icon">!</span>
           <span>{error}</span>
           <button className="error-close" onClick={() => setError("")}>×</button>
         </div>
@@ -251,7 +251,7 @@ function AdminUserManagement() {
       <div className="search-bar">
         <input
           type="text"
-          placeholder="🔍 Search username or email"
+          placeholder="Search username or email"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
         />

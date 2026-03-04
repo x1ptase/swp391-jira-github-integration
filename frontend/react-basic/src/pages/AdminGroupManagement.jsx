@@ -293,7 +293,7 @@ function AdminGroupManagement() {
 
   return (
     <div className="group-container">
-      <h3>👥 Group Management</h3>
+      <h3>Group Management</h3>
 
       {/* FILTER */}
       <div className="group-filter">
@@ -527,7 +527,7 @@ function AdminGroupManagement() {
                           <td>{member.email}</td>
                           <td>
                             {member.memberRole === "LEADER" ? (
-                              <span className="leader-badge">👑 Leader</span>
+                              <span className="leader-badge">Leader</span>
                             ) : (
                               <span className="member-badge">Member</span>
                             )}
@@ -567,7 +567,7 @@ function AdminGroupManagement() {
 
                 <input
                   type="text"
-                  placeholder="🔍 Search by name or username..."
+                  placeholder="Search by name or username..."
                   value={studentKeyword}
                   onChange={(e) => {
                     const value = e.target.value;

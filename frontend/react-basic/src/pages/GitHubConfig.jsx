@@ -380,7 +380,7 @@ function GitHubConfig({ onSuccess }) {
                   onClick={toggleTokenInput}
                   disabled={isSaving}
                 >
-                  🔄 Update
+                   Update
                 </button>
               </div>
             )}
