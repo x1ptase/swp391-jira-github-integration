@@ -2,9 +2,13 @@ package com.swp391.backend.integration.jira;
 
 import com.swp391.backend.dto.response.JiraProjectResponse;
 import com.swp391.backend.exception.BusinessException;
+import com.swp391.backend.integration.jira.dto.JiraBoardListResponse;
 import com.swp391.backend.integration.jira.dto.JiraBulkFetchResponse;
 import com.swp391.backend.integration.jira.dto.JiraSearchJqlResponse;
+import com.swp391.backend.integration.jira.dto.JiraSprintListResponse;
+import com.swp391.backend.integration.jira.dto.JiraVersion;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -23,7 +27,7 @@ public class JiraClient {
     private final RestTemplate restTemplate;
 
     private static final List<String> BULK_FIELDS = List.of(
-            "summary", "description", "issuetype", "status", "priority", "assignee", "updated");
+            "summary", "description", "issuetype", "status", "priority", "assignee", "updated", "labels");
 
     /**
      * Gọi Jira REST API v3 để lấy thông tin project.
@@ -103,12 +107,10 @@ public class JiraClient {
             builder.queryParam("nextPageToken", nextPageToken);
         }
 
-// IMPORTANT: dùng URI thay vì String + bỏ encode()
+        // IMPORTANT: dùng URI thay vì String + bỏ encode()
         java.net.URI uri = builder.build().toUri();
 
         HttpEntity<Void> entity = new HttpEntity<>(buildAuthHeaders(jiraEmail, token));
-
-
 
         try {
             System.out.println("JIRA_SEARCH_JQL_URL=" + uri);
@@ -206,6 +208,194 @@ public class JiraClient {
         } catch (Exception e) {
             throw new BusinessException("Jira BulkFetch Connection Error: " + e.getMessage(), 500);
         }
+    }
+
+    // ── Agile: boards ────────────────────────────────────────────────────────
+
+    /**
+     * Lấy danh sách boards của project theo Jira Agile REST API.
+     *
+     * @param baseUrl        Jira base URL
+     * @param jiraEmail      Email xác thực
+     * @param token          Jira API token (raw)
+     * @param projectKeyOrId Project key hoặc ID
+     * @param maxResults     Số results mỗi trang
+     * @param startAt        Offset bắt đầu
+     * @return JiraBoardListResponse
+     */
+    public JiraBoardListResponse getBoardsByProject(String baseUrl, String jiraEmail, String token,
+            String projectKeyOrId, int maxResults, int startAt) {
+        String normalizedBaseUrl = baseUrl.stripTrailing().replaceAll("/+$", "");
+
+        java.net.URI uri = UriComponentsBuilder
+                .fromHttpUrl(normalizedBaseUrl + "/rest/agile/1.0/board")
+                .queryParam("projectKeyOrId", projectKeyOrId)
+                .queryParam("maxResults", maxResults)
+                .queryParam("startAt", startAt)
+                .build().toUri();
+
+        HttpEntity<Void> entity = new HttpEntity<>(buildAuthHeaders(jiraEmail, token));
+
+        try {
+            ResponseEntity<JiraBoardListResponse> response = restTemplate.exchange(
+                    uri, HttpMethod.GET, entity, JiraBoardListResponse.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody();
+            } else {
+                throw new BusinessException(
+                        "Jira Agile Board API returned unexpected status: " + response.getStatusCode().value(),
+                        response.getStatusCode().value());
+            }
+
+        } catch (HttpStatusCodeException e) {
+            int status = e.getStatusCode().value();
+            String message = switch (status) {
+                case 401 -> "Jira authentication failed";
+                case 403 -> "Jira access denied";
+                case 404 -> "No Jira board found for projectKey=" + projectKeyOrId;
+                default -> "Jira Agile Board API Error: " + status + " " + e.getStatusText();
+            };
+            throw new BusinessException(message, status);
+
+        } catch (BusinessException e) {
+            throw e;
+
+        } catch (Exception e) {
+            throw new BusinessException("Jira Agile Board Connection Error: " + e.getMessage(), 500);
+        }
+    }
+
+    // ── Agile: sprints ───────────────────────────────────────────────────────
+
+    /**
+     * Lấy danh sách sprints của board theo Jira Agile REST API.
+     *
+     * @param baseUrl    Jira base URL
+     * @param jiraEmail  Email xác thực
+     * @param token      Jira API token (raw)
+     * @param boardId    Board ID
+     * @param state      State filter (active / future / closed, comma-separated)
+     * @param maxResults Số results mỗi trang
+     * @param startAt    Offset bắt đầu
+     * @return JiraSprintListResponse
+     */
+    public JiraSprintListResponse getSprintsByBoard(String baseUrl, String jiraEmail, String token,
+            Long boardId, String state, int maxResults, int startAt) {
+        String normalizedBaseUrl = baseUrl.stripTrailing().replaceAll("/+$", "");
+
+        UriComponentsBuilder builder = UriComponentsBuilder
+                .fromHttpUrl(normalizedBaseUrl + "/rest/agile/1.0/board/" + boardId + "/sprint")
+                .queryParam("maxResults", maxResults)
+                .queryParam("startAt", startAt);
+
+        if (state != null && !state.isBlank()) {
+            builder.queryParam("state", state);
+        }
+
+        java.net.URI uri = builder.build().toUri();
+        HttpEntity<Void> entity = new HttpEntity<>(buildAuthHeaders(jiraEmail, token));
+
+        try {
+            ResponseEntity<JiraSprintListResponse> response = restTemplate.exchange(
+                    uri, HttpMethod.GET, entity, JiraSprintListResponse.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody();
+            } else {
+                throw new BusinessException(
+                        "Jira Agile Sprint API returned unexpected status: " + response.getStatusCode().value(),
+                        response.getStatusCode().value());
+            }
+
+        } catch (HttpStatusCodeException e) {
+            int status = e.getStatusCode().value();
+            String message = switch (status) {
+                case 401 -> "Jira authentication failed";
+                case 403 -> "Jira access denied";
+                case 404 -> "No Jira board found with id=" + boardId;
+                default -> "Jira Agile Sprint API Error: " + status + " " + e.getStatusText();
+            };
+            throw new BusinessException(message, status);
+
+        } catch (BusinessException e) {
+            throw e;
+
+        } catch (Exception e) {
+            throw new BusinessException("Jira Agile Sprint Connection Error: " + e.getMessage(), 500);
+        }
+    }
+
+    // ── Project versions ─────────────────────────────────────────────────────
+
+    /**
+     * Lấy tất cả versions của project từ Jira REST API v3.
+     *
+     * @param baseUrl    Jira base URL
+     * @param jiraEmail  Email xác thực
+     * @param token      Jira API token (raw)
+     * @param projectKey Project key
+     * @return List của JiraVersion
+     */
+    public List<JiraVersion> getProjectVersions(String baseUrl, String jiraEmail, String token,
+            String projectKey) {
+        String normalizedBaseUrl = baseUrl.stripTrailing().replaceAll("/+$", "");
+        String url = normalizedBaseUrl + "/rest/api/3/project/" + projectKey + "/versions";
+
+        HttpEntity<Void> entity = new HttpEntity<>(buildAuthHeaders(jiraEmail, token));
+
+        try {
+            ResponseEntity<List<JiraVersion>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<List<JiraVersion>>() {
+                    });
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody() != null ? response.getBody() : List.of();
+            } else {
+                throw new BusinessException(
+                        "Jira Versions API returned unexpected status: " + response.getStatusCode().value(),
+                        response.getStatusCode().value());
+            }
+
+        } catch (HttpStatusCodeException e) {
+            int status = e.getStatusCode().value();
+            String message = switch (status) {
+                case 401 -> "Jira authentication failed";
+                case 403 -> "Jira access denied";
+                case 404 -> "No Jira project found for projectKey=" + projectKey;
+                default -> "Jira Versions API Error: " + status + " " + e.getStatusText();
+            };
+            throw new BusinessException(message, status);
+
+        } catch (BusinessException e) {
+            throw e;
+
+        } catch (Exception e) {
+            throw new BusinessException("Jira Versions Connection Error: " + e.getMessage(), 500);
+        }
+    }
+
+    // ── Labels: search issues for label aggregation ──────────────────────────
+
+    /**
+     * Search issues bằng JQL để aggregate labels.
+     * Reuse endpoint /rest/api/3/search/jql.
+     *
+     * @param baseUrl       Jira base URL
+     * @param jiraEmail     Email xác thực
+     * @param token         Jira API token (raw)
+     * @param jql           JQL query
+     * @param maxResults    Số issues tối đa mỗi lần
+     * @param nextPageToken opaque pagination token (null cho page đầu)
+     * @return JiraSearchJqlResponse
+     */
+    public JiraSearchJqlResponse searchIssuesForLabels(String baseUrl, String jiraEmail, String token,
+            String jql, int maxResults, String nextPageToken) {
+        // Reuse the existing searchIssueIdsByJql method – logic giống nhau
+        return searchIssueIdsByJql(baseUrl, jiraEmail, token, jql, maxResults, nextPageToken);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
