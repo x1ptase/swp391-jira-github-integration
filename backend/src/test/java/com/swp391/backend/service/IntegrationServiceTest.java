@@ -32,7 +32,7 @@ class IntegrationServiceTest {
         private TokenCryptoService tokenCryptoService;
 
         @Mock
-        private com.swp391.backend.integration.GitHubClient gitHubClient;
+        private com.swp391.backend.integration.github.GitHubClient gitHubClient;
 
         @Mock
         private JiraClient jiraClient;

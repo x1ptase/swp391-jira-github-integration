@@ -3,12 +3,17 @@ package com.swp391.backend.controller;
 import com.swp391.backend.common.ApiResponse;
 import com.swp391.backend.dto.response.JiraIssueExportDto;
 import com.swp391.backend.dto.response.JiraIssuePageResponse;
+import com.swp391.backend.dto.response.JiraSprintResponse;
+import com.swp391.backend.dto.response.JiraVersionResponse;
 import com.swp391.backend.entity.User;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.integration.jira.JiraJqlBuilder.FilterType;
 import com.swp391.backend.repository.UserRepository;
 import com.swp391.backend.service.GroupService;
 import com.swp391.backend.service.JiraIssueService;
+import com.swp391.backend.service.JiraLabelService;
+import com.swp391.backend.service.JiraSprintService;
+import com.swp391.backend.service.JiraVersionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -19,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * REST controller for Jira-related operations (issues export, etc.).
+ * REST controller for Jira-related operations (issues export, metadata, etc.).
  * All endpoints require LEADER or ADMIN role within the group.
  */
 @RestController
@@ -28,8 +33,13 @@ import java.util.List;
 public class JiraController {
 
     private final JiraIssueService jiraIssueService;
+    private final JiraSprintService jiraSprintService;
+    private final JiraVersionService jiraVersionService;
+    private final JiraLabelService jiraLabelService;
     private final GroupService groupService;
     private final UserRepository userRepository;
+
+    // ── Issues ────────────────────────────────────────────────────────────────
 
     /**
      * Fetch Jira issues for a group's Jira integration.
@@ -50,8 +60,7 @@ public class JiraController {
      * Response:
      * <ul>
      * <li>fetchAll=true → {@code ApiResponse<List<JiraIssueExportDto>>}</li>
-     * <li>fetchAll=false → {@code ApiResponse<JiraIssuePageResponse>} (items +
-     * nextPageToken + isLast)</li>
+     * <li>fetchAll=false → {@code ApiResponse<JiraIssuePageResponse>}</li>
      * </ul>
      */
     @GetMapping("/{groupId}/issues")
@@ -65,10 +74,8 @@ public class JiraController {
             @RequestParam(defaultValue = "100") int maxResults,
             @RequestParam(defaultValue = "true") boolean fetchAll) {
 
-        // 1. Permission check: only LEADER / ADMIN of the group
         checkAuthority(groupId);
 
-        // 2. Parse filterType enum
         FilterType filter;
         try {
             filter = FilterType.valueOf(filterType.toUpperCase());
@@ -77,7 +84,6 @@ public class JiraController {
                     "Invalid filterType: '" + filterType + "'. Must be ALL, SPRINT, VERSION, or LABEL.", 400);
         }
 
-        // 3. Delegate to service
         if (fetchAll) {
             List<JiraIssueExportDto> issues = jiraIssueService.fetchAllIssues(
                     groupId, filter, sprintId, versionId, label, maxResults);
@@ -87,6 +93,77 @@ public class JiraController {
                     groupId, filter, sprintId, versionId, label, pageToken, maxResults);
             return ResponseEntity.ok(ApiResponse.success(page));
         }
+    }
+
+    // ── (1) List Sprints ─────────────────────────────────────────────────────
+
+    /**
+     * List Jira sprints for the group's configured project.
+     *
+     * <p>
+     * Query params:
+     * <ul>
+     * <li>state – "active" | "future" | "closed" hoặc comma-separated
+     * (default: "active,future,closed")</li>
+     * </ul>
+     */
+    @GetMapping("/{groupId}/sprints")
+    public ResponseEntity<ApiResponse<List<JiraSprintResponse>>> getSprints(
+            @PathVariable Long groupId,
+            @RequestParam(required = false) String state) {
+
+        checkAuthority(groupId);
+
+        List<JiraSprintResponse> sprints = jiraSprintService.listSprints(groupId, state);
+        return ResponseEntity.ok(ApiResponse.success(sprints));
+    }
+
+    // ── (2) List Versions ────────────────────────────────────────────────────
+
+    /**
+     * List Jira project versions for the group's configured project.
+     *
+     * <p>
+     * Query params:
+     * <ul>
+     * <li>includeArchived – boolean (default false)</li>
+     * <li>includeReleased – boolean (default true)</li>
+     * </ul>
+     */
+    @GetMapping("/{groupId}/versions")
+    public ResponseEntity<ApiResponse<List<JiraVersionResponse>>> getVersions(
+            @PathVariable Long groupId,
+            @RequestParam(defaultValue = "false") boolean includeArchived,
+            @RequestParam(defaultValue = "true") boolean includeReleased) {
+
+        checkAuthority(groupId);
+
+        List<JiraVersionResponse> versions = jiraVersionService.listVersions(groupId, includeArchived, includeReleased);
+        return ResponseEntity.ok(ApiResponse.success(versions));
+    }
+
+    // ── (3) Suggest Labels ───────────────────────────────────────────────────
+
+    /**
+     * Suggest Jira labels by aggregating labels from recent issues.
+     *
+     * <p>
+     * Query params:
+     * <ul>
+     * <li>q – optional prefix/contains filter (case-insensitive)</li>
+     * <li>limit – max results (default 30, clamped 1..100)</li>
+     * </ul>
+     */
+    @GetMapping("/{groupId}/labels")
+    public ResponseEntity<ApiResponse<List<String>>> getLabels(
+            @PathVariable Long groupId,
+            @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(defaultValue = "30") int limit) {
+
+        checkAuthority(groupId);
+
+        List<String> labels = jiraLabelService.suggestLabels(groupId, q, limit);
+        return ResponseEntity.ok(ApiResponse.success(labels));
     }
 
     // ── Permission check ──────────────────────────────────────────────────────
