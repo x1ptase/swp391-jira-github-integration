@@ -25,7 +25,7 @@ public class IntegrationServiceImpl implements IntegrationService {
     private final IntegrationConfigRepository repository;
     private final TokenHelper tokenHelper;
     private final com.swp391.backend.service.TokenCryptoService tokenCryptoService;
-    private final com.swp391.backend.integration.GitHubClient gitHubClient;
+    private final com.swp391.backend.integration.github.GitHubClient gitHubClient;
     private final JiraClient jiraClient;
 
     // ── GitHub ──────────────────────────────────────────────────────────────

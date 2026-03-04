@@ -38,7 +38,7 @@ public class SyncLogServiceImpl implements SyncLogService {
     @Override
     @Transactional
     public SyncLog updateStatus(Long logId, SyncStatus status, String message, Integer insertedCount,
-                                Integer updatedCount) {
+            Integer updatedCount) {
         SyncLog syncLog = syncLogRepository.findById(logId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SyncLog not found"));
 
@@ -48,5 +48,17 @@ public class SyncLogServiceImpl implements SyncLogService {
         syncLog.setUpdatedCount(updatedCount);
 
         return syncLogRepository.save(syncLog);
+    }
+
+    @Override
+    @Transactional
+    public SyncLog fail(Long logId, String message) {
+        return updateStatus(logId, SyncStatus.FAIL, message, 0, 0);
+    }
+
+    @Override
+    @Transactional
+    public SyncLog success(Long logId, String message, Integer insertedCount, Integer updatedCount) {
+        return updateStatus(logId, SyncStatus.SUCCESS, message, insertedCount, updatedCount);
     }
 }
