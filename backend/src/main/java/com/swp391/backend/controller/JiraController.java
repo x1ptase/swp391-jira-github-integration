@@ -1,8 +1,10 @@
 package com.swp391.backend.controller;
 
 import com.swp391.backend.common.ApiResponse;
+import com.swp391.backend.dto.response.JiraBoardDto;
 import com.swp391.backend.dto.response.JiraIssueExportDto;
 import com.swp391.backend.dto.response.JiraIssuePageResponse;
+import com.swp391.backend.dto.response.JiraSprintDto;
 import com.swp391.backend.dto.response.JiraSprintResponse;
 import com.swp391.backend.dto.response.JiraVersionResponse;
 import com.swp391.backend.entity.User;
@@ -10,8 +12,10 @@ import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.integration.jira.JiraJqlBuilder.FilterType;
 import com.swp391.backend.repository.UserRepository;
 import com.swp391.backend.service.GroupService;
+import com.swp391.backend.service.JiraBoardService;
 import com.swp391.backend.service.JiraIssueService;
 import com.swp391.backend.service.JiraLabelService;
+import com.swp391.backend.service.JiraSprintByBoardService;
 import com.swp391.backend.service.JiraSprintService;
 import com.swp391.backend.service.JiraVersionService;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +40,8 @@ public class JiraController {
     private final JiraSprintService jiraSprintService;
     private final JiraVersionService jiraVersionService;
     private final JiraLabelService jiraLabelService;
+    private final JiraBoardService jiraBoardService;
+    private final JiraSprintByBoardService jiraSprintByBoardService;
     private final GroupService groupService;
     private final UserRepository userRepository;
 
@@ -164,6 +170,52 @@ public class JiraController {
 
         List<String> labels = jiraLabelService.suggestLabels(groupId, q, limit);
         return ResponseEntity.ok(ApiResponse.success(labels));
+    }
+
+    // ── (4) List Boards ──────────────────────────────────────────────────────
+
+    /**
+     * List Jira boards for the group's configured project.
+     *
+     * <p>
+     * Returns a minimal list of boards (id + name) so the FE can let the user
+     * select a board before fetching sprints.
+     */
+    @GetMapping("/{groupId}/boards")
+    public ResponseEntity<ApiResponse<List<JiraBoardDto>>> getBoards(
+            @PathVariable Long groupId) {
+
+        checkAuthority(groupId);
+
+        List<JiraBoardDto> boards = jiraBoardService.listBoards(groupId);
+        return ResponseEntity.ok(ApiResponse.success(boards));
+    }
+
+    // ── (5) List Sprints by Board ────────────────────────────────────────────
+
+    /**
+     * List Jira sprints for an explicitly selected board.
+     *
+     * <p>
+     * Unlike {@code GET /{groupId}/sprints}, the caller provides the boardId
+     * directly instead of letting the service auto-pick the first board.
+     *
+     * <p>
+     * Query params:
+     * <ul>
+     * <li>state – comma-separated sprint states (default: "active,future")</li>
+     * </ul>
+     */
+    @GetMapping("/{groupId}/boards/{boardId}/sprints")
+    public ResponseEntity<ApiResponse<List<JiraSprintDto>>> getSprintsByBoard(
+            @PathVariable Long groupId,
+            @PathVariable Long boardId,
+            @RequestParam(required = false) String state) {
+
+        checkAuthority(groupId);
+
+        List<JiraSprintDto> sprints = jiraSprintByBoardService.listSprintsByBoard(groupId, boardId, state);
+        return ResponseEntity.ok(ApiResponse.success(sprints));
     }
 
     // ── Permission check ──────────────────────────────────────────────────────
