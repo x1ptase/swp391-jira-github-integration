@@ -136,7 +136,7 @@ CREATE TABLE IntegrationConfig (
 	jira_email NVARCHAR(120) NULL,	
 	-- GitHub config
     repo_full_name NVARCHAR(200) NULL,  
-    token_encrypted VARBINARY(MAX) NULL,
+    token_encrypted VARBINARY(512) NULL,
     created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
     CONSTRAINT FK_Config_Group FOREIGN KEY (group_id) REFERENCES StudentGroup(group_id) ON DELETE CASCADE,
     CONSTRAINT FK_Config_Type FOREIGN KEY (integration_type_id) REFERENCES IntegrationType(integration_type_id),
@@ -213,7 +213,7 @@ CREATE TABLE Repository (
 CREATE TABLE GitCommit (
     commit_id INT IDENTITY(1,1) PRIMARY KEY,
     repo_id INT NOT NULL,
-    sha NVARCHAR(64) NOT NULL,
+    sha VARCHAR(64) NOT NULL,
     author_user_id INT NULL,
     author_name NVARCHAR(120) NULL,
     author_email NVARCHAR(120) NULL,
@@ -234,6 +234,8 @@ CREATE TABLE SyncLog (
     source NVARCHAR(20) NOT NULL, -- JIRA/GITHUB
     started_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
     ended_at DATETIME2 NULL,
+	inserted_count INT NOT NULL,
+    updated_count  INT NOT NULL,
     status NVARCHAR(20) NOT NULL, -- RUNNING/SUCCESS/FAILED
     detail_message NVARCHAR(MAX) NULL,
     CONSTRAINT FK_Sync_Group FOREIGN KEY (group_id) REFERENCES StudentGroup(group_id) ON DELETE CASCADE
