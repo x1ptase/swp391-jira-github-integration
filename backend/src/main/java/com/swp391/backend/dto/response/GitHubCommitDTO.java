@@ -18,6 +18,16 @@ public class GitHubCommitDTO {
 
     private CommitInfo commit;
 
+    private RootAuthor author;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class RootAuthor {
+        private String login;
+    }
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

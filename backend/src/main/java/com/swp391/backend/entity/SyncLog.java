@@ -5,7 +5,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "SyncLogs")
+@Table(name = "SyncLog")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,32 +13,40 @@ import java.time.LocalDateTime;
 public class SyncLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "sync_id")
     private Long id;
 
     @Column(name = "group_id", nullable = false)
     private Long groupId;
 
-    @Column(name = "source", nullable = false, length = 50)
+    @Column(name = "source", nullable = false, length = 20)
     private String source;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private SyncStatus status;
 
-    @Column(name = "message", columnDefinition = "TEXT")
-    private String message;
+    @Column(name = "detail_message", columnDefinition = "NVARCHAR(MAX)")
+    private String detailMessage;
 
-    @Column(name = "inserted_count")
-    private Integer insertedCount;
+    @Builder.Default
+    @Column(name = "inserted_count", nullable = false)
+    private Integer insertedCount = 0;
 
-    @Column(name = "updated_count")
-    private Integer updatedCount;
+    @Builder.Default
+    @Column(name = "updated_count", nullable = false)
+    private Integer updatedCount = 0;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "started_at", nullable = false, updatable = false)
+    private LocalDateTime startedAt;
+
+    @Column(name = "ended_at")
+    private LocalDateTime endedAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        if (startedAt == null) {
+            startedAt = LocalDateTime.now();
+        }
     }
 }

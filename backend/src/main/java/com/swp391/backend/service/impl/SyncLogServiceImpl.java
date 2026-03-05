@@ -43,9 +43,13 @@ public class SyncLogServiceImpl implements SyncLogService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SyncLog not found"));
 
         syncLog.setStatus(status);
-        syncLog.setMessage(message);
+        syncLog.setDetailMessage(message);
         syncLog.setInsertedCount(insertedCount);
         syncLog.setUpdatedCount(updatedCount);
+
+        if (status != SyncStatus.RUNNING) {
+            syncLog.setEndedAt(java.time.LocalDateTime.now());
+        }
 
         return syncLogRepository.save(syncLog);
     }
@@ -53,7 +57,7 @@ public class SyncLogServiceImpl implements SyncLogService {
     @Override
     @Transactional
     public SyncLog fail(Long logId, String message) {
-        return updateStatus(logId, SyncStatus.FAIL, message, 0, 0);
+        return updateStatus(logId, SyncStatus.FAILED, message, 0, 0);
     }
 
     @Override

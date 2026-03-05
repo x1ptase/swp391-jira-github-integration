@@ -33,6 +33,7 @@ public class IntegrationController {
     private final IntegrationConfigRepository repository;
     private final GroupService groupService;
     private final UserRepository userRepository;
+    private final com.swp391.backend.service.GitHubSyncService gitHubSyncService;
 
     // ── GitHub config endpoints ───────────────────────────────────────────────
 
@@ -68,6 +69,16 @@ public class IntegrationController {
         checkAuthority(groupId);
 
         return ResponseEntity.ok(integrationService.testGitHubConnection(groupId));
+    }
+
+    @PostMapping("/{groupId}/github/sync")
+    public ResponseEntity<String> syncGitHubData(@PathVariable Long groupId) {
+
+        checkAuthority(groupId);
+
+        gitHubSyncService.syncNow(groupId);
+
+        return ResponseEntity.ok("Sync initiated successfully.");
     }
 
     // ── Jira config endpoints ─────────────────────────────────────────────────

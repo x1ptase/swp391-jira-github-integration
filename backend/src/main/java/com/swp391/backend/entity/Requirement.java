@@ -20,9 +20,6 @@ public class Requirement {
     @JoinColumn(name = "group_id", nullable = false)
     private StudentGroup studentGroup;
 
-    @Column(name = "req_code", nullable = false, length = 50)
-    private String reqCode;
-
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
