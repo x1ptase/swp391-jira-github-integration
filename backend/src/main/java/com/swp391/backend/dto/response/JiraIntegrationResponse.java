@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class JiraIntegrationResponse {
-
     private String baseUrl;
     private String projectKey;
     private String jiraEmail;

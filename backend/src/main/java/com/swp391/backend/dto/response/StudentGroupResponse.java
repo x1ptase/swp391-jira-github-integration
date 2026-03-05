@@ -13,27 +13,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class StudentGroupResponse {
-
     private Long groupId;
-
-
     private String classCode;
-
-
     private String groupName;
-
-
     private String courseCode;
-
-
     private String semester;
-
-
     private LocalDateTime createdAt;
-
-
     private Long lecturerId;
-
-
     private String lecturerName;
 }

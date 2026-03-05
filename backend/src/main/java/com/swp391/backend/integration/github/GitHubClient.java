@@ -1,6 +1,9 @@
 package com.swp391.backend.integration.github;
 
+import com.swp391.backend.common.DateTimeUtils;
+import com.swp391.backend.dto.request.CommitSearchRequest;
 import com.swp391.backend.dto.response.GitHubCommitDTO;
+import com.swp391.backend.dto.response.GitHubCommitResponse;
 import com.swp391.backend.dto.response.GitHubRepoResponse;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.exception.GitHubApiException;
@@ -10,12 +13,14 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -84,6 +89,76 @@ public class GitHubClient {
         }
 
         return allCommits;
+    }
+
+    public List<GitHubCommitResponse> fetchCommitsWithCriteria(String repoFullName, String token,
+            CommitSearchRequest criteria) {
+        List<GitHubCommitResponse> allCommits = new ArrayList<>();
+        int page = 1;
+        int perPage = 100;
+
+        while (true) {
+            UriComponentsBuilder builder = UriComponentsBuilder
+                    .fromUriString("https://api.github.com/repos/" + repoFullName + "/commits")
+                    .queryParam("per_page", perPage)
+                    .queryParam("page", page);
+
+            // Xử lý query parameters dựa trên criteria
+            if (criteria.getLastNDays() != null && criteria.getLastNDays() > 0) {
+                builder.queryParam("since", DateTimeUtils.getIsoDateLastNDays(criteria.getLastNDays()));
+            } else {
+                if (criteria.getFromDate() != null && !criteria.getFromDate().isEmpty()) {
+                    builder.queryParam("since", criteria.getFromDate());
+                }
+                if (criteria.getToDate() != null && !criteria.getToDate().isEmpty()) {
+                    builder.queryParam("until", criteria.getToDate());
+                }
+            }
+
+            String url = builder.build().toUriString();
+            HttpEntity<Void> entity = new HttpEntity<>(buildHeaders(token));
+
+            try {
+                ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
+                        url,
+                        HttpMethod.GET,
+                        entity,
+                        new ParameterizedTypeReference<List<Map<String, Object>>>() {
+                        });
+
+                List<Map<String, Object>> commitMaps = response.getBody();
+
+                if (commitMaps == null || commitMaps.isEmpty()) {
+                    break;
+                }
+
+                for (Map<String, Object> map : commitMaps) {
+                    allCommits.add(mapToGitHubCommitResponse(map));
+                }
+
+                page++;
+            } catch (HttpClientErrorException e) {
+                handleException(e);
+            } catch (Exception e) {
+                throw new BusinessException("GitHub Connection Error: " + e.getMessage(), 500);
+            }
+        }
+
+        return allCommits;
+    }
+
+    @SuppressWarnings("unchecked")
+    private GitHubCommitResponse mapToGitHubCommitResponse(Map<String, Object> map) {
+        Map<String, Object> commit = (Map<String, Object>) map.get("commit");
+        Map<String, Object> author = (Map<String, Object>) commit.get("author");
+
+        return GitHubCommitResponse.builder()
+                .sha((String) map.get("sha"))
+                .authorName((String) author.get("name"))
+                .authorEmail((String) author.get("email"))
+                .date((String) author.get("date"))
+                .message((String) commit.get("message"))
+                .build();
     }
 
     private void handleException(HttpClientErrorException e) {

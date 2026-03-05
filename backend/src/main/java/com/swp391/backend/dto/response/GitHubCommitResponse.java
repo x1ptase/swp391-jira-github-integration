@@ -5,14 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Minimal response DTO for a Jira Board (id + name only).
- */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class JiraBoardDto {
-    private Long id;
-    private String name;
+public class GitHubCommitResponse {
+    private String sha;
+    private String authorName;
+    private String authorEmail;
+    private String date;
+    private String message;
 }

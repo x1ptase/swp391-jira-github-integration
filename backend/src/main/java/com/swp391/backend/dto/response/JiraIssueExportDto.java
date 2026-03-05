@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 @Builder
 public class JiraIssueExportDto {
-
     private String key;
     private String summary;
     private String description; // plain text (converted from ADF)

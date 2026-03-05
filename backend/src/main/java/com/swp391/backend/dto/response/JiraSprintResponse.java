@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JiraSprintResponse {
-
     private Long id;
     private String name;
     private String state;

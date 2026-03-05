@@ -8,10 +8,7 @@ import java.util.List;
 
 public interface StudentGroupService {
     StudentGroupResponse addStudentGroup(CreateGroupRequest request);
-
     StudentGroupResponse updateStudentGroup(StudentGroup studentGroup, Long id);
-
     StudentGroupResponse deleteStudentGroup(Long studentGroupId);
-
     List<StudentGroupResponse> listStudentGroups(String courseCode, String semester);
 }

@@ -47,6 +47,4 @@ public class StudentGroup {
             createdAt = LocalDateTime.now();
         }
     }
-
-
 }
