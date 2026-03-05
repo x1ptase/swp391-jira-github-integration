@@ -1,6 +1,8 @@
 package com.swp391.backend.service.impl;
 
 import com.swp391.backend.common.IntegrationTypeIds;
+import com.swp391.backend.dto.request.CommitSearchRequest;
+import com.swp391.backend.dto.response.GitHubCommitResponse;
 import com.swp391.backend.dto.response.GitHubRepoResponse;
 import com.swp391.backend.dto.response.JiraProjectResponse;
 import com.swp391.backend.entity.IntegrationConfig;
@@ -214,5 +216,26 @@ public class IntegrationServiceImpl implements IntegrationService {
 
         // 3. Call GitHubClient (no logging of rawToken as required)
         return gitHubClient.getRepoInfo(config.getRepoFullName(), rawToken);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<GitHubCommitResponse> fetchCommitsWithCriteria(Long groupId, CommitSearchRequest criteria) {
+        IntegrationConfig config = repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
+                .orElseThrow(() -> new BusinessException(
+                        "GitHub integration configuration not found for group: " + groupId, 404));
+
+        if (config.getTokenEncrypted() == null) {
+            throw new BusinessException("GitHub token is missing in configuration", 400);
+        }
+
+        String rawToken;
+        try {
+            rawToken = tokenCryptoService.decryptFromBytes(config.getTokenEncrypted());
+        } catch (Exception e) {
+            throw new BusinessException("Failed to decrypt GitHub token", 500);
+        }
+
+        return gitHubClient.fetchCommitsWithCriteria(config.getRepoFullName(), rawToken, criteria);
     }
 }

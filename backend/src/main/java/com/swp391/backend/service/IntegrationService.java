@@ -1,5 +1,7 @@
 package com.swp391.backend.service;
 
+import com.swp391.backend.dto.request.CommitSearchRequest;
+import com.swp391.backend.dto.response.GitHubCommitResponse;
 import com.swp391.backend.dto.response.JiraProjectResponse;
 import com.swp391.backend.entity.IntegrationConfig;
 
@@ -23,6 +25,13 @@ public interface IntegrationService {
      * @return repository information (full name and default branch)
      */
     com.swp391.backend.dto.response.GitHubRepoResponse testGitHubConnection(Long groupId);
+
+    /**
+     * Fetches commits from GitHub API based on search criteria (date range or last
+     * N days).
+     * Supports full pagination.
+     */
+    java.util.List<GitHubCommitResponse> fetchCommitsWithCriteria(Long groupId, CommitSearchRequest criteria);
 
     /**
      * Tests the Jira connection for a specific group using the saved Jira config.

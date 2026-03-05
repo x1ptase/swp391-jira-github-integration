@@ -2,6 +2,7 @@ package com.swp391.backend.service.impl;
 
 import com.swp391.backend.common.IntegrationTypeIds;
 import com.swp391.backend.dto.response.GitHubCommitDTO;
+import com.swp391.backend.dto.response.SyncResultResponse;
 import com.swp391.backend.entity.*;
 import com.swp391.backend.integration.github.GitHubClient;
 import com.swp391.backend.repository.GitCommitRepository;
@@ -38,7 +39,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
 
     @Override
     @Transactional
-    public void syncNow(Long groupId) {
+    public SyncResultResponse syncNow(Long groupId) {
         // Concurrency Guard
         SyncLog syncLog = syncLogService.begin(groupId, "GITHUB");
         int insertedCount = 0;
@@ -131,5 +132,12 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
                         updatedCount);
             }
         }
+
+        return SyncResultResponse.builder()
+                .status(errorMessage == null ? "SUCCESS" : "FAILED")
+                .insertedCount(insertedCount)
+                .updatedCount(updatedCount)
+                .message(errorMessage == null ? "Synced successfully" : errorMessage)
+                .build();
     }
 }

@@ -1,5 +1,7 @@
 package com.swp391.backend.service;
 
+import com.swp391.backend.dto.response.SyncResultResponse;
+
 public interface GitHubSyncService {
-    void syncNow(Long groupId);
+    SyncResultResponse syncNow(Long groupId);
 }

@@ -1,8 +1,10 @@
 package com.swp391.backend.controller;
 
 import com.swp391.backend.common.IntegrationTypeIds;
+import com.swp391.backend.dto.request.CommitSearchRequest;
 import com.swp391.backend.dto.request.GitHubConfigRequest;
 import com.swp391.backend.dto.request.JiraConfigRequest;
+import com.swp391.backend.dto.response.GitHubCommitResponse;
 import com.swp391.backend.dto.response.IntegrationResponse;
 import com.swp391.backend.dto.response.JiraIntegrationResponse;
 import com.swp391.backend.dto.response.JiraProjectResponse;
@@ -72,13 +74,26 @@ public class IntegrationController {
     }
 
     @PostMapping("/{groupId}/github/sync")
-    public ResponseEntity<String> syncGitHubData(@PathVariable Long groupId) {
+    public ResponseEntity<com.swp391.backend.dto.response.SyncResultResponse> syncGitHubData(
+            @PathVariable Long groupId) {
 
         checkAuthority(groupId);
 
-        gitHubSyncService.syncNow(groupId);
+        return ResponseEntity.ok(gitHubSyncService.syncNow(groupId));
+    }
 
-        return ResponseEntity.ok("Sync initiated successfully.");
+    @PostMapping("/{groupId}/github/commits")
+    public ResponseEntity<java.util.List<GitHubCommitResponse>> getCommits(
+            @PathVariable Long groupId,
+            @RequestBody(required = false) CommitSearchRequest criteria) {
+
+        checkAuthority(groupId);
+
+        if (criteria == null) {
+            criteria = new CommitSearchRequest();
+        }
+
+        return ResponseEntity.ok(integrationService.fetchCommitsWithCriteria(groupId, criteria));
     }
 
     // ── Jira config endpoints ─────────────────────────────────────────────────
