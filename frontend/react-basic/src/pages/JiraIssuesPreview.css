@@ -199,7 +199,7 @@
 
 .jip-table th {
   padding: 10px 14px;
-  text-align: left;
+  text-align: center;
   font-weight: 600;
   color: #64748b;
   white-space: nowrap;
@@ -328,7 +328,7 @@
   flex-shrink: 0;
 }
 
-/* ── Load More ── */
+/*  Load More  */
 .jip-load-more-wrap {
   display: flex;
   justify-content: center;
@@ -386,7 +386,7 @@
   font-size: 12px;
 }
 
-/* ── All loaded ── */
+/*  All loaded  */
 .jip-all-loaded {
   text-align: center;
   padding: 12px;

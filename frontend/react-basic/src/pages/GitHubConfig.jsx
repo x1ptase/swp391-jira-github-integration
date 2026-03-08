@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./GitHubConfig.css";
 import { useParams } from "react-router-dom";
+import GitHubCommitPreview from "./GitHubCommitPreview";
 
 const API_URL = "/api/groups";
 
@@ -380,7 +381,7 @@ function GitHubConfig({ onSuccess }) {
                   onClick={toggleTokenInput}
                   disabled={isSaving}
                 >
-                   Update
+                  Update
                 </button>
               </div>
             )}
@@ -469,6 +470,8 @@ function GitHubConfig({ onSuccess }) {
           </ul>
         </div>
       )}
+      
+      {config && hasToken && <GitHubCommitPreview groupId={groupId} />}
     </div>
   );
 }
