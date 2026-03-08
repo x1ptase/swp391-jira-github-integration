@@ -38,10 +38,14 @@ function JiraIssuesPreview({ groupId }) {
   const [label, setLabel] = useState("");
 
   //  Dropdown data 
+  const [boards, setBoards] = useState([]);
+  const [selectedBoardId, setSelectedBoardId] = useState("");
   const [sprints, setSprints] = useState([]);
   const [versions, setVersions] = useState([]);
   const [labelSuggestions, setLabelSuggestions] = useState([]);
   const [labelQuery, setLabelQuery] = useState("");
+  const [loadingBoards, setLoadingBoards] = useState(false);
+  const [loadingSprints, setLoadingSprints] = useState(false);
 
   //  Issues + pagination state 
   const [issues, setIssues] = useState([]);
@@ -52,6 +56,10 @@ function JiraIssuesPreview({ groupId }) {
   const [error, setError] = useState("");
   const [fetched, setFetched] = useState(false);
 
+  //  Sync state 
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null);
+
   //  Sort 
   const [sortKey, setSortKey] = useState("updated");
   const [sortDir, setSortDir] = useState("desc");
@@ -60,20 +68,42 @@ function JiraIssuesPreview({ groupId }) {
     Authorization: `Bearer ${localStorage.getItem("token")}`,
   });
 
-  //  Load sprints/versions when filter changes 
+  //  Load boards when SPRINT tab selected 
   useEffect(() => {
-    if (filterType === "SPRINT" && sprints.length === 0) {
-      fetch(`${API_URL}/${groupId}/sprints`, { headers: authHeader() })
-        .then((r) => r.json())
-        .then((d) => setSprints(d.data || []))
-        .catch(() => {});
-    }
-    if (filterType === "VERSION" && versions.length === 0) {
-      fetch(`${API_URL}/${groupId}/versions`, { headers: authHeader() })
-        .then((r) => r.json())
-        .then((d) => setVersions(d.data || []))
-        .catch(() => {});
-    }
+    if (filterType !== "SPRINT") return;
+    if (boards.length > 0) return;
+    setLoadingBoards(true);
+    fetch(`${API_URL}/${groupId}/boards`, { headers: authHeader() })
+      .then((r) => r.json())
+      .then((d) => setBoards(d.data || []))
+      .catch(() => {})
+      .finally(() => setLoadingBoards(false));
+  }, [filterType]);
+
+  //  Load sprints when board selected 
+  useEffect(() => {
+    if (!selectedBoardId) { setSprints([]); setSprintId(""); return; }
+    setLoadingSprints(true);
+    setSprints([]);
+    setSprintId("");
+    fetch(
+      `${API_URL}/${groupId}/boards/${selectedBoardId}/sprints?state=active,future,closed`,
+      { headers: authHeader() }
+    )
+      .then((r) => r.json())
+      .then((d) => setSprints(d.data || []))
+      .catch(() => {})
+      .finally(() => setLoadingSprints(false));
+  }, [selectedBoardId]);
+
+  //  Load versions when VERSION tab selected 
+  useEffect(() => {
+    if (filterType !== "VERSION") return;
+    if (versions.length > 0) return;
+    fetch(`${API_URL}/${groupId}/versions`, { headers: authHeader() })
+      .then((r) => r.json())
+      .then((d) => setVersions(d.data || []))
+      .catch(() => {});
   }, [filterType]);
 
   //  Label suggestions 
@@ -110,6 +140,7 @@ function JiraIssuesPreview({ groupId }) {
   //  Fetch first page 
   const fetchIssues = useCallback(async () => {
     setError("");
+    setSyncResult(null);
     setLoading(true);
     setFetched(false);
     setIssues([]);
@@ -129,7 +160,7 @@ function JiraIssuesPreview({ groupId }) {
         const page = data.data;
         setIssues(page.items || []);
         setNextPageToken(page.nextPageToken || null);
-        setIsLast(page.isLast ?? true);
+        setIsLast(Boolean(page.isLast));
         setFetched(true);
       }
     } catch {
@@ -158,13 +189,60 @@ function JiraIssuesPreview({ groupId }) {
         const page = data.data;
         setIssues((prev) => [...prev, ...(page.items || [])]);
         setNextPageToken(page.nextPageToken || null);
-        setIsLast(page.isLast ?? true);
+        setIsLast(Boolean(page.isLast));
       }
     } catch {
       setError("Network error");
     } finally {
       setLoadingMore(false);
     }
+  };
+
+  //  Manual sync 
+  const handleSync = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    setSyncResult(null);
+    setError("");
+
+    try {
+      const res = await fetch(`${API_URL}/${groupId}/sync`, {
+        method: "POST",
+        headers: authHeader(),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 409) {
+          setError("A sync is already running for this group. Please wait.");
+        } else {
+          setError(data.message || "Sync failed");
+        }
+      } else {
+        setSyncResult(data.data);
+      }
+    } catch {
+      setError("Network error during sync");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  //  Reset filter state 
+  const resetFilterState = (ft) => {
+    setFilterType(ft);
+    setSprintId("");
+    setVersionId("");
+    setLabel("");
+    setLabelQuery("");
+    setSelectedBoardId("");
+    setSprints([]);
+    setIssues([]);
+    setFetched(false);
+    setNextPageToken(null);
+    setIsLast(false);
+    setError("");
+    setSyncResult(null);
   };
 
   //  Sort logic 
@@ -223,7 +301,42 @@ function JiraIssuesPreview({ groupId }) {
             </span>
           )}
         </div>
+
+        {/* Sync button */}
+        <button
+          className="jip-sync-btn"
+          onClick={handleSync}
+          disabled={syncing}
+          title="Sync Jira → Requirements/Tasks"
+        >
+          <svg
+            width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.5"
+            className={syncing ? "jip-spin" : ""}
+          >
+            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+            <path d="M21 3v5h-5" />
+          </svg>
+          {syncing ? "Syncing..." : "Sync to Tasks"}
+        </button>
       </div>
+
+      {/*  Sync result  */}
+      {syncResult && (
+        <div className="jip-sync-result">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+          Sync complete —{" "}
+          {syncResult.createdRequirements != null && (
+            <span>{syncResult.createdRequirements} requirements, </span>
+          )}
+          {syncResult.createdTasks != null && (
+            <span>{syncResult.createdTasks} tasks created</span>
+          )}
+          {syncResult.message && <span>{syncResult.message}</span>}
+        </div>
+      )}
 
       {/*  Filter bar  */}
       <div className="jip-filter-bar">
@@ -233,36 +346,54 @@ function JiraIssuesPreview({ groupId }) {
               <button
                 key={ft}
                 className={`jip-tab ${filterType === ft ? "active" : ""}`}
-                onClick={() => {
-                  setFilterType(ft);
-                  setSprintId("");
-                  setVersionId("");
-                  setLabel("");
-                  setLabelQuery("");
-                  setIssues([]);
-                  setFetched(false);
-                  setNextPageToken(null);
-                  setIsLast(false);
-                }}
+                onClick={() => resetFilterState(ft)}
               >
                 {ft}
               </button>
             ))}
           </div>
 
+          {/* SPRINT: Board → Sprint cascade */}
           {filterType === "SPRINT" && (
-            <select className="jip-select" value={sprintId} onChange={(e) => setSprintId(e.target.value)}>
-              <option value="">— Select Sprint —</option>
-              {sprints.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} {s.state ? `(${s.state})` : ""}
+            <>
+              <select
+                className="jip-select"
+                value={selectedBoardId}
+                onChange={(e) => setSelectedBoardId(e.target.value)}
+                disabled={loadingBoards}
+              >
+                <option value="">
+                  {loadingBoards ? "Loading boards..." : "— Select Board —"}
                 </option>
-              ))}
-            </select>
+                {boards.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+
+              <select
+                className="jip-select"
+                value={sprintId}
+                onChange={(e) => setSprintId(e.target.value)}
+                disabled={!selectedBoardId || loadingSprints}
+              >
+                <option value="">
+                  {loadingSprints ? "Loading sprints..." : "— Select Sprint —"}
+                </option>
+                {sprints.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} {s.state ? `(${s.state})` : ""}
+                  </option>
+                ))}
+              </select>
+            </>
           )}
 
           {filterType === "VERSION" && (
-            <select className="jip-select" value={versionId} onChange={(e) => setVersionId(e.target.value)}>
+            <select
+              className="jip-select"
+              value={versionId}
+              onChange={(e) => setVersionId(e.target.value)}
+            >
               <option value="">— Select Version —</option>
               {versions.map((v) => (
                 <option key={v.id} value={v.id}>{v.name}</option>
@@ -285,7 +416,11 @@ function JiraIssuesPreview({ groupId }) {
             </div>
           )}
 
-          <button className="jip-fetch-btn" onClick={fetchIssues} disabled={loading || !canFetch}>
+          <button
+            className="jip-fetch-btn"
+            onClick={fetchIssues}
+            disabled={loading || !canFetch}
+          >
             {loading ? <span className="jip-spinner" /> : (
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
