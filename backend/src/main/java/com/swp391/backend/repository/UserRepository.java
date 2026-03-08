@@ -27,6 +27,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
         boolean existsByJiraAccountIdIgnoreCase(String jiraAccountId);
 
+        Optional<User> findByJiraAccountId(String jiraAccountId);
+
         @Query("SELECT u FROM User u " +
                         "WHERE (:kw IS NULL OR :kw = '' OR " +
                         "LOWER(u.username) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
