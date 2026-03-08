@@ -31,19 +31,19 @@ function Badge({ label, colorMap, fallback = "#94a3b8" }) {
 }
 
 function JiraIssuesPreview({ groupId }) {
-  // ── Filter state ──────────────────────────────────────────────────────────
+  //  Filter state 
   const [filterType, setFilterType] = useState("ALL");
   const [sprintId, setSprintId] = useState("");
   const [versionId, setVersionId] = useState("");
   const [label, setLabel] = useState("");
 
-  // ── Dropdown data ─────────────────────────────────────────────────────────
+  //  Dropdown data 
   const [sprints, setSprints] = useState([]);
   const [versions, setVersions] = useState([]);
   const [labelSuggestions, setLabelSuggestions] = useState([]);
   const [labelQuery, setLabelQuery] = useState("");
 
-  // ── Issues + pagination state ─────────────────────────────────────────────
+  //  Issues + pagination state 
   const [issues, setIssues] = useState([]);
   const [nextPageToken, setNextPageToken] = useState(null);
   const [isLast, setIsLast] = useState(false);
@@ -52,7 +52,7 @@ function JiraIssuesPreview({ groupId }) {
   const [error, setError] = useState("");
   const [fetched, setFetched] = useState(false);
 
-  // ── Sort ──────────────────────────────────────────────────────────────────
+  //  Sort 
   const [sortKey, setSortKey] = useState("updated");
   const [sortDir, setSortDir] = useState("desc");
 
@@ -60,7 +60,7 @@ function JiraIssuesPreview({ groupId }) {
     Authorization: `Bearer ${localStorage.getItem("token")}`,
   });
 
-  // ── Load sprints/versions when filter changes ─────────────────────────────
+  //  Load sprints/versions when filter changes 
   useEffect(() => {
     if (filterType === "SPRINT" && sprints.length === 0) {
       fetch(`${API_URL}/${groupId}/sprints`, { headers: authHeader() })
@@ -76,7 +76,7 @@ function JiraIssuesPreview({ groupId }) {
     }
   }, [filterType]);
 
-  // ── Label suggestions ─────────────────────────────────────────────────────
+  //  Label suggestions 
   useEffect(() => {
     if (filterType !== "LABEL") return;
     const timer = setTimeout(() => {
@@ -91,7 +91,7 @@ function JiraIssuesPreview({ groupId }) {
     return () => clearTimeout(timer);
   }, [labelQuery, filterType]);
 
-  // ── Build params helper ───────────────────────────────────────────────────
+  //  Build params helper 
   const buildParams = useCallback(
     (pageToken = null) => {
       const params = new URLSearchParams();
@@ -107,7 +107,7 @@ function JiraIssuesPreview({ groupId }) {
     [filterType, sprintId, versionId, label]
   );
 
-  // ── Fetch first page ──────────────────────────────────────────────────────
+  //  Fetch first page 
   const fetchIssues = useCallback(async () => {
     setError("");
     setLoading(true);
@@ -139,7 +139,7 @@ function JiraIssuesPreview({ groupId }) {
     }
   }, [groupId, buildParams]);
 
-  // ── Load more ─────────────────────────────────────────────────────────────
+  //  Load more 
   const loadMore = async () => {
     if (!nextPageToken || loadingMore) return;
     setLoadingMore(true);
@@ -167,7 +167,7 @@ function JiraIssuesPreview({ groupId }) {
     }
   };
 
-  // ── Sort logic ────────────────────────────────────────────────────────────
+  //  Sort logic 
   const toggleSort = (key) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else { setSortKey(key); setSortDir("asc"); }
@@ -205,7 +205,7 @@ function JiraIssuesPreview({ groupId }) {
 
   return (
     <div className="jip-root">
-      {/* ── Header ── */}
+      {/*  Header  */}
       <div className="jip-header">
         <div className="jip-title">
           <span className="jip-title-icon">
@@ -225,7 +225,7 @@ function JiraIssuesPreview({ groupId }) {
         </div>
       </div>
 
-      {/* ── Filter bar ── */}
+      {/*  Filter bar  */}
       <div className="jip-filter-bar">
         <div className="jip-filter-row">
           <div className="jip-filter-tabs">
@@ -296,10 +296,10 @@ function JiraIssuesPreview({ groupId }) {
         </div>
       </div>
 
-      {/* ── Error ── */}
+      {/*  Error  */}
       {error && <div className="jip-error">{error}</div>}
 
-      {/* ── Empty state ── */}
+      {/*  Empty state  */}
       {!loading && fetched && issues.length === 0 && (
         <div className="jip-empty">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -310,7 +310,7 @@ function JiraIssuesPreview({ groupId }) {
         </div>
       )}
 
-      {/* ── Table ── */}
+      {/*  Table  */}
       {!loading && issues.length > 0 && (
         <div className="jip-table-wrap">
           <table className="jip-table">
@@ -358,7 +358,7 @@ function JiraIssuesPreview({ groupId }) {
             </tbody>
           </table>
 
-          {/* ── Load More ── */}
+          {/*  Load More  */}
           {!isLast && (
             <div className="jip-load-more-wrap">
               <button className="jip-load-more-btn" onClick={loadMore} disabled={loadingMore}>
@@ -376,7 +376,7 @@ function JiraIssuesPreview({ groupId }) {
             </div>
           )}
 
-          {/* ── All loaded ── */}
+          {/*  All loaded  */}
           {isLast && issues.length > 0 && (
             <div className="jip-all-loaded">
               ✓ All {issues.length} issues loaded
