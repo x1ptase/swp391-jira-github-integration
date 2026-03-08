@@ -15,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -183,6 +186,12 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
                 req.setCreatedBy(triggeredBy);
             }
 
+            // --- Jira metadata mới ---
+            req.setJiraIssueType("EPIC");
+            req.setJiraStatusRaw(extractRawStatusName(f));
+            req.setJiraPriorityRaw(extractRawPriorityName(f));
+            req.setJiraUpdatedAt(parseJiraUpdatedAt(f.getUpdated()));
+
             reqsToSave.add(req);
             epicKeyToReq.put(epic.getKey(), req);
 
@@ -242,8 +251,18 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
             task.setStudentGroup(studentGroup);
             task.setStatus(mapTaskStatus(f.getStatus(), taskStatusMap));
             task.setParentTask(null); // Story là top-level task, không có parent
-            // Assignee: chưa trong scope (Jira user chưa link với internal user) → giữ null
-            task.setAssignee(null);
+
+            // --- Jira metadata mới ---
+            task.setJiraIssueType("STORY");
+            task.setJiraParentIssueKey(epicKey);
+            task.setJiraStatusRaw(extractRawStatusName(f));
+            task.setJiraPriorityRaw(extractRawPriorityName(f));
+            task.setJiraUpdatedAt(parseJiraUpdatedAt(f.getUpdated()));
+
+            // Assignee resolution qua jira_account_id (không dùng displayName)
+            String storyAssigneeAccountId = extractAssigneeAccountId(f);
+            task.setJiraAssigneeAccountId(storyAssigneeAccountId);
+            task.setAssignee(resolveAssigneeByJiraAccountId(storyAssigneeAccountId).orElse(null));
 
             storyTasksToSave.add(task);
             storyKeyToTask.put(story.getKey(), task);
@@ -304,8 +323,18 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
             task.setStudentGroup(studentGroup);
             task.setStatus(mapTaskStatus(f.getStatus(), taskStatusMap));
             task.setParentTask(parentStoryTask); // link đúng FK
-            // Assignee: không trong scope → giữ null
-            task.setAssignee(null);
+
+            // --- Jira metadata mới ---
+            task.setJiraIssueType("SUBTASK");
+            task.setJiraParentIssueKey(storyKey);
+            task.setJiraStatusRaw(extractRawStatusName(f));
+            task.setJiraPriorityRaw(extractRawPriorityName(f));
+            task.setJiraUpdatedAt(parseJiraUpdatedAt(f.getUpdated()));
+
+            // Assignee resolution qua jira_account_id (không dùng displayName)
+            String subtaskAssigneeAccountId = extractAssigneeAccountId(f);
+            task.setJiraAssigneeAccountId(subtaskAssigneeAccountId);
+            task.setAssignee(resolveAssigneeByJiraAccountId(subtaskAssigneeAccountId).orElse(null));
 
             subtaskTasksToSave.add(task);
 
@@ -643,5 +672,83 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
         String cleaned = msg.length() > 500 ? msg.substring(0, 500) + "..." : msg;
         // Không dùng regex để tránh false positive, chỉ cắt ngắn
         return cleaned;
+    }
+
+    // ── Jira metadata helpers ─────────────────────────────────────────────────
+
+    /**
+     * Trả về normalized issue type name (UPPER_CASE) hoặc null.
+     * Dùng để fill jira_issue_type; gọi getter trực tiếp an toàn hơn.
+     */
+    private String extractIssueTypeName(JiraFields fields) {
+        if (fields == null || fields.getIssuetype() == null)
+            return null;
+        String name = fields.getIssuetype().getName();
+        return (name != null && !name.isBlank()) ? name.trim().toUpperCase() : null;
+    }
+
+    /**
+     * Trả về raw status name từ Jira. Null-safe.
+     */
+    private String extractRawStatusName(JiraFields fields) {
+        if (fields == null || fields.getStatus() == null)
+            return null;
+        String name = fields.getStatus().getName();
+        return (name != null && !name.isBlank()) ? name.trim() : null;
+    }
+
+    /**
+     * Trả về raw priority name từ Jira. Null-safe.
+     * priority là optional trong Jira, nên có thể null.
+     */
+    private String extractRawPriorityName(JiraFields fields) {
+        if (fields == null || fields.getPriority() == null)
+            return null;
+        String name = fields.getPriority().getName();
+        return (name != null && !name.isBlank()) ? name.trim() : null;
+    }
+
+    /**
+     * Trả về assignee accountId từ Jira. Null-safe.
+     */
+    private String extractAssigneeAccountId(JiraFields fields) {
+        if (fields == null || fields.getAssignee() == null)
+            return null;
+        String accountId = fields.getAssignee().getAccountId();
+        return (accountId != null && !accountId.isBlank()) ? accountId.trim() : null;
+    }
+
+    /**
+     * Parse chuỗi ISO datetime của Jira (có offset timezone) sang LocalDateTime.
+     * Ví dụ: "2024-01-15T10:30:00.000+0700" hoặc "2024-01-15T10:30:00.000+07:00".
+     * Trả null nếu input null/blank/parse lỗi.
+     */
+    private LocalDateTime parseJiraUpdatedAt(String updated) {
+        if (updated == null || updated.isBlank())
+            return null;
+        try {
+            return OffsetDateTime.parse(updated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                    .toLocalDateTime();
+        } catch (Exception e1) {
+            // Thử pattern có milli không có colon trong timezone offset: +0700
+            try {
+                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSxx");
+                return OffsetDateTime.parse(updated, fmt).toLocalDateTime();
+            } catch (Exception e2) {
+                log.warn("Cannot parse Jira updated datetime '{}': {}", updated, e2.getMessage());
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Tìm User trong DB theo jira_account_id.
+     * Trả Optional.empty() nếu accountId null/blank hoặc không tìm thấy.
+     * Không throw exception – caller xử lý null gracefully.
+     */
+    private Optional<User> resolveAssigneeByJiraAccountId(String jiraAccountId) {
+        if (jiraAccountId == null || jiraAccountId.isBlank())
+            return Optional.empty();
+        return userRepository.findByJiraAccountId(jiraAccountId);
     }
 }

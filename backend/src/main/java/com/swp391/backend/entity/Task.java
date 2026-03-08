@@ -68,6 +68,33 @@ public class Task {
     @JoinColumn(name = "parent_task_id")
     private Task parentTask;
 
+    /** Raw issue type từ Jira (e.g. "STORY", "SUBTASK"). */
+    @Column(name = "jira_issue_type", length = 50)
+    private String jiraIssueType;
+
+    /**
+     * Jira key của issue cha.
+     * Story → Epic key; Sub-task → Story key.
+     */
+    @Column(name = "jira_parent_issue_key", length = 50)
+    private String jiraParentIssueKey;
+
+    /** Raw status name từ Jira (e.g. "To Do", "In Progress", "Done"). */
+    @Column(name = "jira_status_raw", length = 100)
+    private String jiraStatusRaw;
+
+    /** Raw priority name từ Jira (e.g. "High", "Medium"). Nullable. */
+    @Column(name = "jira_priority_raw", length = 50)
+    private String jiraPriorityRaw;
+
+    /** Jira accountId của assignee. Dùng để map với Users.jira_account_id. */
+    @Column(name = "jira_assignee_account_id", length = 255)
+    private String jiraAssigneeAccountId;
+
+    /** Timestamp updated cuối từ Jira. Nullable. */
+    @Column(name = "jira_updated_at")
+    private LocalDateTime jiraUpdatedAt;
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
