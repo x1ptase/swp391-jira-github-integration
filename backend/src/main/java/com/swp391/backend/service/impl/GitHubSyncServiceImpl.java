@@ -125,11 +125,10 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Sync failed: " + e.getMessage());
         } finally {
             if (errorMessage == null) {
-                syncLogService.updateStatus(syncLog.getId(), SyncStatus.SUCCESS, "Synced successfully", insertedCount,
-                        updatedCount);
+                syncLogService.end(syncLog.getId(), SyncStatus.SUCCESS, insertedCount, updatedCount,
+                        "Synced successfully");
             } else {
-                syncLogService.updateStatus(syncLog.getId(), SyncStatus.FAILED, errorMessage, insertedCount,
-                        updatedCount);
+                syncLogService.end(syncLog.getId(), SyncStatus.FAILED, insertedCount, updatedCount, errorMessage);
             }
         }
 
