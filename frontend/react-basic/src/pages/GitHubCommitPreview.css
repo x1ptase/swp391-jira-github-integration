@@ -38,6 +38,56 @@
   border: 1px solid #e2e8f0;
 }
 
+/*  Sync button  */
+.ghcp-sync-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ghcp-sync-btn:hover:not(:disabled) {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.ghcp-sync-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ghcp-spin {
+  animation: ghcp-spin 1s linear infinite;
+}
+
+/*  Sync result  */
+.ghcp-sync-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.ghcp-sync-detail {
+  color: #16a34a;
+  font-weight: 500;
+}
+
 /*  Filter bar  */
 .ghcp-filter-bar {
   background: #f8fafc;

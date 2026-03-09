@@ -220,6 +220,7 @@
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   margin-bottom: var(--spacing-2xl);
+  text-align: center;
 }
 
 .user-table thead {

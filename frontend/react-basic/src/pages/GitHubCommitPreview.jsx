@@ -22,6 +22,10 @@ function GitHubCommitPreview({ groupId }) {
   const [error, setError] = useState("");
   const [fetched, setFetched] = useState(false);
 
+  //  Sync state 
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null);
+
   //  Search state 
   const [search, setSearch] = useState("");
 
@@ -48,6 +52,36 @@ function GitHubCommitPreview({ groupId }) {
     setToDate(val);
     setActiveQuick(null);
     setLastNDays(null);
+  };
+
+  //  Sync GitHub data 
+  const handleSync = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    setSyncResult(null);
+    setError("");
+
+    try {
+      const res = await fetch(`${API_URL}/${groupId}/github/sync`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 409) {
+          setError("A sync is already running. Please wait.");
+        } else {
+          setError(data.message || "Sync failed");
+        }
+      } else {
+        setSyncResult(data);
+      }
+    } catch {
+      setError("Network error during sync");
+    } finally {
+      setSyncing(false);
+    }
   };
 
   //  Fetch commits ─
@@ -135,7 +169,39 @@ function GitHubCommitPreview({ groupId }) {
             </span>
           )}
         </div>
+
+        <button
+          className="ghcp-sync-btn"
+          onClick={handleSync}
+          disabled={syncing}
+          title="Sync GitHub commits to system"
+        >
+          <svg
+            width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.5"
+            className={syncing ? "ghcp-spin" : ""}
+          >
+            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+            <path d="M21 3v5h-5" />
+          </svg>
+          {syncing ? "Syncing..." : "Sync Commits"}
+        </button>
       </div>
+
+      {/*  Sync result  */}
+      {syncResult && (
+        <div className="ghcp-sync-result">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+          {syncResult.message || "Sync complete"}
+          {syncResult.insertedCount != null && (
+            <span className="ghcp-sync-detail">
+              · {syncResult.insertedCount} new, {syncResult.updatedCount} updated
+            </span>
+          )}
+        </div>
+      )}
 
       {/*  Filter bar  */}
       <div className="ghcp-filter-bar">
