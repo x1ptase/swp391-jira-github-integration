@@ -226,9 +226,14 @@ function LecturerGroupList() {
                   <span className="detail-value">{group.courseCode}</span>
                 </div>
                 <div className="detail-item">
+                  <span className="detail-label">Class Code:</span>
+                  <span className="detail-value">{group.classCode}</span>
+                </div>
+                <div className="detail-item">
                   <span className="detail-label">Semester:</span>
                   <span className="detail-value">{group.semester}</span>
                 </div>
+
               </div>
               <button
                 className="view-btn"
