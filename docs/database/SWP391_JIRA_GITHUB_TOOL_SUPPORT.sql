@@ -154,19 +154,25 @@ CREATE TABLE Requirement (
     created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
 
     jira_issue_key NVARCHAR(50) NULL,
+	jira_issue_type NVARCHAR(50) NULL,
+    jira_status_raw NVARCHAR(100) NULL,
+    jira_priority_raw NVARCHAR(100) NULL,
+    jira_updated_at DATETIME2 NULL,
 
     CONSTRAINT FK_Req_Group FOREIGN KEY (group_id) REFERENCES StudentGroup(group_id) ON DELETE CASCADE,
     CONSTRAINT FK_Req_Priority FOREIGN KEY (priority_id) REFERENCES Priority(priority_id),
     CONSTRAINT FK_Req_Status FOREIGN KEY (status_id) REFERENCES RequirementStatus(status_id),
     CONSTRAINT FK_Req_CreatedBy FOREIGN KEY (created_by) REFERENCES Users(user_id),
 
-    CONSTRAINT UX_Req_Jira UNIQUE (jira_issue_key)
+    CONSTRAINT UX_Req_Jira UNIQUE (jira_issue_key),
+	CONSTRAINT CK_Requirement_JiraIssueType CHECK (jira_issue_type IS NULL OR jira_issue_type IN (N'EPIC'))
 );
 
 CREATE TABLE Task (
     task_id INT IDENTITY(1,1) PRIMARY KEY,
     requirement_id INT NOT NULL,
     group_id INT NOT NULL,
+	parent_task_id INT NULL,
     title NVARCHAR(200) NOT NULL,
     description NVARCHAR(MAX) NULL,
     assignee_id INT NULL,
@@ -178,13 +184,20 @@ CREATE TABLE Task (
     created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
 
     jira_issue_key NVARCHAR(50) NULL,
+	jira_issue_type NVARCHAR(50) NULL,
+    jira_parent_issue_key NVARCHAR(50) NULL,
+    jira_status_raw NVARCHAR(100) NULL,
+    jira_priority_raw NVARCHAR(100) NULL,
+    jira_assignee_account_id NVARCHAR(255) NULL,
+    jira_updated_at DATETIME2 NULL,
 
     CONSTRAINT FK_Task_Req FOREIGN KEY (requirement_id) REFERENCES Requirement(requirement_id) ON DELETE CASCADE,
-
     CONSTRAINT FK_Task_Group FOREIGN KEY (group_id) REFERENCES StudentGroup(group_id) ON DELETE NO ACTION,
     CONSTRAINT FK_Task_Assignee FOREIGN KEY (assignee_id) REFERENCES Users(user_id),
     CONSTRAINT FK_Task_Status FOREIGN KEY (status_id) REFERENCES TaskStatus(status_id),
-    CONSTRAINT UX_Task_Jira UNIQUE (jira_issue_key)
+	CONSTRAINT FK_Task_ParentTask FOREIGN KEY (parent_task_id) REFERENCES Task(task_id),
+    CONSTRAINT UX_Task_Jira UNIQUE (jira_issue_key),
+	CONSTRAINT CK_Task_JiraIssueType CHECK (jira_issue_type IS NULL OR jira_issue_type IN (N'STORY', N'SUBTASK'))
 );
 
 CREATE TABLE TaskStatusHistory (
@@ -252,5 +265,19 @@ WHERE status = 'RUNNING';
 -- Helpful indexes
 CREATE INDEX IX_Task_GroupStatus ON Task(group_id, status_id);
 CREATE INDEX IX_Task_DueDate ON Task(group_id, due_date);
+CREATE INDEX IX_Task_ParentTask ON Task(parent_task_id);
 CREATE INDEX IX_GitCommit_Date ON GitCommit(repo_id, commit_date);
 CREATE INDEX IX_Sync_GroupDate ON SyncLog(group_id, started_at);
+
+-- ===== Dashboard / Jira indexes =====
+CREATE INDEX IX_Requirement_Group_Status_Priority
+ON dbo.Requirement(group_id, status_id, priority_id);
+
+CREATE INDEX IX_Task_Requirement_IssueType_Status
+ON dbo.Task(requirement_id, jira_issue_type, status_id);
+
+CREATE INDEX IX_Task_Assignee_IssueType_Status
+ON dbo.Task(assignee_id, jira_issue_type, status_id);
+
+CREATE INDEX IX_Task_Group_Parent_IssueType
+ON dbo.Task(group_id, parent_task_id, jira_issue_type);
