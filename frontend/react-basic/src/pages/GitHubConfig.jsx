@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./GitHubConfig.css";
 import { useParams } from "react-router-dom";
 import GitHubCommitPreview from "./GitHubCommitPreview";
+import CommitStats from "./CommitStats";
 
 const API_URL = "/api/groups";
 
@@ -472,6 +473,7 @@ function GitHubConfig({ onSuccess }) {
       )}
       
       {config && hasToken && <GitHubCommitPreview groupId={groupId} />}
+      {config && hasToken && <CommitStats groupId={groupId} />}
     </div>
   );
 }

@@ -444,3 +444,26 @@
 .jira-btn:hover {
   background-color: #003d99;
 }
+.group-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.stats-btn {
+  flex: 1;
+  padding: 8px 16px;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.stats-btn:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}

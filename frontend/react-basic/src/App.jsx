@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import GitHubConfig from './pages/GitHubConfig';
 import JiraConfig from './pages/JiraConfig';
 import JiraIssuesPreview from "./pages/JiraIssuesPreview";
+import LecturerGroupStats from "./pages/LecturerGroupStats";
 
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
           <Route index element={<Navigate to="groups" replace />} />
           <Route path="groups" element={<LecturerGroupList />} />
           <Route path="groups/:groupId/jira-issues" element={<JiraIssuesPreview />} />
+          <Route path="groups/:groupId/stats" element={<LecturerGroupStats />} />
         </Route>
       </Routes>
     </BrowserRouter>

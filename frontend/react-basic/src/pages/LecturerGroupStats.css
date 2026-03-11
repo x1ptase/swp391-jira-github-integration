@@ -1,0 +1,38 @@
+.lgs-root {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+}
+
+.lgs-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.lgs-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.lgs-back-btn:hover {
+  border-color: #94a3b8;
+  color: #1e293b;
+  background: #f1f5f9;
+}
+
+.lgs-group-id {
+  font-size: 13px;
+  color: #94a3b8;
+}

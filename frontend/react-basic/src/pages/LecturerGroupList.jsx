@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./LecturerGroupList.css";
-
+import { useNavigate } from "react-router-dom";
 const API_URL = "/api/lecturer/groups";
 const MEMBER_API = "/api/groups";
 
@@ -15,6 +15,7 @@ function LecturerGroupList() {
   const [eligibleStudents, setEligibleStudents] = useState([]);
   const [studentPage, setStudentPage] = useState(0);
   const [studentTotalPages, setStudentTotalPages] = useState(0);
+  const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
 
@@ -235,12 +236,14 @@ function LecturerGroupList() {
                 </div>
 
               </div>
-              <button
-                className="view-btn"
-                onClick={() => handleOpenMemberModal(group)}
-              >
-                Manage Members
-              </button>
+              <div className="group-actions">
+                <button className="view-btn" onClick={() => handleOpenMemberModal(group)}>
+                  Manage Members
+                </button>
+                <button className="stats-btn" onClick={() => navigate(`/lecturer/groups/${group.groupId}/stats`)}>
+                  View Stats
+                </button>
+              </div>
             </div>
           ))}
         </div>
