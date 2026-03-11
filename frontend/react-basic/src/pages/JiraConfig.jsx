@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./JiraConfig.css";
 import JiraIssuesPreview from "./JiraIssuesPreview";
+import RequirementDashboard from "./RequirementDashboard";
 
 const API_URL = "/api/groups";
 
@@ -256,6 +257,7 @@ function JiraConfig() {
             {config && hasToken && (
                 <JiraIssuesPreview groupId={groupId} />
             )}
+            {config && hasToken && <RequirementDashboard groupId={groupId} />}
         </div>
     );
 }
