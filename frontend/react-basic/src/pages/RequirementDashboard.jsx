@@ -4,10 +4,11 @@ import "./RequirementDashboard.css";
 const API_URL = "/api/groups";
 
 const STATUS_COLOR = {
-  ACTIVE: "#3b82f6",
   DONE: "#22c55e",
-  INACTIVE: "#6b7280",
-  PENDING: "#f59e0b",
+  "IN PROGRESS": "#3b82f6",
+  "IN_PROGRESS": "#3b82f6",
+  TODO: "#6b7280",
+  "TO DO": "#6b7280",
 };
 
 const PRIORITY_COLOR = {
@@ -17,7 +18,6 @@ const PRIORITY_COLOR = {
   LOW: "#3b82f6",
   LOWEST: "#6b7280",
 };
-
 function ProgressBar({ done, total }) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   const color = pct === 100 ? "#22c55e" : pct >= 50 ? "#3b82f6" : "#f59e0b";
@@ -164,10 +164,10 @@ function RequirementDashboard({ groupId }) {
             onChange={(e) => setStatusId(e.target.value)}
           >
             <option value="">All Statuses</option>
-            <option value="1">Active</option>
-            <option value="2">Done</option>
-            <option value="3">Inactive</option>
-            <option value="4">Pending</option>
+            <option value="1">TODO</option>
+            <option value="2">IN PROGRESS</option>
+            <option value="3">DONE</option>
+
           </select>
 
           {/* Priority filter */}
@@ -177,11 +177,9 @@ function RequirementDashboard({ groupId }) {
             onChange={(e) => setPriorityId(e.target.value)}
           >
             <option value="">All Priorities</option>
-            <option value="1">Highest</option>
-            <option value="2">High</option>
-            <option value="3">Medium</option>
-            <option value="4">Low</option>
-            <option value="5">Lowest</option>
+            <option value="3">HIGH</option>
+            <option value="2">MEDIUM</option>
+            <option value="1">LOW</option>
           </select>
 
           <button
