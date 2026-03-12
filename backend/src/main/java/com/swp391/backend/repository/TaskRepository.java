@@ -181,4 +181,75 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
             Integer taskId,
             Long groupId,
             String jiraIssueType);
+
+    // ── My Work – Subtasks (personal view) ───────────────────────────────────
+
+    /**
+     * Lấy danh sách Subtask được assign cho current user trong một group.
+     * Điều kiện chính: t.assignee.userId = :currentUserId (internal mapping).
+     *
+     * <p>Không dùng JOIN FETCH để tránh lỗi count/duplicate khi pageable.
+     * Sort cung cấp qua Pageable.
+     *
+     * @param groupId       group ID (bắt buộc)
+     * @param currentUserId userId của current user (bắt buộc)
+     * @param statusId      optional — null = bỏ qua
+     * @param priority      optional — null = bỏ qua; so sánh LOWERCASE
+     * @param requirementId optional — null = bỏ qua (filter theo Epic)
+     * @param parentTaskId  optional — null = bỏ qua (filter theo Story cha)
+     * @param keyword       optional — null = bỏ qua; tìm trong jiraIssueKey hoặc title
+     * @param pageable      phân trang + sort
+     * @return page of Task entity (Subtask)
+     */
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.studentGroup.groupId = :groupId
+              AND t.jiraIssueType = 'SUBTASK'
+              AND t.parentTask IS NOT NULL
+              AND t.assignee.userId = :currentUserId
+              AND (:statusId IS NULL OR t.status.statusId = :statusId)
+              AND (:priority IS NULL OR LOWER(t.jiraPriorityRaw) = LOWER(:priority))
+              AND (:requirementId IS NULL OR t.requirement.requirementId = :requirementId)
+              AND (:parentTaskId IS NULL OR t.parentTask.taskId = :parentTaskId)
+              AND (:keyword IS NULL
+                   OR LOWER(t.jiraIssueKey) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(t.title)        LIKE LOWER(CONCAT('%', :keyword, '%')))
+            """)
+    Page<Task> findMyWorkSubtasks(
+            @Param("groupId") Long groupId,
+            @Param("currentUserId") Long currentUserId,
+            @Param("statusId") Integer statusId,
+            @Param("priority") String priority,
+            @Param("requirementId") Integer requirementId,
+            @Param("parentTaskId") Integer parentTaskId,
+            @Param("keyword") String keyword,
+            Pageable pageable);
+
+    /**
+     * Lấy detail một Subtask của current user.
+     * Dùng LEFT JOIN FETCH để giảm N+1 khi map DTO có đủ context Story + Epic.
+     *
+     * <p>Leak-safe: chỉ trả nếu taskId + groupId + assignee.userId + SUBTASK đều match.
+     * Nếu không match bất kỳ điều kiện nào → Optional.empty() → caller ném 404.
+     *
+     * @param taskId        PK của Task
+     * @param groupId       group phải match
+     * @param currentUserId assignee phải là current user
+     * @return Optional Task với parentTask, requirement, assignee, status đã fetch
+     */
+    @Query("""
+            SELECT t FROM Task t
+            LEFT JOIN FETCH t.parentTask p
+            LEFT JOIN FETCH p.requirement
+            LEFT JOIN FETCH t.assignee
+            LEFT JOIN FETCH t.status
+            WHERE t.taskId = :taskId
+              AND t.studentGroup.groupId = :groupId
+              AND t.jiraIssueType = 'SUBTASK'
+              AND t.assignee.userId = :currentUserId
+            """)
+    Optional<Task> findMyWorkSubtaskDetail(
+            @Param("taskId") Integer taskId,
+            @Param("groupId") Long groupId,
+            @Param("currentUserId") Long currentUserId);
 }
