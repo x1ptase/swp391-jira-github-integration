@@ -45,4 +45,24 @@ public interface RequirementRepository extends JpaRepository<Requirement, Intege
             @Param("priorityId") Integer priorityId,
             @Param("keyword") String keyword,
             Pageable pageable);
+
+    // ── Story dashboard helpers ───────────────────────────────────────────────
+
+    /**
+     * Kiểm tra requirementId có thuộc groupId không.
+     * Dùng để validate trước khi query story list (404 nếu false).
+     *
+     * @param requirementId PK của Requirement
+     * @param groupId       group phải match
+     */
+    boolean existsByRequirementIdAndStudentGroup_GroupId(Integer requirementId, Long groupId);
+
+    /**
+     * Fetch Requirement theo requirementId + groupId để lấy epicKey/epicSummary.
+     * Trả empty nếu requirementId không thuộc groupId.
+     *
+     * @param requirementId PK của Requirement
+     * @param groupId       group phải match
+     */
+    Optional<Requirement> findByRequirementIdAndStudentGroup_GroupId(Integer requirementId, Long groupId);
 }
