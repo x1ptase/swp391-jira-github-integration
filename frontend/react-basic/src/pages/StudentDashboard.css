@@ -4,7 +4,7 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* ── Navbar ── */
+/* Navbar */
 .sgl-navbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 28px; height: 56px;
@@ -28,13 +28,13 @@
 }
 .sgl-logout-btn:hover { border-color: #ef4444; color: #ef4444; }
 
-/* ── Main ── */
+/* Main */
 .sgl-main {
   max-width: 1000px; margin: 0 auto;
   padding: 32px 24px 64px;
 }
 
-/* ── Page header ── */
+/* Page header */
 .sgl-page-header {
   display: flex; align-items: flex-start; justify-content: space-between;
   margin-bottom: 28px; gap: 12px;
@@ -52,7 +52,7 @@
 .sgl-refresh-btn:hover:not(:disabled) { border-color: #94a3b8; color: #1e293b; }
 .sgl-refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* ── States ── */
+/* States */
 .sgl-error {
   display: flex; align-items: center; gap: 8px;
   padding: 12px 16px; background: #fef2f2;
@@ -70,14 +70,14 @@
 .sgl-empty p { font-size: 15px; font-weight: 500; color: #64748b; margin: 0; }
 .sgl-empty span { font-size: 13px; }
 
-/* ── Grid ── */
+/* Grid */
 .sgl-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
 }
 
-/* ── Card ── */
+/* Card */
 .sgl-card {
   background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
   overflow: hidden; transition: box-shadow 0.15s, border-color 0.15s;
@@ -145,7 +145,7 @@
 }
 .sgl-btn-view:hover { border-color: #94a3b8; color: #1e293b; }
 
-/* ── Spinner ── */
+/* Spinner */
 .sgl-spinner {
   width: 16px; height: 16px; border: 2px solid #e2e8f0;
   border-top-color: #64748b; border-radius: 50%;

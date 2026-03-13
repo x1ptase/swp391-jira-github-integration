@@ -21,7 +21,7 @@ export default function StudentDashboard() {
       const res = await fetch(API_URL, { headers: auth() });
       const data = await res.json();
       if (!res.ok) { setError(data.message || "Failed to load groups"); return; }
-      setGroups(data.data || []);
+      setGroups((data.data || []).filter(g => g.memberRole != null));
     } catch {
       setError("Network error");
     } finally {

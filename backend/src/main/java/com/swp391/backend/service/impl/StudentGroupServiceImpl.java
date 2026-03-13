@@ -3,6 +3,7 @@ package com.swp391.backend.service.impl;
 import com.swp391.backend.dto.request.CreateGroupRequest;
 import com.swp391.backend.dto.response.StudentGroupResponse;
 import com.swp391.backend.entity.GroupMember;
+import com.swp391.backend.entity.GroupMemberId;
 import com.swp391.backend.entity.LecturerAssignment;
 import com.swp391.backend.entity.StudentGroup;
 import com.swp391.backend.exception.BusinessException;
