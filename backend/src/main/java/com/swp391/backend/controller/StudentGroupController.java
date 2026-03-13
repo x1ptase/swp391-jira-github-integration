@@ -51,4 +51,10 @@ public class StudentGroupController {
             @RequestParam(value = "semester", required = false) String semester) {
         return ApiResponse.success(studentGroupService.listStudentGroups(courseCode, semester));
     }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ApiResponse<StudentGroupResponse> getMyGroup() {
+        return ApiResponse.success(studentGroupService.getMyGroup());
+    }
 }
