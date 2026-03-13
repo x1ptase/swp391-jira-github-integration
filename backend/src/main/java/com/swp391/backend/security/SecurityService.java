@@ -39,11 +39,16 @@ public class SecurityService {
             return true;
 
         Long userId = getCurrentUserId();
+        System.out.println(">>> hasAccessToGroup groupId=" + groupId + " userId=" + userId);
         if (userId == null)
             return false;
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_STUDENT"))) {
+            boolean exists = groupMemberRepository.existsByGroup_GroupIdAndUser_UserId(groupId, userId);
+            System.out.println(">>> STUDENT check exists=" + exists);
+            return exists;
+        }
         // Lecturer assigned to group
         if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_LECTURER"))) {
             return lecturerAssignmentRepository.existsByGroupIdAndLecturerId(groupId, userId);

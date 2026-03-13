@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import "./RequirementDashboard.css";
+import StoryDashboard from "./StoryDashboard";
 
 const API_URL = "/api/groups";
 
@@ -18,16 +19,14 @@ const PRIORITY_COLOR = {
   LOW: "#3b82f6",
   LOWEST: "#6b7280",
 };
+
 function ProgressBar({ done, total }) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   const color = pct === 100 ? "#22c55e" : pct >= 50 ? "#3b82f6" : "#f59e0b";
   return (
     <div className="rd-progress-wrap">
       <div className="rd-progress-bar">
-        <div
-          className="rd-progress-fill"
-          style={{ width: `${pct}%`, "--fill-color": color }}
-        />
+        <div className="rd-progress-fill" style={{ width: `${pct}%`, "--fill-color": color }} />
       </div>
       <span className="rd-progress-label">
         {done}/{total} <span className="rd-progress-pct">({pct}%)</span>
@@ -46,12 +45,9 @@ function Badge({ label, colorMap, fallback = "#94a3b8" }) {
 }
 
 function RequirementDashboard({ groupId }) {
-  //  Filter state 
   const [keyword, setKeyword] = useState("");
   const [statusId, setStatusId] = useState("");
   const [priorityId, setPriorityId] = useState("");
-
-  //  Data state 
   const [requirements, setRequirements] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(0);
@@ -59,11 +55,13 @@ function RequirementDashboard({ groupId }) {
   const [error, setError] = useState("");
   const [fetched, setFetched] = useState(false);
 
+  // ── Drill-down state ──────────────────────────────────────────────────────
+  const [selectedEpic, setSelectedEpic] = useState(null);
+
   const authHeader = () => ({
     Authorization: `Bearer ${localStorage.getItem("token")}`,
   });
 
-  //  Fetch ─
   const fetchRequirements = useCallback(async (p = 0) => {
     setError("");
     setLoading(true);
@@ -81,7 +79,6 @@ function RequirementDashboard({ groupId }) {
         headers: authHeader(),
       });
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.message || "Failed to fetch requirements");
       } else {
@@ -105,10 +102,7 @@ function RequirementDashboard({ groupId }) {
   }, [groupId, statusId, priorityId, keyword]);
 
   const handleSearch = () => fetchRequirements(0);
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleSearch();
-  };
+  const handleKeyDown = (e) => { if (e.key === "Enter") handleSearch(); };
 
   const formatDate = (iso) => {
     if (!iso) return "—";
@@ -117,9 +111,24 @@ function RequirementDashboard({ groupId }) {
     });
   };
 
+  // ── Show StoryDashboard when epic selected ────────────────────────────────
+  if (selectedEpic) {
+    return (
+      <div className="rd-root">
+        <StoryDashboard
+          groupId={groupId}
+          requirementId={selectedEpic.requirementId}
+          epicKey={selectedEpic.epicKey}
+          epicSummary={selectedEpic.epicSummary}
+          onClose={() => setSelectedEpic(null)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="rd-root">
-      {/*  Header  */}
+      {/* Header */}
       <div className="rd-header">
         <div className="rd-title">
           <span className="rd-title-icon">
@@ -130,17 +139,14 @@ function RequirementDashboard({ groupId }) {
           </span>
           <span>Requirements</span>
           {fetched && pagination && (
-            <span className="rd-count-chip">
-              {pagination.totalElements} epics
-            </span>
+            <span className="rd-count-chip">{pagination.totalElements} epics</span>
           )}
         </div>
       </div>
 
-      {/*  Filter bar  */}
+      {/* Filter bar */}
       <div className="rd-filter-bar">
         <div className="rd-filter-row">
-          {/* Keyword */}
           <div className="rd-search-wrap">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
@@ -157,36 +163,21 @@ function RequirementDashboard({ groupId }) {
             )}
           </div>
 
-          {/* Status filter */}
-          <select
-            className="rd-select"
-            value={statusId}
-            onChange={(e) => setStatusId(e.target.value)}
-          >
+          <select className="rd-select" value={statusId} onChange={(e) => setStatusId(e.target.value)}>
             <option value="">All Statuses</option>
             <option value="1">TODO</option>
             <option value="2">IN PROGRESS</option>
             <option value="3">DONE</option>
-
           </select>
 
-          {/* Priority filter */}
-          <select
-            className="rd-select"
-            value={priorityId}
-            onChange={(e) => setPriorityId(e.target.value)}
-          >
+          <select className="rd-select" value={priorityId} onChange={(e) => setPriorityId(e.target.value)}>
             <option value="">All Priorities</option>
             <option value="3">HIGH</option>
             <option value="2">MEDIUM</option>
             <option value="1">LOW</option>
           </select>
 
-          <button
-            className="rd-fetch-btn"
-            onClick={handleSearch}
-            disabled={loading}
-          >
+          <button className="rd-fetch-btn" onClick={handleSearch} disabled={loading}>
             {loading ? <span className="rd-spinner" /> : (
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
@@ -197,10 +188,8 @@ function RequirementDashboard({ groupId }) {
         </div>
       </div>
 
-      {/*  Error  */}
       {error && <div className="rd-error">{error}</div>}
 
-      {/*  Empty state  */}
       {!loading && fetched && requirements.length === 0 && (
         <div className="rd-empty">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -212,7 +201,6 @@ function RequirementDashboard({ groupId }) {
         </div>
       )}
 
-      {/*  Table  */}
       {!loading && requirements.length > 0 && (
         <div className="rd-table-wrap">
           <table className="rd-table">
@@ -228,14 +216,19 @@ function RequirementDashboard({ groupId }) {
             </thead>
             <tbody>
               {requirements.map((req) => (
-                <tr key={req.requirementId} className="rd-row">
-                  <td>
-                    <span className="rd-epic-key">{req.epicKey || "—"}</span>
-                  </td>
+                <tr
+                  key={req.requirementId}
+                  className="rd-row rd-row-clickable"
+                  onClick={() => setSelectedEpic({
+                    requirementId: req.requirementId,
+                    epicKey: req.epicKey,
+                    epicSummary: req.summary,
+                  })}
+                  title="Click to view stories"
+                >
+                  <td><span className="rd-epic-key">{req.epicKey || "—"}</span></td>
                   <td className="rd-summary-cell">
-                    <span className="rd-summary" title={req.summary}>
-                      {req.summary || "—"}
-                    </span>
+                    <span className="rd-summary" title={req.summary}>{req.summary || "—"}</span>
                   </td>
                   <td>
                     <Badge label={req.statusRaw || req.statusCode} colorMap={STATUS_COLOR} />
@@ -260,38 +253,17 @@ function RequirementDashboard({ groupId }) {
             </tbody>
           </table>
 
-          {/*  Pagination  */}
           {pagination && pagination.totalPages > 1 && (
             <div className="rd-pagination">
-              <button
-                className="rd-page-btn"
-                onClick={() => fetchRequirements(page - 1)}
-                disabled={pagination.isFirst || loading}
-              >
-                ← Prev
-              </button>
-
+              <button className="rd-page-btn" onClick={() => fetchRequirements(page - 1)} disabled={pagination.isFirst || loading}>← Prev</button>
               <div className="rd-page-numbers">
                 {Array.from({ length: pagination.totalPages }, (_, i) => (
-                  <button
-                    key={i}
-                    className={`rd-page-num ${i === page ? "active" : ""}`}
-                    onClick={() => fetchRequirements(i)}
-                    disabled={loading}
-                  >
+                  <button key={i} className={`rd-page-num ${i === page ? "active" : ""}`} onClick={() => fetchRequirements(i)} disabled={loading}>
                     {i + 1}
                   </button>
                 ))}
               </div>
-
-              <button
-                className="rd-page-btn"
-                onClick={() => fetchRequirements(page + 1)}
-                disabled={pagination.isLast || loading}
-              >
-                Next →
-              </button>
-
+              <button className="rd-page-btn" onClick={() => fetchRequirements(page + 1)} disabled={pagination.isLast || loading}>Next →</button>
               <span className="rd-page-info">
                 Page {page + 1} of {pagination.totalPages} · {pagination.totalElements} total
               </span>

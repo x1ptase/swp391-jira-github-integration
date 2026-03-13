@@ -2,13 +2,17 @@ package com.swp391.backend.service.impl;
 
 import com.swp391.backend.dto.request.CreateGroupRequest;
 import com.swp391.backend.dto.response.StudentGroupResponse;
+import com.swp391.backend.entity.GroupMemberId;
 import com.swp391.backend.entity.LecturerAssignment;
 import com.swp391.backend.entity.StudentGroup;
 import com.swp391.backend.exception.BusinessException;
+import com.swp391.backend.repository.GroupMemberRepository;
 import com.swp391.backend.repository.LecturerAssignmentRepository;
 import com.swp391.backend.repository.StudentGroupRepository;
 import com.swp391.backend.repository.UserRepository;
 import com.swp391.backend.service.StudentGroupService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -22,13 +26,16 @@ public class StudentGroupServiceImpl implements StudentGroupService {
     private final StudentGroupRepository studentGroupRepository;
     private final UserRepository userRepository;
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
     public StudentGroupServiceImpl(StudentGroupRepository studentGroupRepository,
                                    UserRepository userRepository,
-                                   LecturerAssignmentRepository lecturerAssignmentRepository) {
+                                   LecturerAssignmentRepository lecturerAssignmentRepository,
+                                   GroupMemberRepository groupMemberRepository) {
         this.studentGroupRepository = studentGroupRepository;
         this.userRepository = userRepository;
         this.lecturerAssignmentRepository = lecturerAssignmentRepository;
+        this.groupMemberRepository = groupMemberRepository;
     }
 
     @Override
@@ -105,6 +112,16 @@ public class StudentGroupServiceImpl implements StudentGroupService {
             Long lecturerId = assignOpt.get().getLecturerId();
             resp.setLecturerId(lecturerId);
             userRepository.findById(lecturerId).ifPresent(u -> resp.setLecturerName(u.getFullName()));
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            userRepository.findByUsername(auth.getName()).ifPresent(user -> {
+                GroupMemberId memberId = new GroupMemberId(group.getGroupId(), user.getUserId());
+                groupMemberRepository.findById(memberId).ifPresent(member -> {
+                    resp.setMemberRole(member.getMemberRole().getCode()); // "LEADER" or "MEMBER"
+                });
+            });
         }
 
         return resp;

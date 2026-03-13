@@ -21,4 +21,5 @@ public class StudentGroupResponse {
     private LocalDateTime createdAt;
     private Long lecturerId;
     private String lecturerName;
+    private String memberRole;
 }

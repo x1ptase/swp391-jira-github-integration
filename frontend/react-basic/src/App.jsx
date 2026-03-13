@@ -10,17 +10,19 @@ import GitHubConfig from './pages/GitHubConfig';
 import JiraConfig from './pages/JiraConfig';
 import JiraIssuesPreview from "./pages/JiraIssuesPreview";
 import LecturerGroupStats from "./pages/LecturerGroupStats";
+import LeaderDashboard from "./pages/LeaderDashboard";
+import StudentDashboard from "./pages/StudentDashboard";
 
 
 function App() {
   return (
-     <BrowserRouter>
+    <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
+        {/* Public */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Admin Routes */}
+        {/* Admin */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="users" replace />} />
           <Route path="users" element={<AdminUserManagement />} />
@@ -29,15 +31,22 @@ function App() {
           <Route path="groups/:groupId/jira-config" element={<JiraConfig />} />
         </Route>
 
-        {/* Lecturer Routes */}
+        {/* Lecturer */}
         <Route path="/lecturer" element={<LecturerLayout />}>
           <Route index element={<Navigate to="groups" replace />} />
           <Route path="groups" element={<LecturerGroupList />} />
           <Route path="groups/:groupId/jira-issues" element={<JiraIssuesPreview />} />
           <Route path="groups/:groupId/stats" element={<LecturerGroupStats />} />
         </Route>
+
+        {/* Student — danh sách group */}
+        <Route path="/student/groups" element={<StudentDashboard />} />
+
+        {/* Leader — quản lý group (GitHub + Jira config) */}
+        <Route path="/leader/groups/:groupId" element={<LeaderDashboard />} />
       </Routes>
     </BrowserRouter>
   );
 }
+
 export default App;

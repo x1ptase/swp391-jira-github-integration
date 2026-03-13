@@ -1,0 +1,100 @@
+.gml-root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.gml-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.gml-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 16px; font-weight: 600; color: #1e293b;
+}
+.gml-count-chip {
+  background: #f1f5f9; color: #64748b;
+  padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 500;
+}
+.gml-refresh-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; background: #f8fafc;
+  border: 1.5px solid #e2e8f0; border-radius: 7px;
+  font-size: 12px; font-weight: 500; color: #475569;
+  cursor: pointer; transition: all 0.15s;
+}
+.gml-refresh-btn:hover:not(:disabled) { border-color: #94a3b8; color: #1e293b; }
+.gml-refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.gml-error {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; background: #fef2f2;
+  border: 1px solid #fecaca; border-radius: 8px;
+  color: #dc2626; font-size: 13px; margin-bottom: 12px;
+}
+.gml-loading {
+  display: flex; align-items: center; gap: 8px;
+  padding: 32px 0; color: #64748b; font-size: 13px; justify-content: center;
+}
+.gml-empty {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; padding: 40px 0; color: #94a3b8; text-align: center;
+}
+.gml-empty p { font-size: 14px; color: #64748b; margin: 0; }
+
+/* ── List ── */
+.gml-list {
+  display: flex; flex-direction: column; gap: 2px;
+}
+
+.gml-member {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 10px;
+  background: #fff; border: 1px solid #f1f5f9;
+  transition: border-color 0.15s;
+}
+.gml-member:hover { border-color: #e2e8f0; }
+.gml-member-leader {
+  background: #fafbff; border-color: #e0e7ff;
+}
+
+.gml-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; flex-shrink: 0;
+}
+
+.gml-info {
+  flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.gml-name {
+  font-size: 14px; font-weight: 600; color: #1e293b;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gml-username { font-size: 12px; color: #64748b; }
+.gml-email { font-size: 11px; color: #94a3b8; }
+
+.gml-role-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; flex-shrink: 0;
+}
+.gml-leader { background: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe; }
+.gml-member-role { background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; }
+
+.gml-divider {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 4px; color: #94a3b8; font-size: 11px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.gml-divider::after {
+  content: ""; flex: 1; height: 1px; background: #f1f5f9;
+}
+
+/* Spinners */
+.gml-spinner {
+  width: 14px; height: 14px; border: 2px solid #e2e8f0;
+  border-top-color: #64748b; border-radius: 50%;
+  animation: gml-spin 0.7s linear infinite; display: inline-block;
+}
+.gml-spin { animation: gml-spin 1s linear infinite; }
+@keyframes gml-spin { to { transform: rotate(360deg); } }

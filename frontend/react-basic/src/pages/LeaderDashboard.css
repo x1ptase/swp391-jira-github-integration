@@ -1,0 +1,80 @@
+.ld-root {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 24px 64px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Topbar */
+.ld-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.ld-back-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; background: #fff;
+  border: 1.5px solid #e2e8f0; border-radius: 8px;
+  font-size: 13px; font-weight: 500; color: #475569;
+  cursor: pointer; transition: all 0.15s;
+}
+.ld-back-btn:hover { border-color: #94a3b8; color: #1e293b; background: #f8fafc; }
+
+.ld-group-info {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: #64748b; font-weight: 500;
+}
+
+.ld-role-chip {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 12px; border-radius: 999px;
+  background: #eff6ff; color: #1d4ed8;
+  border: 1.5px solid #bfdbfe;
+}
+
+/* Page header */
+.ld-page-header { margin-bottom: 24px; }
+.ld-page-title { font-size: 24px; font-weight: 700; color: #1e293b; margin: 0 0 6px; }
+.ld-page-desc { font-size: 14px; color: #64748b; margin: 0; }
+
+/* Tabs */
+.ld-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 28px;
+}
+
+.ld-tab {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  background: none; border: none; border-bottom: 2px solid transparent;
+  margin-bottom: -2px; /* overlap parent border */
+  font-size: 14px; font-weight: 500; color: #64748b;
+  cursor: pointer; transition: all 0.15s; border-radius: 6px 6px 0 0;
+}
+.ld-tab:hover { color: #1e293b; background: #f8fafc; }
+.ld-tab-active { color: #1e293b; border-bottom-color: #1e293b; }
+
+.ld-tab-icon { display: flex; align-items: center; }
+
+/* Content */
+.ld-content { animation: ld-fadein 0.2s ease; }
+@keyframes ld-fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* Role chip variants */
+.ld-role-leader {
+  background: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe;
+}
+.ld-role-member {
+  background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0;
+}
+
+/* Overview layout */
+.ld-overview {
+  display: flex; flex-direction: column; gap: 32px;
+}
