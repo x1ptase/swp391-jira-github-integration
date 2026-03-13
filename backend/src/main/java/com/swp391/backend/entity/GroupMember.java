@@ -25,11 +25,7 @@ public class GroupMember {
     @JoinColumn(name = "member_role_id", nullable = false)
     private MemberRole memberRole;
 
-    @Column(name = "course_code", nullable = false, length = 30)
-    private String courseCode;
 
-    @Column(name = "semester", nullable = false, length = 30)
-    private String semester;
 
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
@@ -75,21 +71,7 @@ public class GroupMember {
         this.memberRole = memberRole;
     }
 
-    public String getCourseCode() {
-        return courseCode;
-    }
 
-    public void setCourseCode(String courseCode) {
-        this.courseCode = courseCode;
-    }
-
-    public String getSemester() {
-        return semester;
-    }
-
-    public void setSemester(String semester) {
-        this.semester = semester;
-    }
 
     public LocalDateTime getJoinedAt() {
         return joinedAt;

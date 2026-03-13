@@ -14,10 +14,11 @@ import java.time.LocalDateTime;
 @Builder
 public class StudentGroupResponse {
     private Long groupId;
+    private Long classId;
     private String classCode;
     private String groupName;
     private String courseCode;
-    private String semester;
+    private String semesterCode;
     private LocalDateTime createdAt;
     private Long lecturerId;
     private String lecturerName;

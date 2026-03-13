@@ -1,9 +1,12 @@
 package com.swp391.backend.service.impl;
 
+import com.swp391.backend.entity.AcademicClass;
 import com.swp391.backend.entity.LecturerAssignment;
+
 import com.swp391.backend.entity.StudentGroup;
 import com.swp391.backend.entity.User;
 import com.swp391.backend.exception.BusinessException;
+import com.swp391.backend.repository.AcademicClassRepository;
 import com.swp391.backend.repository.LecturerAssignmentRepository;
 import com.swp391.backend.repository.StudentGroupRepository;
 import com.swp391.backend.repository.UserRepository;
@@ -22,23 +25,26 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
 
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
     private final StudentGroupRepository studentGroupRepository;
+    private final AcademicClassRepository academicClassRepository;
     private final UserRepository userRepository;
 
     public LecturerAssignmentServiceImpl(
             LecturerAssignmentRepository lecturerAssignmentRepository,
             StudentGroupRepository studentGroupRepository,
+            AcademicClassRepository academicClassRepository,
             UserRepository userRepository
     ) {
         this.lecturerAssignmentRepository = lecturerAssignmentRepository;
         this.studentGroupRepository = studentGroupRepository;
+        this.academicClassRepository = academicClassRepository;
         this.userRepository = userRepository;
     }
 
-    public void assignLecturer(Long groupId, Long lecturerId) {
-        // validate group exists
-        Optional<StudentGroup> groupOpt = studentGroupRepository.findById(groupId);
-        if (!groupOpt.isPresent()) {
-            throw new BusinessException("Group not found: " + groupId, 404);
+    public void assignLecturer(Long classId, Long lecturerId) {
+        // validate class exists
+        Optional<AcademicClass> classOpt = academicClassRepository.findById(classId);
+        if (!classOpt.isPresent()) {
+            throw new BusinessException("Class not found: " + classId, 404);
         }
 
         // validate lecturer exists + role is LECTURER
@@ -52,14 +58,14 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
             throw new BusinessException("User is not a lecturer: " + lecturerId, 400);
         }
 
-        // upsert (because LecturerAssignment has PK group_id)
-        Optional<LecturerAssignment> existing = lecturerAssignmentRepository.findById(groupId);
+        // upsert
+        Optional<LecturerAssignment> existing = lecturerAssignmentRepository.findById(classId);
         LecturerAssignment la;
         if (existing.isPresent()) {
             la = existing.get();
         } else {
             la = new LecturerAssignment();
-            la.setGroupId(groupId);
+            la.setClassId(classId);
         }
         la.setLecturerId(lecturerId);
         la.setAssignedAt(LocalDateTime.now());
@@ -77,10 +83,8 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
 
         for (int i = 0; i < assigns.size(); i++) {
             LecturerAssignment a = assigns.get(i);
-            Optional<StudentGroup> gOpt = studentGroupRepository.findById(a.getGroupId());
-            if (gOpt.isPresent()) {
-                result.add(gOpt.get());
-            }
+            List<StudentGroup> classGroups = studentGroupRepository.findByAcademicClass_ClassId(a.getClassId());
+            result.addAll(classGroups);
         }
         return result;
     }

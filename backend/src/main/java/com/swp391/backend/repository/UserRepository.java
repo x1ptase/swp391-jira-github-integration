@@ -59,10 +59,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
                         ") " +
                         "AND u.userId NOT IN (SELECT gm.user.userId FROM GroupMember gm WHERE gm.group.groupId = :groupId) "
                         +
-                        "AND u.userId NOT IN (SELECT gm2.user.userId FROM GroupMember gm2 WHERE gm2.courseCode = :courseCode AND gm2.semester = :semester)")
+                        "AND u.userId NOT IN (SELECT gm2.user.userId FROM GroupMember gm2 JOIN gm2.group g2 WHERE g2.academicClass.classId = :classId)")
         Page<User> searchEligibleStudentsForGroup(@Param("kw") String keyword,
                         @Param("groupId") Long groupId,
-                        @Param("courseCode") String courseCode,
-                        @Param("semester") String semester,
+                        @Param("classId") Long classId,
                         Pageable pageable);
 }
