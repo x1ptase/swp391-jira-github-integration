@@ -30,38 +30,41 @@ public interface UserRepository extends JpaRepository<User, Long> {
         Optional<User> findByJiraAccountId(String jiraAccountId);
 
         @Query("SELECT u FROM User u " +
-                        "WHERE (:kw IS NULL OR :kw = '' OR " +
-                        "LOWER(u.username) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
-                        "LOWER(u.email) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
-                        "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :kw, '%'))" +
-                        ")")
+                "WHERE (:kw IS NULL OR :kw = '' OR " +
+                "LOWER(u.username) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
+                "LOWER(u.email) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
+                "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :kw, '%'))" +
+                ")")
         Page<User> search(@Param("kw") String keyword, Pageable pageable);
 
-        // Dùng cho dropdown assign lecturer: /api/admin/users?roleCode=LECTURER
         @Query("SELECT u FROM User u " +
-                        "WHERE (:roleCode IS NULL OR :roleCode = '' OR " +
-                        "LOWER(u.role.roleCode) = LOWER(:roleCode)) " +
-                        "AND (:kw IS NULL OR :kw = '' OR " +
-                        "LOWER(u.username) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
-                        "LOWER(u.email) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
-                        "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :kw, '%'))" +
-                        ")")
+                "WHERE (:roleCode IS NULL OR :roleCode = '' OR " +
+                "LOWER(u.role.roleCode) = LOWER(:roleCode)) " +
+                "AND (:kw IS NULL OR :kw = '' OR " +
+                "LOWER(u.username) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
+                "LOWER(u.email) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
+                "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :kw, '%'))" +
+                ")")
         Page<User> searchWithRole(@Param("kw") String keyword,
-                        @Param("roleCode") String roleCode,
-                        Pageable pageable);
+                                  @Param("roleCode") String roleCode,
+                                  Pageable pageable);
 
-        @Query("SELECT u FROM User u " +
-                        "WHERE LOWER(u.role.roleCode) = 'student' " +
-                        "AND (:kw IS NULL OR :kw = '' OR " +
-                        "LOWER(u.username) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
-                        "LOWER(u.email) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
-                        "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :kw, '%'))" +
-                        ") " +
-                        "AND u.userId NOT IN (SELECT gm.user.userId FROM GroupMember gm WHERE gm.group.groupId = :groupId) "
-                        +
-                        "AND u.userId NOT IN (SELECT gm2.user.userId FROM GroupMember gm2 JOIN gm2.group g2 WHERE g2.academicClass.classId = :classId)")
+        @Query("SELECT DISTINCT u FROM User u " +
+                "JOIN ClassEnrollment ce ON ce.student.userId = u.userId " +
+                "WHERE ce.academicClass.classId = :classId " +
+                "AND LOWER(u.role.roleCode) = 'student' " +
+                "AND (:kw IS NULL OR :kw = '' OR " +
+                "LOWER(u.username) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
+                "LOWER(u.email) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
+                "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :kw, '%'))" +
+                ") " +
+                "AND u.userId NOT IN (" +
+                "   SELECT gm.user.userId " +
+                "   FROM GroupMember gm " +
+                "   JOIN gm.group g " +
+                "   WHERE g.academicClass.classId = :classId" +
+                ")")
         Page<User> searchEligibleStudentsForGroup(@Param("kw") String keyword,
-                        @Param("groupId") Long groupId,
-                        @Param("classId") Long classId,
-                        Pageable pageable);
+                                                  @Param("classId") Long classId,
+                                                  Pageable pageable);
 }

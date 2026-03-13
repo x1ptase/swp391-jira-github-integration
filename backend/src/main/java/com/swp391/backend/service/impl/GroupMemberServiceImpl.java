@@ -26,19 +26,22 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     private final UserRepository userRepository;
     private final MemberRoleRepository memberRoleRepository;
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
+    private final ClassEnrollmentRepository classEnrollmentRepository;
 
     public GroupMemberServiceImpl(
             GroupMemberRepository groupMemberRepository,
             StudentGroupRepository studentGroupRepository,
             UserRepository userRepository,
             MemberRoleRepository memberRoleRepository,
-            LecturerAssignmentRepository lecturerAssignmentRepository
+            LecturerAssignmentRepository lecturerAssignmentRepository,
+            ClassEnrollmentRepository classEnrollmentRepository
     ) {
         this.groupMemberRepository = groupMemberRepository;
         this.studentGroupRepository = studentGroupRepository;
         this.userRepository = userRepository;
         this.memberRoleRepository = memberRoleRepository;
         this.lecturerAssignmentRepository = lecturerAssignmentRepository;
+        this.classEnrollmentRepository = classEnrollmentRepository;
     }
 
     @Override
@@ -50,12 +53,15 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         User student = requireUser(studentId);
         requireStudentRole(student);
 
-        // already in this group?
+        if (!classEnrollmentRepository.existsByAcademicClass_ClassIdAndStudent_UserId(
+                group.getAcademicClass().getClassId(), studentId)) {
+            throw new BusinessException("Student has not joined this class.", 400);
+        }
+
         if (groupMemberRepository.existsByGroup_GroupIdAndUser_UserId(groupId, studentId)) {
             throw new BusinessException("Student already in this group.", 409);
         }
 
-        // BR-01: 1 group per class
         if (groupMemberRepository.existsByUser_UserIdAndGroup_AcademicClass_ClassId(
                 studentId, group.getAcademicClass().getClassId()
         )) {
@@ -168,7 +174,6 @@ public class GroupMemberServiceImpl implements GroupMemberService {
 
         Page<User> page = userRepository.searchEligibleStudentsForGroup(
                 keyword,
-                groupId,
                 group.getAcademicClass().getClassId(),
                 pageable
         );
