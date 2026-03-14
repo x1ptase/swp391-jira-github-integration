@@ -5,6 +5,6 @@ import com.swp391.backend.entity.StudentGroup;
 import java.util.List;
 
 public interface LecturerAssignmentService {
-    void assignLecturer(Long groupId, Long lecturerId);
+    void assignLecturer(Long classId, Long lecturerId);
     List<StudentGroup> getAssignedGroupsForCurrentLecturer();
 }

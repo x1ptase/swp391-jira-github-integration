@@ -1,19 +1,14 @@
 package com.swp391.backend.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class CreateGroupRequest {
-    @NotBlank
-    private String classCode;
+    @NotNull
+    private Long classId;
 
     @NotBlank
     private String groupName;
-
-    @NotBlank
-    private String courseCode;
-
-    @NotBlank
-    private String semester;
 }

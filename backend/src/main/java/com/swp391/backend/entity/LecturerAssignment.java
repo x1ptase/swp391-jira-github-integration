@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 public class LecturerAssignment {
 
     @Id
-    @Column(name = "group_id")
-    private Long groupId;
+    @Column(name = "class_id", nullable = false)
+    private Long classId;
 
     @Column(name = "lecturer_id", nullable = false)
     private Long lecturerId;
@@ -27,4 +27,3 @@ public class LecturerAssignment {
     }
 
 }
-

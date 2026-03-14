@@ -71,12 +71,11 @@ public class GlobalExceptionHandler {
             msg = "";
         }
 
-        // BR-01: Each student may join at most one group in the same course and
-        // semester
+        // BR-01: Each student may join at most one group in the same class
         if (containsIgnoreCase(msg, "UQ_OneGroupPerStudentPerTerm")) {
             return ResponseEntity.status(409)
                     .body(ApiResponse.error(409,
-                            "BR-01 violated: Each student may join at most one group in the same course and semester."));
+                            "BR-01 violated: Each student may join at most one group in the same class."));
         }
 
         // BR-02: each group has at most 1 leader
