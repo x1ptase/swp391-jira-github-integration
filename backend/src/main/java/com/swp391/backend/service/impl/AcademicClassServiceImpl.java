@@ -2,8 +2,15 @@ package com.swp391.backend.service.impl;
 
 import com.swp391.backend.dto.response.AcademicClassResponse;
 import com.swp391.backend.entity.AcademicClass;
+import com.swp391.backend.entity.Course;
+import com.swp391.backend.entity.Semester;
 import com.swp391.backend.repository.AcademicClassRepository;
+import com.swp391.backend.repository.CourseRepository;
+import com.swp391.backend.repository.LecturerAssignmentRepository;
+import com.swp391.backend.repository.SemesterRepository;
+import com.swp391.backend.repository.StudentGroupRepository;
 import com.swp391.backend.service.AcademicClassService;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -12,18 +19,107 @@ import org.springframework.stereotype.Service;
 public class AcademicClassServiceImpl implements AcademicClassService {
 
     private final AcademicClassRepository academicClassRepository;
+    private final CourseRepository courseRepository;
+    private final SemesterRepository semesterRepository;
+    private final LecturerAssignmentRepository lecturerAssignmentRepository;
+    private final StudentGroupRepository studentGroupRepository;
 
-    public AcademicClassServiceImpl(AcademicClassRepository academicClassRepository) {
+    public AcademicClassServiceImpl(
+            AcademicClassRepository academicClassRepository,
+            CourseRepository courseRepository,
+            SemesterRepository semesterRepository,
+            LecturerAssignmentRepository lecturerAssignmentRepository,
+            StudentGroupRepository studentGroupRepository
+    ) {
         this.academicClassRepository = academicClassRepository;
+        this.courseRepository = courseRepository;
+        this.semesterRepository = semesterRepository;
+        this.lecturerAssignmentRepository = lecturerAssignmentRepository;
+        this.studentGroupRepository = studentGroupRepository;
     }
 
+    // SEARCH CLASS
     @Override
     public Page<AcademicClassResponse> searchClasses(String keyword, String courseCode, String semesterCode, Pageable pageable) {
         Page<AcademicClass> page = academicClassRepository.searchClasses(keyword, courseCode, semesterCode, pageable);
-
         return page.map(this::toResponse);
     }
 
+    // CREATE CLASS
+    @Override
+    public AcademicClassResponse createClass(String classCode, Long courseId, Long semesterId) {
+
+        if (academicClassRepository.findByClassCode(classCode).isPresent()) {
+            throw new RuntimeException("Class code already exists");
+        }
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        Semester semester = semesterRepository.findById(semesterId)
+                .orElseThrow(() -> new RuntimeException("Semester not found"));
+
+        AcademicClass c = new AcademicClass();
+        c.setClassCode(classCode);
+        c.setCourse(course);
+        c.setSemester(semester);
+
+        academicClassRepository.save(c);
+
+        return toResponse(c);
+    }
+
+    // GET CLASS DETAIL
+    @Override
+    public AcademicClassResponse getClass(Long id) {
+
+        AcademicClass c = academicClassRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        return toResponse(c);
+    }
+
+    // UPDATE CLASS
+    @Override
+    public AcademicClassResponse updateClass(Long id, String classCode, Long courseId, Long semesterId) {
+
+        AcademicClass c = academicClassRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        Semester semester = semesterRepository.findById(semesterId)
+                .orElseThrow(() -> new RuntimeException("Semester not found"));
+
+        c.setClassCode(classCode);
+        c.setCourse(course);
+        c.setSemester(semester);
+
+        academicClassRepository.save(c);
+
+        return toResponse(c);
+    }
+
+    // DELETE CLASS
+    @Override
+    public void deleteClass(Long id) {
+
+        AcademicClass c = academicClassRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        if (lecturerAssignmentRepository.existsByClassId(id)) {
+            throw new RuntimeException("Cannot delete class because lecturer assigned");
+        }
+
+        if (studentGroupRepository.existsByAcademicClass_ClassId(id)) {
+            throw new RuntimeException("Cannot delete class because student groups exist");
+        }
+
+        academicClassRepository.delete(c);
+    }
+
+    // CONVERT ENTITY -> RESPONSE
     private AcademicClassResponse toResponse(AcademicClass c) {
         return new AcademicClassResponse(
                 c.getClassId(),
