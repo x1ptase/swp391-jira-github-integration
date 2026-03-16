@@ -1,5 +1,0 @@
-$kind: http-request
-name: login
-url: ""
-method: GET
-order: 1773568003166
