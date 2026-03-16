@@ -47,6 +47,15 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
             throw new BusinessException("Class not found: " + classId, 404);
         }
 
+        // nếu lecturerId = null => unassign
+        if (lecturerId == null) {
+            Optional<LecturerAssignment> existing = lecturerAssignmentRepository.findById(classId);
+            if (existing.isPresent()) {
+                lecturerAssignmentRepository.delete(existing.get());
+            }
+            return;
+        }
+
         // validate lecturer exists + role is LECTURER
         Optional<User> lectOpt = userRepository.findById(lecturerId);
         if (!lectOpt.isPresent()) {
