@@ -190,6 +190,7 @@ function AdminGroupManagement() {
     if (res.ok) {
       alert("Member removed successfully!");
       await fetchMembers(selectedGroup.groupId);
+      await fetchEligibleStudents(selectedGroup.groupId);
     } else {
       const err = await res.json();
       alert("Failed to remove member: " + (err.message || "Unknown error"));

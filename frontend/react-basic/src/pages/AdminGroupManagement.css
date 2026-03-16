@@ -558,6 +558,7 @@
 .add-member-section {
   border-top: 1px solid var(--border);
   padding-top: var(--spacing-2xl);
+  text-align: center;
 }
 
 .search-input {
@@ -629,6 +630,10 @@
   .modal-content {
     max-width: 90%;
   }
+}
+
+.members-section{
+  text-align: center;
 }
 
 @media (max-width: 768px) {
