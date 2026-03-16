@@ -20,12 +20,12 @@ public class LecturerAssignmentController {
         this.lecturerAssignmentService = lecturerAssignmentService;
     }
 
-    // Admin assign 1 lecturer for group
+    // Admin assign 1 lecturer for class
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/admin/groups/{groupId}/lecturer")
-    public ApiResponse<Object> assignLecturer(@PathVariable Long groupId,
+    @PutMapping("/admin/classes/{classId}/lecturer")
+    public ApiResponse<Object> assignLecturer(@PathVariable Long classId,
                                               @Valid @RequestBody AssignLecturerRequest req) {
-        lecturerAssignmentService.assignLecturer(groupId, req.getLecturerId());
+        lecturerAssignmentService.assignLecturer(classId, req.getLecturerId());
         return ApiResponse.success(null);
     }
 

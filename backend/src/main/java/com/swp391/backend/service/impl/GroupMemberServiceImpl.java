@@ -26,41 +26,46 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     private final UserRepository userRepository;
     private final MemberRoleRepository memberRoleRepository;
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
+    private final ClassEnrollmentRepository classEnrollmentRepository;
 
     public GroupMemberServiceImpl(
             GroupMemberRepository groupMemberRepository,
             StudentGroupRepository studentGroupRepository,
             UserRepository userRepository,
             MemberRoleRepository memberRoleRepository,
-            LecturerAssignmentRepository lecturerAssignmentRepository
+            LecturerAssignmentRepository lecturerAssignmentRepository,
+            ClassEnrollmentRepository classEnrollmentRepository
     ) {
         this.groupMemberRepository = groupMemberRepository;
         this.studentGroupRepository = studentGroupRepository;
         this.userRepository = userRepository;
         this.memberRoleRepository = memberRoleRepository;
         this.lecturerAssignmentRepository = lecturerAssignmentRepository;
+        this.classEnrollmentRepository = classEnrollmentRepository;
     }
 
     @Override
     public void addMember(Long groupId, Long studentId) {
-        User actor = currentUser();
-        requireCanManageGroup(actor, groupId);
-
         StudentGroup group = requireGroup(groupId);
+        User actor = currentUser();
+        requireCanManageGroup(actor, group);
+
         User student = requireUser(studentId);
         requireStudentRole(student);
 
-        // already in this group?
+        if (!classEnrollmentRepository.existsByAcademicClass_ClassIdAndStudent_UserId(
+                group.getAcademicClass().getClassId(), studentId)) {
+            throw new BusinessException("Student has not joined this class.", 400);
+        }
+
         if (groupMemberRepository.existsByGroup_GroupIdAndUser_UserId(groupId, studentId)) {
             throw new BusinessException("Student already in this group.", 409);
         }
 
-        // BR-01: 1 group per (course_code + semester)
-        if (groupMemberRepository.existsByUser_UserIdAndCourseCodeAndSemester(
-                studentId, group.getCourseCode(), group.getSemester()
+        if (groupMemberRepository.existsByUser_UserIdAndGroup_AcademicClass_ClassId(
+                studentId, group.getAcademicClass().getClassId()
         )) {
-            throw new BusinessException("BR-01 violated: This student already belongs to a group in "
-                    + group.getCourseCode() + " / " + group.getSemester(), 409);
+            throw new BusinessException("BR-01 violated: This student already belongs to a group in this class.", 409);
         }
 
         MemberRole memberRole = requireMemberRole("MEMBER");
@@ -70,16 +75,15 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         gm.setGroup(group);
         gm.setUser(student);
         gm.setMemberRole(memberRole);
-        gm.setCourseCode(group.getCourseCode());
-        gm.setSemester(group.getSemester());
 
         groupMemberRepository.save(gm);
     }
 
     @Override
     public void removeMember(Long groupId, Long studentId) {
+        StudentGroup group = requireGroup(groupId);
         User actor = currentUser();
-        requireCanManageGroup(actor, groupId);
+        requireCanManageGroup(actor, group);
 
         GroupMemberId id = new GroupMemberId(groupId, studentId);
         Optional<GroupMember> gmOpt = groupMemberRepository.findById(id);
@@ -92,11 +96,9 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     @Transactional
     @Override
     public void setLeader(Long groupId, Long studentId) {
+        StudentGroup group = requireGroup(groupId);
         User actor = currentUser();
-        requireCanManageGroup(actor, groupId);
-
-        // group exists
-        requireGroup(groupId);
+        requireCanManageGroup(actor, group);
 
         GroupMemberId id = new GroupMemberId(groupId, studentId);
         Optional<GroupMember> targetOpt = groupMemberRepository.findById(id);
@@ -127,7 +129,9 @@ public class GroupMemberServiceImpl implements GroupMemberService {
 
     @Override
     public List<GroupMemberResponse> listMembers(Long groupId) {
+        StudentGroup group = requireGroup(groupId);
         User actor = currentUser();
+        requireCanManageGroup(actor, group);
         if (actor == null) throw new BusinessException("Unauthorized", 401);
 
         String roleCode = actor.getRole() == null ? null : actor.getRole().getRoleCode();
@@ -137,7 +141,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
                 throw new BusinessException("Access denied. You are not a member of this group.", 403);
             }
         } else {
-            requireCanManageGroup(actor, groupId);
+            requireCanManageGroup(actor, group);
         }
 
         List<GroupMember> members = groupMemberRepository.findByGroup_GroupId(groupId);
@@ -164,16 +168,13 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         }
         keyword = keyword.trim();
 
-        User actor = currentUser();
-        requireCanManageGroup(actor, groupId);
-
         StudentGroup group = requireGroup(groupId);
+        User actor = currentUser();
+        requireCanManageGroup(actor, group);
 
         Page<User> page = userRepository.searchEligibleStudentsForGroup(
                 keyword,
-                groupId,
-                group.getCourseCode(),
-                group.getSemester(),
+                group.getAcademicClass().getClassId(),
                 pageable
         );
 
@@ -228,7 +229,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         }
     }
 
-    private void requireCanManageGroup(User actor, Long groupId) {
+    private void requireCanManageGroup(User actor, StudentGroup group) {
         if (actor == null) throw new BusinessException("Unauthorized", 401);
 
         String roleCode = actor.getRole() == null ? null : actor.getRole().getRoleCode();
@@ -239,9 +240,9 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         }
 
         if ("LECTURER".equalsIgnoreCase(roleCode)) {
-            boolean assigned = lecturerAssignmentRepository.existsByGroupIdAndLecturerId(groupId, actor.getUserId());
+            boolean assigned = lecturerAssignmentRepository.existsByClassIdAndLecturerId(group.getAcademicClass().getClassId(), actor.getUserId());
             if (!assigned) {
-                throw new BusinessException("Lecturer is not assigned to this group.", 403);
+                throw new BusinessException("Lecturer is not assigned to this class.", 403);
             }
             return;
         }

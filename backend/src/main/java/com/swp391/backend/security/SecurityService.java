@@ -3,6 +3,7 @@ package com.swp391.backend.security;
 import com.swp391.backend.entity.User;
 import com.swp391.backend.repository.GroupMemberRepository;
 import com.swp391.backend.repository.LecturerAssignmentRepository;
+import com.swp391.backend.repository.StudentGroupRepository;
 import com.swp391.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -16,6 +17,7 @@ public class SecurityService {
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
+    private final StudentGroupRepository studentGroupRepository;
 
     public Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -51,7 +53,9 @@ public class SecurityService {
         }
         // Lecturer assigned to group
         if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_LECTURER"))) {
-            return lecturerAssignmentRepository.existsByGroupIdAndLecturerId(groupId, userId);
+            return studentGroupRepository.findById(groupId)
+                    .map(group -> lecturerAssignmentRepository.existsByClassIdAndLecturerId(group.getAcademicClass().getClassId(), userId))
+                    .orElse(false);
         }
 
         // Student in group
@@ -76,7 +80,9 @@ public class SecurityService {
 
         // Lecturer assigned to group
         if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_LECTURER"))) {
-            return lecturerAssignmentRepository.existsByGroupIdAndLecturerId(groupId, userId);
+            return studentGroupRepository.findById(groupId)
+                    .map(group -> lecturerAssignmentRepository.existsByClassIdAndLecturerId(group.getAcademicClass().getClassId(), userId))
+                    .orElse(false);
         }
 
         // Student is Leader of the group
@@ -112,7 +118,9 @@ public class SecurityService {
         Long userId = getCurrentUserId();
         if (userId == null || groupId == null) return false;
 
-        return lecturerAssignmentRepository.existsByGroupIdAndLecturerId(groupId, userId);
+        return studentGroupRepository.findById(groupId)
+                .map(group -> lecturerAssignmentRepository.existsByClassIdAndLecturerId(group.getAcademicClass().getClassId(), userId))
+                .orElse(false);
     }
 
     @Deprecated

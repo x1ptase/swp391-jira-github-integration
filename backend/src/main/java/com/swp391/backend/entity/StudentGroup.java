@@ -18,24 +18,14 @@ public class StudentGroup {
     @Column(name="group_id" , nullable = false , updatable = false)
     private Long groupId;
 
-    @NotBlank
-    @JsonAlias("class_code")
-    @Column(name="class_code" , nullable = false , length = 50 )
-    private String classCode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id", nullable = false)
+    private AcademicClass academicClass;
 
     @NotBlank
     @JsonAlias("group_name")
     @Column(name="group_name" ,  nullable = false , length = 120 )
     private String groupName;
-
-    @NotBlank
-    @JsonAlias("course_code")
-    @Column(name="course_code" , nullable = false , length = 30)
-    private String courseCode;
-
-    @NotBlank
-    @Column(name="semester" , nullable = false , length = 30)
-    private String semester;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Column(name="created_at" , nullable = false  , updatable = false)
