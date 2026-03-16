@@ -1,0 +1,5 @@
+$kind: http-request
+name: getdetailclass
+url: ""
+method: GET
+order: 4491018739419143

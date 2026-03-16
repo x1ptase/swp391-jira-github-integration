@@ -1,0 +1,5 @@
+$kind: http-request
+name: academic
+url: ""
+method: GET
+order: 4489126595563852

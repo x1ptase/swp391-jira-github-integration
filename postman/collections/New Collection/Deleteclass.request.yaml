@@ -1,0 +1,5 @@
+$kind: http-request
+name: Deleteclass
+url: ""
+method: GET
+order: 4502741228231238
