@@ -7,7 +7,6 @@ import lombok.Setter;
 @Setter
 @Getter
 public class AssignLecturerRequest {
-    @NotNull
     private Long lecturerId;
 
     public AssignLecturerRequest() {
