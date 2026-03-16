@@ -34,6 +34,14 @@ public class SemesterServiceImpl implements SemesterService {
     @Override
     public Semester createSemester(String code, String name, LocalDate startDate, LocalDate endDate) {
 
+        if (semesterRepository.existsBySemesterCode(code)) {
+            throw new RuntimeException("Semester code already exists");
+        }
+
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            throw new RuntimeException("Start date must be before end date");
+        }
+
         Semester semester = new Semester();
         semester.setSemesterCode(code);
         semester.setSemesterName(name);
@@ -56,6 +64,10 @@ public class SemesterServiceImpl implements SemesterService {
 
         Semester semester = semesterRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Semester not found"));
+
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            throw new RuntimeException("Start date must be before end date");
+        }
 
         semester.setSemesterName(name);
         semester.setStartDate(startDate);
