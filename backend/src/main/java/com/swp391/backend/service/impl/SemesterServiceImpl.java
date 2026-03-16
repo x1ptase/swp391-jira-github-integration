@@ -38,6 +38,11 @@ public class SemesterServiceImpl implements SemesterService {
             throw new RuntimeException("Semester code already exists");
         }
 
+        // CHECK NGÀY QUÁ KHỨ
+        if (startDate != null && startDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Start date cannot be in the past");
+        }
+
         if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
             throw new RuntimeException("Start date must be before end date");
         }
@@ -64,6 +69,10 @@ public class SemesterServiceImpl implements SemesterService {
 
         Semester semester = semesterRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Semester not found"));
+
+        if (startDate != null && startDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Start date cannot be in the past");
+        }
 
         if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
             throw new RuntimeException("Start date must be before end date");
