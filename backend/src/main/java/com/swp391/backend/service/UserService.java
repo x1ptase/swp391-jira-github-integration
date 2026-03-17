@@ -2,6 +2,7 @@ package com.swp391.backend.service;
 
 
 import com.swp391.backend.dto.request.CreateUserRequest;
+import com.swp391.backend.dto.request.UpdateProfileRequest;
 import com.swp391.backend.dto.request.UpdateUserRequest;
 import com.swp391.backend.dto.response.UserResponse;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
         Page<UserResponse> listUsers(String keyword, Pageable pageable);
         Page<UserResponse> listUsers(String keyword, String roleCode, Pageable pageable);
         void deleteUser(Long userId);
+        UserResponse updateProfile(UpdateProfileRequest request);
     }
 
 
