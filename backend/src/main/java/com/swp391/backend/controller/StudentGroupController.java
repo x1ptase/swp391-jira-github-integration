@@ -48,8 +48,9 @@ public class StudentGroupController {
     @PreAuthorize("hasAnyRole('ADMIN', 'LECTURER', 'STUDENT')")
     public ApiResponse<List<StudentGroupResponse>> listStudentGroups(
             @RequestParam(value = "course_code", required = false) String courseCode,
-            @RequestParam(value = "semester", required = false) String semester) {
-        return ApiResponse.success(studentGroupService.listStudentGroups(courseCode, semester));
+            @RequestParam(value = "semester", required = false) String semester,
+            @RequestParam(value = "class_id", required = false) Long classId) {
+        return ApiResponse.success(studentGroupService.listStudentGroups(courseCode, semester, classId));
     }
 
     @GetMapping("/me")

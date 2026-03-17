@@ -93,7 +93,11 @@ public class StudentGroupServiceImpl implements StudentGroupService {
     }
 
     @Override
-    public List<StudentGroupResponse> listStudentGroups(String courseCode, String semesterCode) {
+    public List<StudentGroupResponse> listStudentGroups(String courseCode, String semesterCode, Long classId) {
+        if (classId != null) {
+            return studentGroupRepository.findByAcademicClass_ClassId(classId)
+                    .stream().map(this::mapToResponse).collect(Collectors.toList());
+        }
         String normalizedCourseCode = StringUtils.hasText(courseCode) ? courseCode.trim() : null;
         String normalizedSemester = StringUtils.hasText(semesterCode) ? semesterCode.trim() : null;
 
