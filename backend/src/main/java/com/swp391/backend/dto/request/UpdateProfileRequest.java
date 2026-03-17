@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class UpdateProfileRequest {
+    private String email;
     private String githubUsername;
     private String jiraAccountId;
 }

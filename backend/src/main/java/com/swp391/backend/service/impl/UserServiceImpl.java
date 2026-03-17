@@ -216,6 +216,7 @@ public class UserServiceImpl implements UserService {
 
         String github = safeTrim(request.getGithubUsername());
         String jira = safeTrim(request.getJiraAccountId());
+        String email = safeTrim(request.getEmail());
 
         String oldGithub = user.getGithubUsername() == null ? "" : user.getGithubUsername();
         if (!github.isEmpty()
@@ -231,8 +232,16 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException("Jira account id already exists: " + jira, 409);
         }
 
+        String oldEmail = user.getEmail() == null ? "" : user.getEmail();
+        if (!email.isEmpty()
+                && !email.equalsIgnoreCase(oldEmail)
+                && userRepository.existsByEmailIgnoreCase(email)) {
+            throw new BusinessException("Email already exists: " + email, 409);
+        }
+
         user.setGithubUsername(github.isEmpty() ? null : github);
         user.setJiraAccountId(jira.isEmpty() ? null : jira);
+        user.setEmail(email.isEmpty() ? null : email);
 
         userRepository.save(user);
 
