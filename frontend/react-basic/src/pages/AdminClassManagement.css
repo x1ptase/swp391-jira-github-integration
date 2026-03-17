@@ -1,0 +1,156 @@
+.acm-root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  padding: 28px 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Page header */
+.acm-page-header { margin-bottom: 24px; }
+.acm-page-title { font-size: 22px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+.acm-page-desc { font-size: 13px; color: #94a3b8; margin: 0; }
+
+/* Card */
+.acm-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.acm-table-card { padding: 0; overflow: hidden; }
+.acm-card-title { font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 16px; }
+
+/* Form */
+.acm-form-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.acm-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 160px; }
+.acm-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+.acm-input, .acm-select {
+  padding: 8px 11px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+  font-size: 13px; color: #1e293b; background: #fff; outline: none;
+  transition: border-color 0.15s;
+}
+.acm-input:focus, .acm-select:focus { border-color: #6366f1; }
+.acm-disabled { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+.acm-form-error {
+  margin-top: 10px; padding: 8px 12px; background: #fef2f2;
+  border: 1px solid #fecaca; border-radius: 7px; color: #dc2626; font-size: 12px;
+}
+.acm-form-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+/* Filter bar */
+.acm-filter-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 12px 14px; background: #f8fafc;
+  border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 16px;
+}
+.acm-search-wrap {
+  display: flex; align-items: center; gap: 6px; flex: 1; min-width: 180px;
+  background: #fff; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 7px 10px;
+}
+.acm-search-wrap:focus-within { border-color: #6366f1; }
+.acm-search-input { border: none; outline: none; font-size: 13px; color: #1e293b; width: 100%; background: transparent; }
+.acm-select-sm { padding: 7px 10px; font-size: 13px; }
+
+/* Buttons */
+.acm-btn-primary {
+  padding: 8px 18px; background: #1e293b; color: #fff;
+  border: none; border-radius: 8px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background 0.15s;
+}
+.acm-btn-primary:hover { background: #0f172a; }
+.acm-btn-ghost {
+  padding: 8px 16px; background: #fff; color: #475569;
+  border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+}
+.acm-btn-ghost:hover { border-color: #94a3b8; color: #1e293b; }
+.acm-btn-sm { padding: 7px 14px; font-size: 12px; }
+
+/* Table */
+.acm-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
+.acm-table thead tr { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+.acm-table th {
+  padding: 10px 16px;
+  font-size: 11px; font-weight: 600; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+}
+.acm-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.1s; }
+.acm-table tbody tr:last-child { border-bottom: none; }
+.acm-table tbody tr:hover { background: #fafafa; }
+.acm-table td { padding: 12px 16px; vertical-align: middle; color: #1e293b; }
+.acm-td-num { color: #94a3b8; font-size: 12px; width: 40px; }
+.acm-empty-row { text-align: center; padding: 40px !important; color: #94a3b8; }
+.acm-loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 40px; color: #64748b; font-size: 13px; }
+
+/* Badges */
+.acm-course-badge {
+  display: inline-block; padding: 2px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; background: #eef2ff; color: #6366f1;
+  border: 1px solid #c7d2fe;
+}
+.acm-semester-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 5px;
+  font-size: 11px; font-weight: 600; background: #f1f5f9; color: #475569;
+  border: 1px solid #e2e8f0; margin-right: 6px;
+}
+.acm-semester-name { font-size: 12px; color: #94a3b8; }
+.acm-username { font-family: monospace; font-size: 12px; color: #64748b; }
+
+/* Action buttons */
+.acm-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.acm-btn-action {
+  padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  border: 1.5px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.acm-btn-edit { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+.acm-btn-edit:hover { border-color: #94a3b8; color: #1e293b; }
+.acm-btn-lecturer { background: #eff6ff; color: #3b82f6; border-color: #bfdbfe; }
+.acm-btn-lecturer:hover { background: #dbeafe; }
+.acm-btn-danger { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+.acm-btn-danger:hover { background: #fee2e2; }
+
+/* Modal */
+.acm-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 24px;
+}
+.acm-modal {
+  background: #fff; border-radius: 14px; width: 100%; max-width: 680px;
+  max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: acm-modal-in 0.18s ease;
+}
+@keyframes acm-modal-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+.acm-modal-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 18px 22px; border-bottom: 1px solid #f1f5f9;
+  position: sticky; top: 0; background: #fff;
+}
+.acm-modal-title { font-size: 15px; font-weight: 600; color: #1e293b; }
+.acm-modal-subtitle { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+.acm-modal-close {
+  background: none; border: none; font-size: 20px; color: #94a3b8;
+  cursor: pointer; padding: 2px 6px; border-radius: 4px; line-height: 1;
+}
+.acm-modal-close:hover { background: #f1f5f9; color: #1e293b; }
+.acm-modal-body { padding: 0; }
+
+/* Spinner */
+.acm-spinner {
+  width: 14px; height: 14px; border: 2px solid #e2e8f0;
+  border-top-color: #6366f1; border-radius: 50%;
+  animation: acm-spin 0.7s linear infinite; display: inline-block;
+}
+@keyframes acm-spin { to { transform: rotate(360deg); } }
+
+.acm-lecturer-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 500;
+  background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;
+}
+.acm-no-lecturer {
+  font-size: 12px; color: #94a3b8; font-style: italic;
+}

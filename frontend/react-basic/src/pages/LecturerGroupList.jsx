@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./LecturerGroupList.css";
 import { useNavigate } from "react-router-dom";
-const API_URL = "/api/lecturer/groups";
+const API_URL = "/api/lecturer/classes"; // Endpoint to get classes assigned to lecturer
 const MEMBER_API = "/api/groups";
 
 function LecturerGroupList() {
@@ -187,7 +187,7 @@ function LecturerGroupList() {
   if (loading) {
     return (
       <div className="lecturer-container">
-        <h3>My Assigned Groups</h3>
+        <h3>My Assigned Class</h3>
         <p>Loading...</p>
       </div>
     );
@@ -196,7 +196,7 @@ function LecturerGroupList() {
   if (error) {
     return (
       <div className="lecturer-container">
-        <h3>My Assigned Groups</h3>
+        <h3>My Assigned Class</h3>
         <p className="error">{error}</p>
       </div>
     );
@@ -204,14 +204,14 @@ function LecturerGroupList() {
 
   return (
     <div className="lecturer-container">
-      <h3>My Assigned Groups</h3>
-      <p className="subtitle">You are assigned to {groups.length} group(s)</p>
+      <h3>My Assigned Class</h3>
+      <p className="subtitle">You are assigned to {groups.length} class(es)</p>
 
       {groups.length === 0 ? (
         <div className="empty-state">
           <span className="empty-icon">📋</span>
-          <p>No groups assigned yet</p>
-          <p className="empty-hint">Contact your admin to assign you to groups</p>
+          <p>No classes assigned yet</p>
+          <p className="empty-hint">Contact your admin to assign you to classes</p>
         </div>
       ) : (
         <div className="groups-grid">

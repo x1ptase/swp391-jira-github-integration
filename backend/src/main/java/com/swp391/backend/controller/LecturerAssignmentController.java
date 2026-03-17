@@ -2,6 +2,7 @@ package com.swp391.backend.controller;
 
 import com.swp391.backend.common.ApiResponse;
 import com.swp391.backend.dto.request.AssignLecturerRequest;
+import com.swp391.backend.dto.response.AcademicClassResponse;
 import com.swp391.backend.entity.StudentGroup;
 import com.swp391.backend.service.LecturerAssignmentService;
 import jakarta.validation.Valid;
@@ -31,9 +32,9 @@ public class LecturerAssignmentController {
 
     // Lecturer chỉ xem các group được assign
     @PreAuthorize("hasRole('LECTURER')")
-    @GetMapping("/lecturer/groups")
-    public ApiResponse<List<StudentGroup>> myAssignedGroups() {
-        return ApiResponse.success(lecturerAssignmentService.getAssignedGroupsForCurrentLecturer());
+    @GetMapping("/lecturer/classes")
+    public ApiResponse<List<AcademicClassResponse>> myAssignedClasses() {
+        return ApiResponse.success(lecturerAssignmentService.getAssignedClassesForCurrentLecturer());
     }
 }
 

@@ -16,4 +16,6 @@ public class AcademicClassResponse {
     private Long semesterId;
     private String semesterCode;
     private String semesterName;
+    private Long lecturerId;
+    private String lecturerName;
 }

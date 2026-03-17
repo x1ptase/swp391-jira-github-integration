@@ -1,43 +1,42 @@
 package com.swp391.backend.service.impl;
 
+import com.swp391.backend.dto.response.AcademicClassResponse;
 import com.swp391.backend.entity.AcademicClass;
 import com.swp391.backend.entity.LecturerAssignment;
 
-import com.swp391.backend.entity.StudentGroup;
 import com.swp391.backend.entity.User;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.repository.AcademicClassRepository;
 import com.swp391.backend.repository.LecturerAssignmentRepository;
-import com.swp391.backend.repository.StudentGroupRepository;
 import com.swp391.backend.repository.UserRepository;
+import com.swp391.backend.service.AcademicClassService;
 import com.swp391.backend.service.LecturerAssignmentService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class LecturerAssignmentServiceImpl implements LecturerAssignmentService {
 
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
-    private final StudentGroupRepository studentGroupRepository;
     private final AcademicClassRepository academicClassRepository;
     private final UserRepository userRepository;
+    private final AcademicClassService academicClassService;
 
     public LecturerAssignmentServiceImpl(
             LecturerAssignmentRepository lecturerAssignmentRepository,
-            StudentGroupRepository studentGroupRepository,
             AcademicClassRepository academicClassRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            AcademicClassService academicClassService
     ) {
         this.lecturerAssignmentRepository = lecturerAssignmentRepository;
-        this.studentGroupRepository = studentGroupRepository;
         this.academicClassRepository = academicClassRepository;
         this.userRepository = userRepository;
+        this.academicClassService = academicClassService;
     }
 
     public void assignLecturer(Long classId, Long lecturerId) {
@@ -81,21 +80,14 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
         lecturerAssignmentRepository.save(la);
     }
 
-    public List<StudentGroup> getAssignedGroupsForCurrentLecturer() {
+    public List<AcademicClassResponse> getAssignedClassesForCurrentLecturer() {
         Long lecturerId = currentUserId();
-        if (lecturerId == null) {
-            throw new BusinessException("Unauthorized", 401);
-        }
+        if (lecturerId == null) throw new BusinessException("Unauthorized", 401);
 
-        List<LecturerAssignment> assigns = lecturerAssignmentRepository.findByLecturerId(lecturerId);
-        List<StudentGroup> result = new ArrayList<StudentGroup>();
-
-        for (int i = 0; i < assigns.size(); i++) {
-            LecturerAssignment a = assigns.get(i);
-            List<StudentGroup> classGroups = studentGroupRepository.findByAcademicClass_ClassId(a.getClassId());
-            result.addAll(classGroups);
-        }
-        return result;
+        return lecturerAssignmentRepository.findByLecturerId(lecturerId)
+                .stream()
+                .map(a -> academicClassService.getClass(a.getClassId()))
+                .collect(Collectors.toList());
     }
 
     private Long currentUserId() {

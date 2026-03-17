@@ -25,11 +25,18 @@ function AdminLayout() {
               <span>Users</span>
             </Link>
             <Link 
-              to="groups" 
-              className={`nav-item ${location.pathname.includes('groups') ? 'active' : ''}`}
+              to="classes" 
+              className={`nav-item ${location.pathname.includes('classes') ? 'active' : ''}`}
             >
               <span className="nav-icon">👥</span>
-              <span>Groups</span>
+              <span>Class</span>
+            </Link>
+            <Link 
+              to="semesters" 
+              className={`nav-item ${location.pathname.includes('semesters') ? 'active' : ''}`}
+            >
+              <span className="nav-icon">📅</span>
+              <span>Semesters</span>
             </Link>
           </nav>
         </div>
