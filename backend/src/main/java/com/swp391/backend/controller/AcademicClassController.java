@@ -2,6 +2,7 @@ package com.swp391.backend.controller;
 
 import com.swp391.backend.common.ApiResponse;
 import com.swp391.backend.dto.response.AcademicClassResponse;
+import com.swp391.backend.entity.AcademicClass;
 import com.swp391.backend.service.AcademicClassService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +18,7 @@ public class AcademicClassController {
         this.academicClassService = academicClassService;
     }
 
+    // SEARCH CLASS
     @GetMapping
     public ApiResponse<Page<AcademicClassResponse>> searchClasses(
             @RequestParam(required = false) String keyword,
@@ -29,5 +31,48 @@ public class AcademicClassController {
                 keyword, courseCode, semesterCode, PageRequest.of(page, size)
         );
         return ApiResponse.success(result);
+    }
+
+    // GET CLASS DETAIL
+    @GetMapping("/{id}")
+    public ApiResponse<AcademicClassResponse> getClass(@PathVariable Long id) {
+        return ApiResponse.success(academicClassService.getClass(id));
+    }
+
+    // CREATE CLASS (JSON BODY)
+    @PostMapping
+    public ApiResponse<AcademicClassResponse> createClass(
+            @RequestBody AcademicClass academicClass
+    ) {
+        return ApiResponse.success(
+                academicClassService.createClass(
+                        academicClass.getClassCode(),
+                        academicClass.getCourse().getCourseId(),
+                        academicClass.getSemester().getSemesterId()
+                )
+        );
+    }
+
+    // UPDATE CLASS (JSON BODY)
+    @PutMapping("/{id}")
+    public ApiResponse<AcademicClassResponse> updateClass(
+            @PathVariable Long id,
+            @RequestBody AcademicClass academicClass
+    ) {
+        return ApiResponse.success(
+                academicClassService.updateClass(
+                        id,
+                        academicClass.getClassCode(),
+                        academicClass.getCourse().getCourseId(),
+                        academicClass.getSemester().getSemesterId()
+                )
+        );
+    }
+
+    // DELETE CLASS
+    @DeleteMapping("/{id}")
+    public ApiResponse<String> deleteClass(@PathVariable Long id) {
+        academicClassService.deleteClass(id);
+        return ApiResponse.success("Class deleted successfully");
     }
 }

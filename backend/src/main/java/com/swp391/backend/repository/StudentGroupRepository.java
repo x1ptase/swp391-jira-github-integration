@@ -26,6 +26,8 @@ public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long
     @EntityGraph(attributePaths = {"academicClass", "academicClass.course", "academicClass.semester"})
     List<StudentGroup> findByGroupId(Long groupId);
 
+    boolean existsByAcademicClass_ClassId(Long classId);
+
     boolean existsByAcademicClass_ClassCodeAndGroupIdNot(String classCode, Long groupId);
 
     boolean existsByAcademicClass_ClassIdAndGroupName(Long classId, String groupName);

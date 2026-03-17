@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface SemesterRepository extends JpaRepository<Semester, Long> {
     Optional<Semester> findBySemesterCode(String semesterCode);
+    boolean existsBySemesterCode(String semesterCode);
 }

@@ -9,4 +9,5 @@ import java.util.List;
 public interface LecturerAssignmentRepository extends JpaRepository<LecturerAssignment, Long> {
     List<LecturerAssignment> findByLecturerId(Long lecturerId);
     boolean existsByClassIdAndLecturerId(Long classId, Long lecturerId);
+    boolean existsByClassId(Long classId);
 }

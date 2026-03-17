@@ -1,6 +1,7 @@
 package com.swp391.backend.repository;
 
 import com.swp391.backend.entity.AcademicClass;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -15,6 +16,8 @@ import java.util.Optional;
 public interface AcademicClassRepository extends JpaRepository<AcademicClass, Long> {
     Optional<AcademicClass> findByClassCode(String classCode);
     List<AcademicClass> findByCourse_CourseCodeAndSemester_SemesterCode(String courseCode, String semesterCode);
+
+    @EntityGraph(attributePaths = {"course","semester"})
 
     @Query("SELECT c FROM AcademicClass c " +
             "WHERE (:kw IS NULL OR :kw = '' OR LOWER(c.classCode) LIKE LOWER(CONCAT('%', :kw, '%'))) " +
