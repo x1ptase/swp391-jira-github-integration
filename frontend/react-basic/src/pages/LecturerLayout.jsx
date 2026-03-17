@@ -22,7 +22,7 @@ function LecturerLayout() {
               className={`nav-item ${location.pathname.includes('groups') ? 'active' : ''}`}
             >
               <span className="nav-icon">👥</span>
-              My Groups
+              My Class
             </Link>
           </nav>
         </div>

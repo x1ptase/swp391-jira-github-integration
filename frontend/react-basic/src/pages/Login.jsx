@@ -24,7 +24,7 @@ function Login() {
 
       // Lưu token + thông tin cơ bản
       // role ở đây là system role: STUDENT  LECTURER  ADMIN
-      // memberRole (LEADER/MEMBER) KHÔNG có trong login response vì nó là role trong từng group cụ thể, check riêng khi vào group
+      // memberRole (LEADER/MEMBER) KHÔNG có trong login response 
       // nó là role trong từng group cụ thể, check riêng khi vào group
       const token = data.data.token;
       const role = data.data.role;          // STUDENT LECTURER  ADMIN

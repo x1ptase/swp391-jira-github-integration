@@ -23,14 +23,14 @@ public class StudentGroupController {
     }
 
     @PostMapping("/add")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('LECTURER')")
     public ApiResponse<StudentGroupResponse> createStudentGroup(@Valid @RequestBody CreateGroupRequest request) {
         StudentGroupResponse stu = studentGroupService.addStudentGroup(request);
         return ApiResponse.success(stu);
     }
 
     @PutMapping("/update/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('LECTURER')")
     public ApiResponse<StudentGroupResponse> updateStudentGroup(@Valid @RequestBody StudentGroup studentGroup,
             @PathVariable Long id) {
         StudentGroupResponse stu = studentGroupService.updateStudentGroup(studentGroup, id);
@@ -38,7 +38,7 @@ public class StudentGroupController {
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('LECTURER')")
     public ApiResponse<StudentGroupResponse> deleteStudentGroup(@PathVariable Long id) {
         StudentGroupResponse stu = studentGroupService.deleteStudentGroup(id);
         return ApiResponse.success(stu);

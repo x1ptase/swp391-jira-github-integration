@@ -1,14 +1,8 @@
 package com.swp391.backend.service.impl;
 
 import com.swp391.backend.dto.response.AcademicClassResponse;
-import com.swp391.backend.entity.AcademicClass;
-import com.swp391.backend.entity.Course;
-import com.swp391.backend.entity.Semester;
-import com.swp391.backend.repository.AcademicClassRepository;
-import com.swp391.backend.repository.CourseRepository;
-import com.swp391.backend.repository.LecturerAssignmentRepository;
-import com.swp391.backend.repository.SemesterRepository;
-import com.swp391.backend.repository.StudentGroupRepository;
+import com.swp391.backend.entity.*;
+import com.swp391.backend.repository.*;
 import com.swp391.backend.service.AcademicClassService;
 
 import org.springframework.data.domain.Page;
@@ -23,19 +17,22 @@ public class AcademicClassServiceImpl implements AcademicClassService {
     private final SemesterRepository semesterRepository;
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
     private final StudentGroupRepository studentGroupRepository;
+    private final UserRepository userRepository;
 
     public AcademicClassServiceImpl(
             AcademicClassRepository academicClassRepository,
             CourseRepository courseRepository,
             SemesterRepository semesterRepository,
             LecturerAssignmentRepository lecturerAssignmentRepository,
-            StudentGroupRepository studentGroupRepository
+            StudentGroupRepository studentGroupRepository,
+            UserRepository userRepository
     ) {
         this.academicClassRepository = academicClassRepository;
         this.courseRepository = courseRepository;
         this.semesterRepository = semesterRepository;
         this.lecturerAssignmentRepository = lecturerAssignmentRepository;
         this.studentGroupRepository = studentGroupRepository;
+        this.userRepository = userRepository;
     }
 
     // SEARCH CLASS
@@ -121,6 +118,11 @@ public class AcademicClassServiceImpl implements AcademicClassService {
 
     // CONVERT ENTITY -> RESPONSE
     private AcademicClassResponse toResponse(AcademicClass c) {
+        var assignment = lecturerAssignmentRepository.findByClassId(c.getClassId());
+        Long lecturerId = assignment.map(LecturerAssignment::getLecturerId).orElse(null);
+        String lecturerName = lecturerId != null
+                ? userRepository.findById(lecturerId).map(User::getFullName).orElse(null)
+                : null;
         return new AcademicClassResponse(
                 c.getClassId(),
                 c.getClassCode(),
@@ -129,7 +131,9 @@ public class AcademicClassServiceImpl implements AcademicClassService {
                 c.getCourse() != null ? c.getCourse().getCourseName() : null,
                 c.getSemester() != null ? c.getSemester().getSemesterId() : null,
                 c.getSemester() != null ? c.getSemester().getSemesterCode() : null,
-                c.getSemester() != null ? c.getSemester().getSemesterName() : null
+                c.getSemester() != null ? c.getSemester().getSemesterName() : null,
+                lecturerId,
+                lecturerName
         );
     }
 }

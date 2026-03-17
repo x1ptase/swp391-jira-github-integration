@@ -126,7 +126,7 @@ function JiraConfig() {
 
   return (
     <div className="jc-root">
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="jc-header">
         <div className="jc-header-left">
           <div className="jc-logo">
@@ -150,7 +150,7 @@ function JiraConfig() {
         )}
       </div>
 
-      {/* ── Alerts ── */}
+      {/* Alerts */}
       {error && (
         <div className="jc-alert jc-alert-error">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -181,7 +181,7 @@ function JiraConfig() {
         </div>
       )}
 
-      {/* ── Read mode ── */}
+      {/* Read mode */}
       {config && !isEditing && (
         <div className="jc-config-display">
           <div className="jc-config-grid">
@@ -248,7 +248,7 @@ function JiraConfig() {
         </div>
       )}
 
-      {/* ── Edit / Create form ── */}
+      {/* Edit / Create form */}
       {(isEditing || !config) && (
         <form className="jc-form" onSubmit={handleSubmit}>
           <div className="jc-form-grid">
@@ -375,7 +375,7 @@ function JiraConfig() {
         </form>
       )}
 
-      {/* ── Security note ── */}
+      {/* Security note */}
       {config && (
         <div className="jc-security-section">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -385,7 +385,7 @@ function JiraConfig() {
         </div>
       )}
 
-      {/* ── Sub-components ── */}
+      {/* Sub-components */}
       {config && hasToken && <JiraIssuesPreview groupId={groupId} />}
       {config && hasToken && <RequirementDashboard groupId={groupId} />}
     </div>

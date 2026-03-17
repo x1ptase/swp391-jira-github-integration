@@ -1,7 +1,7 @@
 // src/App.jsx
 import Login from './pages/Login';
 import AdminUserManagement from './pages/AdminUserManagement';
-import AdminGroupManagement from './pages/AdminGroupManagement';
+import AdminClassManagement from './pages/AdminClassManagement';
 import AdminLayout from './pages/AdminLayout';
 import LecturerLayout from './pages/LecturerLayout';
 import LecturerGroupList from './pages/LecturerGroupList';
@@ -12,6 +12,7 @@ import JiraIssuesPreview from "./pages/JiraIssuesPreview";
 import LecturerGroupStats from "./pages/LecturerGroupStats";
 import LeaderDashboard from "./pages/LeaderDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
+import AdminSemesterManagement from "./pages/AdminSemesterManagement";
 
 
 function App() {
@@ -26,9 +27,10 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="users" replace />} />
           <Route path="users" element={<AdminUserManagement />} />
-          <Route path="groups" element={<AdminGroupManagement />} />
-          <Route path="groups/:groupId/github-config" element={<GitHubConfig />} />
-          <Route path="groups/:groupId/jira-config" element={<JiraConfig />} />
+          <Route path="classes" element={<AdminClassManagement />} />
+          <Route path="classes/:classId/github-config" element={<GitHubConfig />} />
+          <Route path="classes/:classId/jira-config" element={<JiraConfig />} />
+          <Route path="semesters" element={<AdminSemesterManagement />} />
         </Route>
 
         {/* Lecturer */}
