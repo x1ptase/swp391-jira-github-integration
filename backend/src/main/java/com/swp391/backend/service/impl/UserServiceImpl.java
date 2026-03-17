@@ -1,6 +1,7 @@
 package com.swp391.backend.service.impl;
 
 import com.swp391.backend.dto.request.CreateUserRequest;
+import com.swp391.backend.dto.request.UpdateProfileRequest;
 import com.swp391.backend.dto.request.UpdateUserRequest;
 import com.swp391.backend.dto.response.UserResponse;
 import com.swp391.backend.entity.Role;
@@ -13,6 +14,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +50,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new BusinessException("Username already exists: " + username, 409);
         }
-        if (userRepository.existsByEmailIgnoreCase(email)) {
+        if (!email.isEmpty() && userRepository.existsByEmailIgnoreCase(email)) {
             throw new BusinessException("Email already exists: " + email, 409);
         }
         if (!githubUsername.isEmpty() && userRepository.existsByGithubUsernameIgnoreCase(githubUsername)) {
@@ -69,7 +72,7 @@ public class UserServiceImpl implements UserService {
 
         User user = new User();
         user.setUsername(username);
-        user.setEmail(email);
+        user.setEmail(email.isEmpty() ? null : email);
         user.setFullName(fullName);
         user.setGithubUsername(githubUsername.isEmpty() ? null : githubUsername);
         user.setJiraAccountId(jiraAccountId.isEmpty() ? null : jiraAccountId);
@@ -94,7 +97,11 @@ public class UserServiceImpl implements UserService {
         String newGithub = safeTrim(request.getGithubUsername());
         String newJira = safeTrim(request.getJiraAccountId());
 
-        if (!newEmail.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmailIgnoreCase(newEmail)) {
+        String oldEmail = user.getEmail() == null ? "" : user.getEmail();
+
+        if (!newEmail.isEmpty() &&
+                !newEmail.equalsIgnoreCase(oldEmail) &&
+                userRepository.existsByEmailIgnoreCase(newEmail)) {
             throw new BusinessException("Email already exists: " + newEmail, 409);
         }
 
@@ -113,8 +120,7 @@ public class UserServiceImpl implements UserService {
         }
 
         Role role = getRoleOrThrow(newRoleCode);
-
-        user.setEmail(newEmail);
+        user.setEmail(newEmail.isEmpty() ? null : newEmail);
         user.setFullName(newFullName);
         user.setRole(role);
         user.setGithubUsername(newGithub.isEmpty() ? null : newGithub);
@@ -144,7 +150,7 @@ public class UserServiceImpl implements UserService {
         if (keyword != null) {
             keyword = keyword.trim();
             if (keyword.isEmpty()) {
-                keyword = null;   // coi như không search
+                keyword = null;
             }
         }
 
@@ -204,5 +210,50 @@ public class UserServiceImpl implements UserService {
     private String safeTrim(String s) {
         if (s == null) return "";
         return s.trim();
+    }
+    public UserResponse updateProfile(UpdateProfileRequest request) {
+        User user = getCurrentUser();
+
+        String github = safeTrim(request.getGithubUsername());
+        String jira = safeTrim(request.getJiraAccountId());
+
+        String oldGithub = user.getGithubUsername() == null ? "" : user.getGithubUsername();
+        if (!github.isEmpty()
+                && !github.equalsIgnoreCase(oldGithub)
+                && userRepository.existsByGithubUsernameIgnoreCase(github)) {
+            throw new BusinessException("Github username already exists: " + github, 409);
+        }
+
+        String oldJira = user.getJiraAccountId() == null ? "" : user.getJiraAccountId();
+        if (!jira.isEmpty()
+                && !jira.equalsIgnoreCase(oldJira)
+                && userRepository.existsByJiraAccountIdIgnoreCase(jira)) {
+            throw new BusinessException("Jira account id already exists: " + jira, 409);
+        }
+
+        user.setGithubUsername(github.isEmpty() ? null : github);
+        user.setJiraAccountId(jira.isEmpty() ? null : jira);
+
+        userRepository.save(user);
+
+        return toResponse(user);
+    }
+
+
+    private User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        String username;
+
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else {
+            username = principal.toString();
+        }
+
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException("User not found", 404));
     }
 }
