@@ -29,7 +29,7 @@ function AdminLayout() {
               className={`nav-item ${location.pathname.includes('classes') ? 'active' : ''}`}
             >
               <span className="nav-icon">👥</span>
-              <span>Class</span>
+              <span>Classes</span>
             </Link>
             <Link 
               to="semesters" 
