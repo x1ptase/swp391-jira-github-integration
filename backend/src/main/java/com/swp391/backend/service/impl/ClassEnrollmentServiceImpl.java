@@ -57,6 +57,13 @@ public class ClassEnrollmentServiceImpl implements ClassEnrollmentService {
             throw new BusinessException("You already enrolled in this class.", 409);
         }
 
+        boolean alreadyInAnotherClass =
+                classEnrollmentRepository.existsByStudent_UserId(student.getUserId());
+
+        if (alreadyInAnotherClass) {
+            throw new BusinessException("You already enrolled in another class.", 409);
+        }
+
         ClassEnrollment enrollment = new ClassEnrollment();
         enrollment.setId(new ClassEnrollmentId(classId, student.getUserId()));
         enrollment.setAcademicClass(academicClass);
