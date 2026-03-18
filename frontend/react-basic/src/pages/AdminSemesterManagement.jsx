@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import "./AdminSemesterManagement.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const SEMESTER_API = "/api/semesters";
 
@@ -12,6 +14,14 @@ export default function AdminSemesterManagement() {
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
   const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
+  const parseDate = (str) => str ? new Date(str) : null;
+  const formatISO = (date) => {
+    if (!date) return "";
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
 
   useEffect(() => { fetchSemesters(); }, []);
 
@@ -26,7 +36,10 @@ export default function AdminSemesterManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
-    if (form.startDate && form.endDate && form.startDate > form.endDate) {
+    const start = parseLocalDate(form.startDate);
+    const end = parseLocalDate(form.endDate);
+
+    if (start && end && start > end) {
       setFormError("End date must be after start date");
       return;
     }
@@ -67,13 +80,28 @@ export default function AdminSemesterManagement() {
     setFormError("");
   };
 
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString("vi-VN") : "—";
-
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "—";
+    const [y, m, d] = dateStr.split("-");
+    return `${d}/${m}/${y}`;
+  };
+  const parseLocalDate = (dateStr) => {
+    if (!dateStr) return null;
+    const [y, m, d] = dateStr.split("-");
+    return new Date(y, m - 1, d);
+  };
   const getStatus = (s) => {
     if (!s.startDate || !s.endDate) return null;
-    const now = new Date(); 
-    const start = new Date(s.startDate); 
-    const end = new Date(s.endDate);
+
+    const now = new Date();
+    const start = parseLocalDate(s.startDate);
+    const end = parseLocalDate(s.endDate);
+
+    // reset giờ về 00:00 cho chắc
+    now.setHours(0, 0, 0, 0);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+
     if (now < start) return { label: "Upcoming", cls: "asm-status-upcoming" };
     if (now > end) return { label: "Ended", cls: "asm-status-ended" };
     return { label: "Active", cls: "asm-status-active" };
@@ -114,22 +142,28 @@ export default function AdminSemesterManagement() {
             </div>
             <div className="asm-field">
               <label className="asm-label">Start Date</label>
-              <input
+              <DatePicker
                 className="asm-input"
-                type="date"
-                value={form.startDate}
-                onChange={e => setForm({ ...form, startDate: e.target.value })}
+                selected={parseDate(form.startDate)}
+                onChange={date => setForm({ ...form, startDate: formatISO(date) })}
+                dateFormat="dd/MM/yyyy"
+                maxDate={parseDate(form.endDate)}
+                placeholderText="dd/mm/yyyy"
+                isClearable
               />
             </div>
             <div className="asm-field">
               <label className="asm-label">End Date</label>
-              <input
+              <DatePicker
                 className="asm-input"
-                type="date"
-                value={form.endDate}
-                onChange={e => setForm({ ...form, endDate: e.target.value })}
+                selected={parseDate(form.endDate)}
+                onChange={date => setForm({ ...form, endDate: formatISO(date) })}
+                dateFormat="dd/MM/yyyy"
+                minDate={parseDate(form.startDate)}
+                placeholderText="dd/mm/yyyy"
+                isClearable
               />
-            </div>
+            </div>  
           </div>
           {formError && <div className="asm-form-error">{formError}</div>}
           <div className="asm-form-actions">

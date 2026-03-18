@@ -14,7 +14,7 @@ function AdminLayout() {
     <div className="layout">
       <aside className="sidebar">
         <div>
-          <h2 className="logo">Admin Panel</h2>
+          <h2 className="logo">Jira & GitHub Tool Support</h2>
 
           <nav className="nav-menu">
             <Link 
@@ -29,7 +29,7 @@ function AdminLayout() {
               className={`nav-item ${location.pathname.includes('classes') ? 'active' : ''}`}
             >
               <span className="nav-icon">👥</span>
-              <span>Class</span>
+              <span>Classes</span>
             </Link>
             <Link 
               to="semesters" 
