@@ -132,18 +132,20 @@ export default function LeaderDashboard() {
         {activeTab === "members" && <GroupMemberList groupId={groupId} />}
         {activeTab === "mywork" && <MyWork groupId={groupId} />}
         {activeTab === "github" && (
-          <>
-            {isLeader && <GitHubConfig />}
-            <GitHubCommitPreview groupId={groupId} />
-            <CommitStats groupId={groupId} />
-          </>
+          isLeader
+            ? <GitHubConfig />
+            : <>
+              <GitHubCommitPreview groupId={groupId} />
+              <CommitStats groupId={groupId} />
+            </>
         )}
         {activeTab === "jira" && (
-          <>
-            {isLeader && <JiraConfig />}
-            <JiraIssuesPreview groupId={groupId} />
-            <RequirementDashboard groupId={groupId} />
-          </>
+          isLeader
+            ? <JiraConfig />
+            : <>
+              <JiraIssuesPreview groupId={groupId} />
+              <RequirementDashboard groupId={groupId} />
+            </>
         )}
       </div>
     </div>
