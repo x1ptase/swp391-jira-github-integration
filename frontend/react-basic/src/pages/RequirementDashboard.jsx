@@ -165,9 +165,8 @@ function RequirementDashboard({ groupId }) {
 
           <select className="rd-select" value={statusId} onChange={(e) => setStatusId(e.target.value)}>
             <option value="">All Statuses</option>
-            <option value="1">TODO</option>
-            <option value="2">IN PROGRESS</option>
-            <option value="3">DONE</option>
+            <option value="1">ACTIVE</option>
+            <option value="2">DONE</option>
           </select>
 
           <select className="rd-select" value={priorityId} onChange={(e) => setPriorityId(e.target.value)}>
