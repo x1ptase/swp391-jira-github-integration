@@ -131,24 +131,19 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     public List<GroupMemberResponse> listMembers(Long groupId) {
         StudentGroup group = requireGroup(groupId);
         User actor = currentUser();
-        requireCanManageGroup(actor, group);
         if (actor == null) throw new BusinessException("Unauthorized", 401);
 
         String roleCode = actor.getRole() == null ? null : actor.getRole().getRoleCode();
         if ("STUDENT".equalsIgnoreCase(roleCode)) {
             boolean isMember = groupMemberRepository.existsByGroup_GroupIdAndUser_UserId(groupId, actor.getUserId());
-            if (!isMember) {
-                throw new BusinessException("Access denied. You are not a member of this group.", 403);
-            }
+            if (!isMember) throw new BusinessException("Access denied.", 403);
         } else {
             requireCanManageGroup(actor, group);
         }
 
         List<GroupMember> members = groupMemberRepository.findByGroup_GroupId(groupId);
-        List<GroupMemberResponse> result = new ArrayList<GroupMemberResponse>();
-
-        for (int i = 0; i < members.size(); i++) {
-            GroupMember gm = members.get(i);
+        List<GroupMemberResponse> result = new ArrayList<>();
+        for (GroupMember gm : members) {
             GroupMemberResponse r = new GroupMemberResponse();
             r.setUserId(gm.getUser().getUserId());
             r.setUsername(gm.getUser().getUsername());
@@ -157,7 +152,6 @@ public class GroupMemberServiceImpl implements GroupMemberService {
             r.setMemberRole(gm.getMemberRole() == null ? null : gm.getMemberRole().getCode());
             result.add(r);
         }
-
         return result;
     }
 

@@ -185,7 +185,7 @@ export default function StudentDashboard() {
                   </div>
                   <div className="sgl-card-row">
                     <span className="sgl-card-label">Semester</span>
-                    <span className="sgl-card-val">{g.semester || "—"}</span>
+                    <span className="sgl-card-val">{g.semesterCode || "—"}</span>
                   </div>
                   <div className="sgl-card-row">
                     <span className="sgl-card-label">Lecturer</span>
