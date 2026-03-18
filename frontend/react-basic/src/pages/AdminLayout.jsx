@@ -14,7 +14,7 @@ function AdminLayout() {
     <div className="layout">
       <aside className="sidebar">
         <div>
-          <h2 className="logo">Jira & GitHub Tool Support</h2>
+          <h2 className="logo">Jira GitHub Tool Support</h2>
 
           <nav className="nav-menu">
             <Link 
