@@ -1,6 +1,7 @@
 package com.swp391.backend.controller;
 
 import com.swp391.backend.common.ApiResponse;
+import com.swp391.backend.dto.response.AcademicClassResponse;
 import com.swp391.backend.service.ClassEnrollmentService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,5 +21,11 @@ public class ClassEnrollmentController {
     public ApiResponse<Object> enroll(@PathVariable Long classId) {
         classEnrollmentService.enroll(classId);
         return ApiResponse.success(null);
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ApiResponse<AcademicClassResponse> getMyClass() {
+        return ApiResponse.success(classEnrollmentService.getMyClass());
     }
 }
