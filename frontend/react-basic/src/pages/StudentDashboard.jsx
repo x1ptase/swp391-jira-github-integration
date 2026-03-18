@@ -4,6 +4,8 @@ import "./StudentDashboard.css";
 
 const API_URL = "/api/student_group";
 
+
+
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
@@ -16,12 +18,26 @@ export default function StudentDashboard() {
   const [enrollingId, setEnrollingId] = useState(null);
   const [enrollSuccess, setEnrollSuccess] = useState("");
   const [enrollError, setEnrollError] = useState("");
-  const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
+  const [enrolledClass, setEnrolledClass] = useState(null);
+  const [enrolledClassLoading, setEnrolledClassLoading] = useState(false);
 
   const auth = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
   const username = localStorage.getItem("username") || "";
+  const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
 
-  useEffect(() => { fetchGroups(); }, []);
+  useEffect(() => { fetchGroups(); fetchEnrolledClass(); }, []);
+
+
+  const fetchEnrolledClass = async () => {
+    setEnrolledClassLoading(true);
+    try {
+      const res = await fetch("/api/classes/me", { headers: auth() });
+      if (!res.ok) { setEnrolledClass(null); return; }
+      const data = await res.json();
+      setEnrolledClass(data.data || null);
+    } catch { setEnrolledClass(null); }
+    finally { setEnrolledClassLoading(false); }
+  };
 
   const searchClasses = async (keyword) => {
     setClassSearch(keyword);
@@ -43,6 +59,7 @@ export default function StudentDashboard() {
       if (!res.ok) { setEnrollError(data.message || "Failed to enroll"); return; }
       setEnrollSuccess("Enrolled! Your lecturer can now add you to a group.");
       setClassResults(prev => prev.filter(c => c.classId !== classId));
+      fetchEnrolledClass();
     } catch { setEnrollError("Network error"); }
     finally { setEnrollingId(null); }
   };
@@ -137,6 +154,47 @@ export default function StudentDashboard() {
           <div className="sgl-loading">
             <span className="sgl-spinner" />
             <span>Loading your groups...</span>
+          </div>
+        )}
+        {/* Enrolled Class Section */}
+        {(enrolledClass || enrolledClassLoading) && (
+          <div className="sgl-enrolled-section">
+            <div className="sgl-enrolled-header">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              </svg>
+              <span>My Enrolled Class</span>
+            </div>
+            {enrolledClassLoading ? (
+              <div className="sgl-enrolled-loading"><span className="sgl-spinner-sm" /> Loading...</div>
+            ) : enrolledClass && (
+              <div className="sgl-enrolled-card">
+                <div className="sgl-enrolled-card-left">
+                  <div className="sgl-enrolled-icon">{enrolledClass.classCode?.charAt(0) || "C"}</div>
+                  <div>
+                    <div className="sgl-enrolled-code">{enrolledClass.classCode}</div>
+                    <div className="sgl-enrolled-course">{enrolledClass.courseName || enrolledClass.courseCode}</div>
+                  </div>
+                </div>
+                <div className="sgl-enrolled-card-right">
+                  <div className="sgl-enrolled-meta">
+                    <span className="sgl-enrolled-label">Semester</span>
+                    <span className="sgl-enrolled-val">{enrolledClass.semesterCode}</span>
+                  </div>
+                  <div className="sgl-enrolled-meta">
+                    <span className="sgl-enrolled-label">Lecturer</span>
+                    <span className="sgl-enrolled-val">{enrolledClass.lecturerName || "Not assigned"}</span>
+                  </div>
+                </div>
+                <div className="sgl-enrolled-status">
+                  <span className="sgl-enrolled-badge">Enrolled</span>
+                  {groups.length === 0 && (
+                    <span className="sgl-enrolled-hint">Waiting to be added to a group</span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
