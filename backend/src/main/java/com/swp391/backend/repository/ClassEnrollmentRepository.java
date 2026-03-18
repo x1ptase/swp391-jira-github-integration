@@ -15,6 +15,8 @@ public interface ClassEnrollmentRepository extends JpaRepository<ClassEnrollment
 
     boolean existsByStudent_UserIdAndAcademicClass_ClassId(Long studentId, Long classId);
 
+    boolean existsByStudent_UserId(Long studentId);
+
     @EntityGraph(attributePaths = {
             "academicClass",
             "academicClass.course",
