@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class UpdateUserRequest {
-    @NotBlank(message = "Email is required")
     @Email(message = "Email is invalid")
     @Size(max = 120, message = "Email max length is 120")
     private String email;

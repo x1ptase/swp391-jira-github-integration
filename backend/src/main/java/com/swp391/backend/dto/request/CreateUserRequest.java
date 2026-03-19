@@ -10,7 +10,6 @@ public class CreateUserRequest {
     @Size(max = 50, message = "Username max length is 50")
     private String username;
 
-    @NotBlank(message = "Email is required")
     @Email(message = "Email is invalid")
     @Size(max = 120, message = "Email max length is 120")
     private String email;
