@@ -58,6 +58,7 @@ public class AcademicClassServiceImpl implements AcademicClassService {
 
         AcademicClass c = new AcademicClass();
         c.setClassCode(classCode);
+        c.setStatus("OPEN");
         c.setCourse(course);
         c.setSemester(semester);
 
@@ -126,6 +127,7 @@ public class AcademicClassServiceImpl implements AcademicClassService {
         return new AcademicClassResponse(
                 c.getClassId(),
                 c.getClassCode(),
+                c.getStatus(),
                 c.getCourse() != null ? c.getCourse().getCourseId() : null,
                 c.getCourse() != null ? c.getCourse().getCourseCode() : null,
                 c.getCourse() != null ? c.getCourse().getCourseName() : null,

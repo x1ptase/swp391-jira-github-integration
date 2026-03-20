@@ -17,6 +17,9 @@ public class AcademicClass {
     @Column(name = "class_code", nullable = false, length = 50)
     private String classCode;
 
+    @Column(name = "status", nullable = false, length = 20)
+    private String status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;

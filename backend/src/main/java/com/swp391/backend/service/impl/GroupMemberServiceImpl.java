@@ -26,7 +26,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     private final UserRepository userRepository;
     private final MemberRoleRepository memberRoleRepository;
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
-    private final ClassEnrollmentRepository classEnrollmentRepository;
+    private final StudentClassAssignmentRepository studentClassAssignmentRepository;
 
     public GroupMemberServiceImpl(
             GroupMemberRepository groupMemberRepository,
@@ -34,14 +34,14 @@ public class GroupMemberServiceImpl implements GroupMemberService {
             UserRepository userRepository,
             MemberRoleRepository memberRoleRepository,
             LecturerAssignmentRepository lecturerAssignmentRepository,
-            ClassEnrollmentRepository classEnrollmentRepository
+            StudentClassAssignmentRepository studentClassAssignmentRepository
     ) {
         this.groupMemberRepository = groupMemberRepository;
         this.studentGroupRepository = studentGroupRepository;
         this.userRepository = userRepository;
         this.memberRoleRepository = memberRoleRepository;
         this.lecturerAssignmentRepository = lecturerAssignmentRepository;
-        this.classEnrollmentRepository = classEnrollmentRepository;
+        this.studentClassAssignmentRepository = studentClassAssignmentRepository;
     }
 
     @Override
@@ -53,9 +53,9 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         User student = requireUser(studentId);
         requireStudentRole(student);
 
-        if (!classEnrollmentRepository.existsByAcademicClass_ClassIdAndStudent_UserId(
+        if (!studentClassAssignmentRepository.existsByAcademicClass_ClassIdAndStudent_UserId(
                 group.getAcademicClass().getClassId(), studentId)) {
-            throw new BusinessException("Student has not joined this class.", 400);
+            throw new BusinessException("Student is not assigned to this class.", 400);
         }
 
         if (groupMemberRepository.existsByGroup_GroupIdAndUser_UserId(groupId, studentId)) {

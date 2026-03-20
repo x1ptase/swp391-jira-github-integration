@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 public class AcademicClassResponse {
     private Long classId;
     private String classCode;
+    private String status;
+
     private Long courseId;
     private String courseCode;
     private String courseName;
