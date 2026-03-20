@@ -52,8 +52,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
                                   Pageable pageable);
 
         @Query("SELECT DISTINCT u FROM User u " +
-                "JOIN ClassEnrollment ce ON ce.student.userId = u.userId " +
-                "WHERE ce.academicClass.classId = :classId " +
+                "JOIN StudentClassAssignment sca ON sca.student.userId = u.userId " +
+                "WHERE sca.academicClass.classId = :classId " +
                 "AND LOWER(u.role.roleCode) = 'student' " +
                 "AND (:kw IS NULL OR :kw = '' OR " +
                 "LOWER(u.username) LIKE LOWER(CONCAT('%', :kw, '%')) OR " +
