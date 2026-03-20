@@ -16,6 +16,7 @@ import java.util.Optional;
 public interface AcademicClassRepository extends JpaRepository<AcademicClass, Long> {
     Optional<AcademicClass> findByClassCode(String classCode);
     List<AcademicClass> findByCourse_CourseCodeAndSemester_SemesterCode(String courseCode, String semesterCode);
+    boolean existsBySemester_SemesterId(Long semesterId);
 
     @EntityGraph(attributePaths = {"course","semester"})
 

@@ -16,4 +16,6 @@ public interface SemesterService {
 
     Semester updateSemester(Long id, String name, LocalDate startDate, LocalDate endDate);
 
+    void deleteSemester(Long id);
+
 }
