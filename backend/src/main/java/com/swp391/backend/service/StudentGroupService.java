@@ -12,4 +12,5 @@ public interface StudentGroupService {
     StudentGroupResponse deleteStudentGroup(Long studentGroupId);
     List<StudentGroupResponse> listStudentGroups(String courseCode, String semesterCode, Long classId);
     StudentGroupResponse getMyGroup();
+    StudentGroupResponse changeGroupStatus(Long groupId, String status);
 }

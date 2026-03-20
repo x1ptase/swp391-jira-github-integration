@@ -9,11 +9,21 @@ import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.repository.AcademicClassRepository;
 import com.swp391.backend.repository.StudentClassAssignmentRepository;
 import com.swp391.backend.repository.UserRepository;
+import com.swp391.backend.repository.LecturerAssignmentRepository;
+import com.swp391.backend.repository.GroupMemberRepository;
+import com.swp391.backend.security.SecurityService;
 import com.swp391.backend.service.ClassStudentAssignmentService;
+import com.swp391.backend.entity.GroupMember;
+import com.swp391.backend.dto.response.StudentClassDetailsResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ClassStudentAssignmentServiceImpl implements ClassStudentAssignmentService {
@@ -21,15 +31,24 @@ public class ClassStudentAssignmentServiceImpl implements ClassStudentAssignment
     private final AcademicClassRepository academicClassRepository;
     private final StudentClassAssignmentRepository studentClassAssignmentRepository;
     private final UserRepository userRepository;
+    private final LecturerAssignmentRepository lecturerAssignmentRepository;
+    private final GroupMemberRepository groupMemberRepository;
+    private final SecurityService securityService;
 
     public ClassStudentAssignmentServiceImpl(
             AcademicClassRepository academicClassRepository,
             StudentClassAssignmentRepository studentClassAssignmentRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            LecturerAssignmentRepository lecturerAssignmentRepository,
+            GroupMemberRepository groupMemberRepository,
+            SecurityService securityService
     ) {
         this.academicClassRepository = academicClassRepository;
         this.studentClassAssignmentRepository = studentClassAssignmentRepository;
         this.userRepository = userRepository;
+        this.lecturerAssignmentRepository = lecturerAssignmentRepository;
+        this.groupMemberRepository = groupMemberRepository;
+        this.securityService = securityService;
     }
 
     @Override
@@ -123,5 +142,49 @@ public class ClassStudentAssignmentServiceImpl implements ClassStudentAssignment
                     return res;
                 })
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<StudentClassDetailsResponse> searchStudents(Long classId, String search, Boolean hasGroup, Pageable pageable) {
+        requireCanManageClass(classId);
+
+        Page<User> usersPage = studentClassAssignmentRepository.searchStudentsInClass(classId, search, hasGroup, pageable);
+
+        return usersPage.map(user -> {
+            StudentClassDetailsResponse.StudentClassDetailsResponseBuilder builder = StudentClassDetailsResponse.builder()
+                    .userId(user.getUserId())
+                    .studentCode(user.getStudentCode())
+                    .username(user.getUsername())
+                    .fullName(user.getFullName())
+                    .email(user.getEmail());
+
+            Optional<GroupMember> groupMemberOpt = groupMemberRepository.findByUser_UserId(user.getUserId());
+            GroupMember classGroupMember = groupMemberOpt
+                    .filter(gm -> gm.getGroup().getAcademicClass().getClassId().equals(classId))
+                    .orElse(null);
+
+            if (classGroupMember != null) {
+                builder.groupId(classGroupMember.getGroup().getGroupId())
+                       .groupName(classGroupMember.getGroup().getGroupName())
+                       .memberRole(classGroupMember.getMemberRole() != null ? classGroupMember.getMemberRole().getCode() : null);
+            }
+
+            return builder.build();
+        });
+    }
+
+    private void requireCanManageClass(Long classId) {
+        Long currentUserId = securityService.getCurrentUserId();
+        if (currentUserId == null) throw new BusinessException("Unauthorized", 401);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (isAdmin) return;
+
+        boolean assigned = lecturerAssignmentRepository.existsByClassIdAndLecturerId(classId, currentUserId);
+        if (!assigned) {
+            throw new BusinessException("Access denied. Lecturer not assigned to this class.", 403);
+        }
     }
 }

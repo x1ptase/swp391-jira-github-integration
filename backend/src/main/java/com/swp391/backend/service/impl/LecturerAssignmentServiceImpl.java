@@ -1,13 +1,18 @@
 package com.swp391.backend.service.impl;
 
 import com.swp391.backend.dto.response.AcademicClassResponse;
+import com.swp391.backend.dto.response.GroupMemberResponse;
+import com.swp391.backend.dto.response.LecturerGroupSummaryResponse;
 import com.swp391.backend.entity.AcademicClass;
+import com.swp391.backend.entity.GroupMember;
 import com.swp391.backend.entity.LecturerAssignment;
-
+import com.swp391.backend.entity.StudentGroup;
 import com.swp391.backend.entity.User;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.repository.AcademicClassRepository;
+import com.swp391.backend.repository.GroupMemberRepository;
 import com.swp391.backend.repository.LecturerAssignmentRepository;
+import com.swp391.backend.repository.StudentGroupRepository;
 import com.swp391.backend.repository.UserRepository;
 import com.swp391.backend.service.AcademicClassService;
 import com.swp391.backend.service.LecturerAssignmentService;
@@ -15,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,17 +32,23 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
     private final AcademicClassRepository academicClassRepository;
     private final UserRepository userRepository;
     private final AcademicClassService academicClassService;
+    private final StudentGroupRepository studentGroupRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
     public LecturerAssignmentServiceImpl(
             LecturerAssignmentRepository lecturerAssignmentRepository,
             AcademicClassRepository academicClassRepository,
             UserRepository userRepository,
-            AcademicClassService academicClassService
+            AcademicClassService academicClassService,
+            StudentGroupRepository studentGroupRepository,
+            GroupMemberRepository groupMemberRepository
     ) {
         this.lecturerAssignmentRepository = lecturerAssignmentRepository;
         this.academicClassRepository = academicClassRepository;
         this.userRepository = userRepository;
         this.academicClassService = academicClassService;
+        this.studentGroupRepository = studentGroupRepository;
+        this.groupMemberRepository = groupMemberRepository;
     }
 
     public void assignLecturer(Long classId, Long lecturerId) {
@@ -88,6 +100,43 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
                 .stream()
                 .map(a -> academicClassService.getClass(a.getClassId()))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<LecturerGroupSummaryResponse> getGroupsForCurrentLecturer() {
+        Long lecturerId = currentUserId();
+        if (lecturerId == null) throw new BusinessException("Unauthorized", 401);
+
+        List<StudentGroup> groups = studentGroupRepository.findByLecturerId(lecturerId);
+
+        List<LecturerGroupSummaryResponse> result = new ArrayList<>();
+        for (StudentGroup sg : groups) {
+            List<GroupMember> rawMembers = groupMemberRepository.findByGroup_GroupId(sg.getGroupId());
+
+            List<GroupMemberResponse> memberDtos = new ArrayList<>();
+            for (GroupMember gm : rawMembers) {
+                GroupMemberResponse dto = new GroupMemberResponse();
+                dto.setUserId(gm.getUser().getUserId());
+                dto.setUsername(gm.getUser().getUsername());
+                dto.setFullName(gm.getUser().getFullName());
+                dto.setEmail(gm.getUser().getEmail());
+                dto.setMemberRole(gm.getMemberRole() == null ? null : gm.getMemberRole().getCode());
+                memberDtos.add(dto);
+            }
+
+            LecturerGroupSummaryResponse summary = LecturerGroupSummaryResponse.builder()
+                    .groupId(sg.getGroupId())
+                    .groupName(sg.getGroupName())
+                    .classCode(sg.getAcademicClass() != null ? sg.getAcademicClass().getClassCode() : null)
+                    .semesterCode(sg.getAcademicClass() != null && sg.getAcademicClass().getSemester() != null
+                            ? sg.getAcademicClass().getSemester().getSemesterCode() : null)
+                    .topicName(sg.getTopic() != null ? sg.getTopic().getTopicName() : null)
+                    .members(memberDtos)
+                    .build();
+
+            result.add(summary);
+        }
+        return result;
     }
 
     private Long currentUserId() {

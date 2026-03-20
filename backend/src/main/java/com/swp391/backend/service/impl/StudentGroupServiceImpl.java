@@ -55,6 +55,8 @@ public class StudentGroupServiceImpl implements StudentGroupService {
         AcademicClass clazz = academicClassRepository.findById(request.getClassId())
                 .orElseThrow(() -> new BusinessException("AcademicClass not found: " + request.getClassId(), 404));
 
+        requireCanManageClass(clazz.getClassId());
+
         if (studentGroupRepository.existsByAcademicClass_ClassIdAndGroupName(clazz.getClassId(), request.getGroupName())) {
             throw new BusinessException("StudentGroup groupName already exists in this class: " + request.getGroupName(), 409);
         }
@@ -74,6 +76,12 @@ public class StudentGroupServiceImpl implements StudentGroupService {
         StudentGroup existing = studentGroupRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("StudentGroup not found: " + id, 404));
 
+        requireCanManageClass(existing.getAcademicClass().getClassId());
+
+        if ("CLOSED".equals(existing.getStatus())) {
+            throw new BusinessException("Cannot update group when status is CLOSED", 400);
+        }
+
         if (studentGroupRepository.existsByAcademicClass_ClassIdAndGroupNameAndGroupIdNot(existing.getAcademicClass().getClassId(), studentGroup.getGroupName(), id)) {
             throw new BusinessException("StudentGroup groupName already exists in this class: " + studentGroup.getGroupName(), 409);
         }
@@ -88,6 +96,9 @@ public class StudentGroupServiceImpl implements StudentGroupService {
     public StudentGroupResponse deleteStudentGroup(Long studentGroupId) {
         StudentGroup existing = studentGroupRepository.findById(studentGroupId)
                 .orElseThrow(() -> new BusinessException("StudentGroup not found: " + studentGroupId, 404));
+
+        requireCanManageClass(existing.getAcademicClass().getClassId());
+
         studentGroupRepository.delete(existing);
         return mapToResponse(existing);
     }
@@ -138,6 +149,7 @@ public class StudentGroupServiceImpl implements StudentGroupService {
                 .semesterCode(group.getAcademicClass().getSemester().getSemesterCode())
                 .createdAt(group.getCreatedAt())
                 .build();
+        resp.setStatus(group.getStatus());
 
         lecturerAssignmentRepository.findById(group.getAcademicClass().getClassId()).ifPresent(la -> {
             resp.setLecturerId(la.getLecturerId());
@@ -155,5 +167,31 @@ public class StudentGroupServiceImpl implements StudentGroupService {
         }
 
         return resp;
+    }
+
+    @Override
+    @Transactional
+    public StudentGroupResponse changeGroupStatus(Long groupId, String status) {
+        StudentGroup existing = studentGroupRepository.findById(groupId)
+                .orElseThrow(() -> new BusinessException("StudentGroup not found: " + groupId, 404));
+
+        requireCanManageClass(existing.getAcademicClass().getClassId());
+
+        existing.setStatus(status);
+        return mapToResponse(studentGroupRepository.save(existing));
+    }
+
+    private void requireCanManageClass(Long classId) {
+        Long currentUserId = securityService.getCurrentUserId();
+        if (currentUserId == null) throw new BusinessException("Unauthorized", 401);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (isAdmin) return;
+
+        boolean assigned = lecturerAssignmentRepository.existsByClassIdAndLecturerId(classId, currentUserId);
+        if (!assigned) {
+            throw new BusinessException("Access denied. Lecturer not assigned to this class.", 403);
+        }
     }
 }

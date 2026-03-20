@@ -3,6 +3,8 @@ package com.swp391.backend.repository;
 import com.swp391.backend.entity.StudentGroup;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +12,15 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long> {
+
+    /**
+     * Lấy tất cả StudentGroup mà một Giảng viên phụ trách,
+     * thông qua bảng LecturerAssignment (join theo classId).
+     */
+    @EntityGraph(attributePaths = {"academicClass", "academicClass.course", "academicClass.semester", "topic"})
+    @Query("SELECT sg FROM StudentGroup sg JOIN LecturerAssignment la ON la.classId = sg.academicClass.classId WHERE la.lecturerId = :lecturerId")
+    List<StudentGroup> findByLecturerId(@Param("lecturerId") Long lecturerId);
+
     @Transactional
     void removeStudentGroupByGroupId(Long groupId);
 

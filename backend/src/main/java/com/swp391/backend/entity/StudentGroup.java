@@ -30,6 +30,9 @@ public class StudentGroup {
     @JsonAlias("group_name")
     @Column(name="group_name" ,  nullable = false , length = 120 )
     private String groupName;
+    
+    @Column(name="status", length = 20)
+    private String status;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Column(name="created_at" , nullable = false  , updatable = false)
@@ -39,6 +42,9 @@ public class StudentGroup {
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = "OPEN";
         }
     }
 }
