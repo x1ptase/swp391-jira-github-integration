@@ -11,6 +11,7 @@ public class UserResponse {
     private String username;
     private String fullName;
     private String email;
+    private String studentCode;
     private String githubUsername;
     private String jiraAccountId;
     private String roleCode;

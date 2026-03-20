@@ -18,6 +18,8 @@ public class CreateUserRequest {
     @Size(max = 100, message = "Full name max length is 100")
     private String fullName;
 
+    @Size(max = 30, message = "Student code max length is 30")
+    private String studentCode;
 
     @NotBlank(message = "Role code is required")
     @Size(max = 30, message = "Role code max length is 30")
@@ -61,6 +63,14 @@ public class CreateUserRequest {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public String getStudentCode() {
+        return studentCode;
+    }
+
+    public void setStudentCode(String studentCode) {
+        this.studentCode = studentCode;
     }
 
     public String getRoleCode() {

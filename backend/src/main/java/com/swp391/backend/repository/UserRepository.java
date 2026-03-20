@@ -27,6 +27,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
         boolean existsByJiraAccountIdIgnoreCase(String jiraAccountId);
 
+        boolean existsByStudentCode(String studentCode);
+
         Optional<User> findByJiraAccountId(String jiraAccountId);
 
         @Query("SELECT u FROM User u " +
