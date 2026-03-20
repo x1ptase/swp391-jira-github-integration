@@ -65,4 +65,11 @@ public class SemesterController {
                 )
         );
     }
+
+    // DELETE
+    @DeleteMapping("/{id}")
+    public ApiResponse<Object> deleteSemester(@PathVariable Long id) {
+        semesterService.deleteSemester(id);
+        return ApiResponse.success(null);
+    }
 }
