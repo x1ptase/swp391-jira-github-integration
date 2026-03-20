@@ -25,6 +25,9 @@ public class User {
     @Column(unique = true, nullable = true, length = 120)
     private String email;
 
+    @Column(name = "student_code", length = 30)
+    private String studentCode;
+
     @Column(name = "github_username", unique = true, length = 100)
     private String githubUsername;
 
