@@ -28,6 +28,8 @@ public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long
 
     boolean existsByAcademicClass_ClassId(Long classId);
 
+    boolean existsByTopic_TopicId(Long topicId);
+
     boolean existsByAcademicClass_ClassCodeAndGroupIdNot(String classCode, Long groupId);
 
     boolean existsByAcademicClass_ClassIdAndGroupName(Long classId, String groupName);
