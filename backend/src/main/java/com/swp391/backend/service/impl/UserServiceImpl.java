@@ -46,12 +46,16 @@ public class UserServiceImpl implements UserService {
         String roleCode = safeTrim(request.getRoleCode()).toUpperCase();
         String githubUsername = safeTrim(request.getGithubUsername());
         String jiraAccountId = safeTrim(request.getJiraAccountId());
+        String studentCode = safeTrim(request.getStudentCode());
 
         if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new BusinessException("Username already exists: " + username, 409);
         }
         if (!email.isEmpty() && userRepository.existsByEmailIgnoreCase(email)) {
             throw new BusinessException("Email already exists: " + email, 409);
+        }
+        if (!studentCode.isEmpty() && userRepository.existsByStudentCode(studentCode)) {
+            throw new BusinessException("Student code already exists: " + studentCode, 409);
         }
         if (!githubUsername.isEmpty() && userRepository.existsByGithubUsernameIgnoreCase(githubUsername)) {
             throw new BusinessException("Github username already exists: " + githubUsername, 409);
@@ -74,6 +78,7 @@ public class UserServiceImpl implements UserService {
         user.setUsername(username);
         user.setEmail(email.isEmpty() ? null : email);
         user.setFullName(fullName);
+        user.setStudentCode(studentCode.isEmpty() ? null : studentCode);
         user.setGithubUsername(githubUsername.isEmpty() ? null : githubUsername);
         user.setJiraAccountId(jiraAccountId.isEmpty() ? null : jiraAccountId);
         user.setRole(role);
@@ -96,6 +101,7 @@ public class UserServiceImpl implements UserService {
         String newRoleCode = safeTrim(request.getRoleCode()).toUpperCase();
         String newGithub = safeTrim(request.getGithubUsername());
         String newJira = safeTrim(request.getJiraAccountId());
+        String newStudentCode = safeTrim(request.getStudentCode());
 
         String oldEmail = user.getEmail() == null ? "" : user.getEmail();
 
@@ -103,6 +109,13 @@ public class UserServiceImpl implements UserService {
                 !newEmail.equalsIgnoreCase(oldEmail) &&
                 userRepository.existsByEmailIgnoreCase(newEmail)) {
             throw new BusinessException("Email already exists: " + newEmail, 409);
+        }
+
+        String oldStudentCode = user.getStudentCode() == null ? "" : user.getStudentCode();
+        if (!newStudentCode.isEmpty() &&
+                !newStudentCode.equalsIgnoreCase(oldStudentCode) &&
+                userRepository.existsByStudentCode(newStudentCode)) {
+            throw new BusinessException("Student code already exists: " + newStudentCode, 409);
         }
 
         if (!newGithub.isEmpty()) {
@@ -122,6 +135,7 @@ public class UserServiceImpl implements UserService {
         Role role = getRoleOrThrow(newRoleCode);
         user.setEmail(newEmail.isEmpty() ? null : newEmail);
         user.setFullName(newFullName);
+        user.setStudentCode(newStudentCode.isEmpty() ? null : newStudentCode);
         user.setRole(role);
         user.setGithubUsername(newGithub.isEmpty() ? null : newGithub);
         user.setJiraAccountId(newJira.isEmpty() ? null : newJira);
@@ -198,6 +212,7 @@ public class UserServiceImpl implements UserService {
         r.setUsername(u.getUsername());
         r.setFullName(u.getFullName());
         r.setEmail(u.getEmail());
+        r.setStudentCode(u.getStudentCode());
         r.setGithubUsername(u.getGithubUsername());
         r.setJiraAccountId(u.getJiraAccountId());
         if (u.getRole() != null) {
@@ -265,4 +280,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new BusinessException("User not found", 404));
     }
+
+
 }
