@@ -47,6 +47,10 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     @Override
     public void addMember(Long groupId, Long studentId) {
         StudentGroup group = requireGroup(groupId);
+        if ("CLOSED".equals(group.getStatus())) {
+            throw new BusinessException("Cannot add member: group is CLOSED.", 400);
+        }
+
         User actor = currentUser();
         requireCanManageGroup(actor, group);
 
@@ -82,6 +86,10 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     @Override
     public void removeMember(Long groupId, Long studentId) {
         StudentGroup group = requireGroup(groupId);
+        if ("CLOSED".equals(group.getStatus())) {
+            throw new BusinessException("Cannot remove member: group is CLOSED.", 400);
+        }
+
         User actor = currentUser();
         requireCanManageGroup(actor, group);
 
@@ -97,6 +105,10 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     @Override
     public void setLeader(Long groupId, Long studentId) {
         StudentGroup group = requireGroup(groupId);
+        if ("CLOSED".equals(group.getStatus())) {
+            throw new BusinessException("Cannot set leader: group is CLOSED.", 400);
+        }
+
         User actor = currentUser();
         requireCanManageGroup(actor, group);
 

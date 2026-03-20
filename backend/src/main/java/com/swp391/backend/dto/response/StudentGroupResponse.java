@@ -19,8 +19,9 @@ public class StudentGroupResponse {
     private String groupName;
     private String courseCode;
     private String semesterCode;
-    private LocalDateTime createdAt;
     private Long lecturerId;
     private String lecturerName;
+    private String status;
     private String memberRole;
+    private LocalDateTime createdAt;
 }

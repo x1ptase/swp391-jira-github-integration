@@ -58,4 +58,11 @@ public class StudentGroupController {
     public ApiResponse<StudentGroupResponse> getMyGroup() {
         return ApiResponse.success(studentGroupService.getMyGroup());
     }
+
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('LECTURER')")
+    public ApiResponse<StudentGroupResponse> changeGroupStatus(@PathVariable Long id,
+            @Valid @RequestBody com.swp391.backend.dto.request.ChangeGroupStatusRequest request) {
+        return ApiResponse.success(studentGroupService.changeGroupStatus(id, request.getStatus()));
+    }
 }
