@@ -22,6 +22,10 @@ public class StudentGroup {
     @JoinColumn(name = "class_id", nullable = false)
     private AcademicClass academicClass;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "topic_id")
+    private Topic topic;
+
     @NotBlank
     @JsonAlias("group_name")
     @Column(name="group_name" ,  nullable = false , length = 120 )
