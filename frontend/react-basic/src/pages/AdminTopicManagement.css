@@ -1,0 +1,104 @@
+.atm-root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  padding: 28px 32px; max-width: 1100px; margin: 0 auto;
+}
+
+.atm-page-header { margin-bottom: 24px; }
+.atm-page-title { font-size: 22px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+.atm-page-desc { font-size: 13px; color: #94a3b8; margin: 0; }
+
+/* Card */
+.atm-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+.atm-table-card { padding: 0; overflow: hidden; text-align: center;}
+.atm-card-title { font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 16px; }
+
+/* Form */
+.atm-form-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.atm-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 160px; }
+.atm-field-wide { flex: 2; }
+.atm-field-full { width: 100%; }
+.atm-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+.atm-input, .atm-textarea {
+  padding: 8px 11px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+  font-size: 13px; color: #1e293b; background: #fff; outline: none;
+  transition: border-color 0.15s; font-family: inherit;
+}
+.atm-input:focus, .atm-textarea:focus { border-color: #6366f1; }
+.atm-input:disabled { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+.atm-textarea { resize: vertical; min-height: 72px; }
+.atm-form-error { margin-top: 10px; padding: 8px 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 7px; color: #dc2626; font-size: 12px; }
+.atm-form-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+/* Filter */
+.atm-filter-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 16px; }
+.atm-search-wrap { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 200px; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 7px 10px; }
+.atm-search-wrap:focus-within { border-color: #6366f1; }
+.atm-search-input { border: none; outline: none; font-size: 13px; color: #1e293b; width: 100%; background: transparent; }
+.atm-clear-btn { background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 15px; padding: 0; line-height: 1; }
+
+/* Buttons */
+.atm-btn-primary { padding: 8px 18px; background: #1e293b; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+.atm-btn-primary:hover { background: #0f172a; }
+.atm-btn-ghost { padding: 8px 16px; background: #fff; color: #475569; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.atm-btn-ghost:hover { border-color: #94a3b8; color: #1e293b; }
+.atm-btn-sm { padding: 7px 14px; font-size: 12px; }
+
+/* Table */
+.atm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.atm-table thead tr { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+.atm-table th { padding: 10px 16px; text-align: center; font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.atm-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.1s; }
+.atm-table tbody tr:last-child { border-bottom: none; }
+.atm-table tbody tr:hover { background: #fafafa; }
+.atm-table td { padding: 12px 16px; vertical-align: middle; color: #1e293b; text-align: center; }
+.atm-td-num { color: #94a3b8; font-size: 12px; width: 40px; }
+.atm-name-cell { font-weight: 500; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.atm-desc-cell { color: #64748b; font-size: 12px; max-width: 240px; }
+.atm-date-cell { color: #94a3b8; font-size: 12px; white-space: nowrap; }
+.atm-null { color: #cbd5e1; }
+.atm-loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 40px; color: #64748b; font-size: 13px; }
+
+/* Code badge */
+.atm-code-badge { display: inline-block; padding: 2px 9px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-family: monospace; }
+
+/* Action buttons */
+.atm-btn-action { padding: 5px 12px; border-radius: 6px; font-size: 12px;margin: 2px 3px; font-weight: 500; border: 1.5px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.atm-btn-detail { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+.atm-btn-detail:hover { border-color: #94a3b8; color: #1e293b; }
+.atm-btn-edit { background: #eff6ff; color: #3b82f6; border-color: #bfdbfe; }
+.atm-btn-edit:hover { background: #dbeafe; }
+.atm-btn-danger { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+.atm-btn-danger:hover { background: #fee2e2; }
+
+/* Pagination */
+.atm-pagination { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-top: 1px solid #f1f5f9; flex-wrap: wrap; }
+.atm-page-btn { padding: 5px 12px; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 7px; font-size: 12px; color: #475569; cursor: pointer; }
+.atm-page-btn:hover:not(:disabled) { border-color: #94a3b8; }
+.atm-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.atm-page-numbers { display: flex; gap: 4px; }
+.atm-page-num { width: 30px; height: 30px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 12px; color: #475569; background: #fff; cursor: pointer; }
+.atm-page-num.active { background: #1e293b; color: #fff; border-color: #1e293b; }
+
+/* Modal */
+.atm-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
+.atm-modal { background: #fff; border-radius: 14px; width: 100%; max-width: 520px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: atm-in 0.18s ease; }
+@keyframes atm-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+.atm-modal-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; background: #fff; }
+.atm-modal-title { font-size: 15px; font-weight: 600; color: #1e293b; }
+.atm-modal-subtitle { margin-top: 4px; }
+.atm-modal-close { background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.atm-modal-close:hover { background: #f1f5f9; color: #1e293b; }
+.atm-modal-body { padding: 20px 22px; }
+
+/* Detail */
+.atm-detail-section { margin-bottom: 20px; }
+.atm-detail-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px; }
+.atm-detail-desc { font-size: 13px; color: #475569; line-height: 1.6; margin: 0; white-space: pre-wrap; }
+.atm-detail-meta { display: flex; flex-direction: column; gap: 8px; padding: 14px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+.atm-detail-meta-row { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #475569; }
+.atm-detail-meta-row .atm-detail-label { margin: 0; width: 60px; }
+.atm-detail-actions { display: flex; gap: 8px; }
+
+/* Spinner */
+.atm-spinner { width: 14px; height: 14px; border: 2px solid #e2e8f0; border-top-color: #6366f1; border-radius: 50%; animation: atm-spin 0.7s linear infinite; display: inline-block; }
+@keyframes atm-spin { to { transform: rotate(360deg); } }

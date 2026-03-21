@@ -154,3 +154,42 @@
 .acm-no-lecturer {
   font-size: 12px; color: #94a3b8; font-style: italic;
 }
+
+/* Status badge */
+.acm-status-badge {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.acm-status-badge-sm { font-size: 10px; padding: 2px 8px; }
+
+/* Extra action buttons */
+.acm-btn-detail { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+.acm-btn-detail:hover { border-color: #94a3b8; color: #1e293b; }
+.acm-btn-student { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+.acm-btn-student:hover:not(:disabled) { background: #dcfce7; }
+.acm-btn-student:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Larger modal */
+.acm-modal-lg { max-width: 780px; }
+
+/* Modal body padding */
+.acm-modal-body { padding: 16px 22px 22px; }
+
+/* Feedback */
+.acm-add-success {
+  padding: 9px 14px; background: #f0fdf4; border: 1px solid #bbf7d0;
+  border-radius: 8px; color: #16a34a; font-size: 13px; margin-bottom: 12px;
+}
+.acm-add-error {
+  padding: 9px 14px; background: #fef2f2; border: 1px solid #fecaca;
+  border-radius: 8px; color: #dc2626; font-size: 13px; margin-bottom: 12px;
+}
+
+/* Spinner sm */
+.acm-spinner-sm {
+  width: 12px; height: 12px; border: 2px solid #bbf7d0;
+  border-top-color: #16a34a; border-radius: 50%;
+  animation: acm-spin 0.7s linear infinite; display: inline-block;
+}
+
+.acm-enrolled-tag { font-size: 12px; font-weight: 600; color: #16a34a; }
