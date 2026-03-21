@@ -1,6 +1,6 @@
 package com.swp391.backend.controller;
 
-import com.swp391.backend.common.ApiResponse;
+import com.swp391.backend.dto.response.ApiResponse;
 import com.swp391.backend.dto.request.CreateUserRequest;
 import com.swp391.backend.dto.request.UpdateUserRequest;
 import com.swp391.backend.dto.response.UserResponse;

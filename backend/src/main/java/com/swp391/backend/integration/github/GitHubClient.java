@@ -1,6 +1,6 @@
 package com.swp391.backend.integration.github;
 
-import com.swp391.backend.common.DateTimeUtils;
+import com.swp391.backend.utils.DateTimeUtils;
 import com.swp391.backend.dto.request.CommitSearchRequest;
 import com.swp391.backend.dto.response.GitHubCommitDTO;
 import com.swp391.backend.dto.response.GitHubCommitResponse;

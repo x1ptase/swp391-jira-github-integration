@@ -1,7 +1,7 @@
 package com.swp391.backend.controller;
 
 import com.swp391.backend.dto.response.AcademicClassResponse;
-import com.swp391.backend.common.ApiResponse;
+import com.swp391.backend.dto.response.ApiResponse;
 import com.swp391.backend.service.StudentClassQueryService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;

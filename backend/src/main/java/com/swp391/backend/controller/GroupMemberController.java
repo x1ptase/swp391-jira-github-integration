@@ -1,6 +1,6 @@
 package com.swp391.backend.controller;
 
-import com.swp391.backend.common.ApiResponse;
+import com.swp391.backend.dto.response.ApiResponse;
 import com.swp391.backend.dto.request.AddMemberRequest;
 import com.swp391.backend.dto.request.SetLeaderRequest;
 import com.swp391.backend.dto.response.GroupMemberResponse;

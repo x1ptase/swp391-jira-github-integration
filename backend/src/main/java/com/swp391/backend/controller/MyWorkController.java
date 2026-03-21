@@ -1,6 +1,6 @@
 package com.swp391.backend.controller;
 
-import com.swp391.backend.common.ApiResponse;
+import com.swp391.backend.dto.response.ApiResponse;
 import com.swp391.backend.dto.response.MyWorkSubtaskDetailResponse;
 import com.swp391.backend.dto.response.MyWorkSubtaskListResponse;
 import com.swp391.backend.service.MyWorkQueryService;

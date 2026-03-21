@@ -23,7 +23,7 @@ public interface IntegrationConfigRepository extends JpaRepository<IntegrationCo
      *
      * @param groupId           the group ID
      * @param integrationTypeId use
-     *                          {@link com.swp391.backend.common.IntegrationTypeIds}
+     *                          {@link com.swp391.backend.utils.IntegrationTypeIds}
      */
     Optional<IntegrationConfig> findByGroupIdAndIntegrationTypeId(Long groupId, Integer integrationTypeId);
 }

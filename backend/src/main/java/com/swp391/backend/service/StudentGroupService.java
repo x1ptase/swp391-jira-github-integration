@@ -13,4 +13,5 @@ public interface StudentGroupService {
     List<StudentGroupResponse> listStudentGroups(String courseCode, String semesterCode, Long classId);
     StudentGroupResponse getMyGroup();
     StudentGroupResponse changeGroupStatus(Long groupId, String status);
+    StudentGroupResponse assignTopic(Long groupId, Long topicId);
 }

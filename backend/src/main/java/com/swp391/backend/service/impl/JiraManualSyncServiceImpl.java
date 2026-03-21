@@ -1,6 +1,6 @@
 package com.swp391.backend.service.impl;
 
-import com.swp391.backend.common.IntegrationTypeIds;
+import com.swp391.backend.utils.IntegrationTypeIds;
 import com.swp391.backend.dto.response.SyncResultResponse;
 import com.swp391.backend.entity.*;
 import com.swp391.backend.exception.BusinessException;
