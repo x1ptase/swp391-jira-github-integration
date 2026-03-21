@@ -22,7 +22,7 @@ function AdminUserManagement() {
     roleCode: "STUDENT",
   });
 
-  // ===== FETCH USERS =====
+  //  FETCH USERS 
   const fetchUsers = async (p = 0, search = keyword, role = filterRole) => {
     try {
       const res = await fetch(
@@ -47,7 +47,7 @@ function AdminUserManagement() {
     fetchUsers();
   }, []);
 
-  // ===== CREATE / UPDATE =====
+  //  CREATE / UPDATE 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -109,7 +109,7 @@ function AdminUserManagement() {
     }
   };
 
-  // ===== DELETE =====
+  //  DELETE 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this user?")) return;
     setError("");

@@ -13,9 +13,8 @@
   background: #fff; border: 1px solid #e2e8f0;
   border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;
 }
-.asm-table-card { padding: 0; overflow: hidden; }
+.asm-table-card{ padding: 0; overflow: hidden; }
 .asm-card-title { font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 16px; }
-
 /* Form */
 .asm-form-row { display: flex; gap: 12px; flex-wrap: wrap; }
 .asm-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 140px; }
@@ -48,10 +47,10 @@
 .asm-btn-ghost:hover { border-color: #94a3b8; color: #1e293b; }
 
 /* Table */
-.asm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.asm-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
 .asm-table thead tr { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
 .asm-table th {
-  padding: 10px 16px; text-align: left;
+  padding: 10px 16px; 
   font-size: 11px; font-weight: 600; color: #94a3b8;
   text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
 }
@@ -82,17 +81,18 @@
 .asm-status-none { color: #cbd5e1; }
 
 /* Actions */
-.asm-actions { display: flex; gap: 6px; }
 .asm-btn-action {
-  padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; margin: 4px 3px;
   border: 1.5px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap;
 }
 .asm-btn-edit { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
 .asm-btn-edit:hover { border-color: #94a3b8; color: #1e293b; }
-
+.asm-btn-action.asm-btn-delete { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+.asm-btn-action.asm-btn-delete:hover { background: #fee2e2; }
 .asm-spinner {
   width: 14px; height: 14px; border: 2px solid #e2e8f0;
   border-top-color: #6366f1; border-radius: 50%;
   animation: asm-spin 0.7s linear infinite; display: inline-block;
 }
 @keyframes asm-spin { to { transform: rotate(360deg); } }
+

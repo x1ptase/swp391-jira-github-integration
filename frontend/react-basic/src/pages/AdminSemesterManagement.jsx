@@ -75,6 +75,20 @@ export default function AdminSemesterManagement() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleDelete = async (s) => {
+    if (!window.confirm(`Are you sure you want to delete semester "${s.semesterName}"? This action cannot be undone.`)) {
+      return;
+    }
+    const res = await fetch(`${SEMESTER_API}/${s.semesterId}`, { headers: auth(), method: "DELETE" });
+    if (!res.ok) {
+      const err = await res.json();
+      setFormError(err.message || "Error occurred");
+      return;
+    }
+    fetchSemesters();
+  };
+
+
   const resetForm = () => {
     setForm({ semesterId: null, semesterCode: "", semesterName: "", startDate: "", endDate: "" });
     setFormError("");
@@ -213,6 +227,7 @@ export default function AdminSemesterManagement() {
                     <td>
                       <div className="asm-actions">
                         <button className="asm-btn-action asm-btn-edit" onClick={() => handleEdit(s)}>Edit</button>
+                        <button className="asm-btn-action asm-btn-delete" onClick={() => handleDelete(s)}>Delete</button>
                       </div>
                     </td>
                   </tr>
