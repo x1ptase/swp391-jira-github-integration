@@ -65,7 +65,7 @@ export default function AdminClassManagement() {
     setAllStudents(data.data?.content || data.data || []);
   };
 
-  // Form──────
+  // Form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -106,6 +106,7 @@ export default function AdminClassManagement() {
     const res = await fetch(`${ASSIGN_STUDENT_API}/${classId}/students/${studentId}`, { method: "DELETE", headers: auth() });
     if (res.ok) {
       setDetailStudents(prev => prev.filter(s => s.userId !== studentId));
+      setEnrolledStudentIds(prev => { const next = new Set(prev); next.delete(studentId); return next; });
       fetchClasses();
     } else { const err = await res.json(); alert("Failed: " + (err.message || "Unknown")); }
   };
@@ -276,9 +277,13 @@ export default function AdminClassManagement() {
               <div>
                 <div className="acm-modal-title">Class Detail — {detailClass?.classCode}</div>
                 <div className="acm-modal-subtitle">
+                  {detailClass?.lecturerName
+                    ? <span>👨‍🏫 {detailClass.lecturerName}</span>
+                    : <span style={{ color: "#cbd5e1" }}>No lecturer assigned</span>
+                  }
+                  {" · "}
                   <span className="acm-status-badge acm-status-badge-sm" style={{
                     ...(() => { const st = getStatusStyle(detailClass?.status); return { background: st.bg, color: st.color, border: `1px solid ${st.border}` }; })(),
-                    marginLeft: 8
                   }}>{detailClass?.status || "—"}</span>
                 </div>
               </div>
@@ -291,7 +296,7 @@ export default function AdminClassManagement() {
                 <div className="acm-empty-row" style={{ padding: "32px", textAlign: "center", color: "#94a3b8" }}>No students enrolled</div>
               ) : (
                 <table className="acm-table">
-                  <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Student Code</th><th>Action</th></tr></thead>
+                  <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Student Code</th></tr></thead>
                   <tbody>
                     {detailStudents.map((s, i) => (
                       <tr key={s.userId}>
@@ -300,12 +305,6 @@ export default function AdminClassManagement() {
                         <td><span className="acm-username">{s.username}</span></td>
                         <td>{s.email}</td>
                         <td>{s.studentCode || "—"}</td>
-                        <td>
-                          <button className="acm-btn-action acm-btn-danger"
-                            onClick={() => handleRemoveStudent(detailClass.classId, s.userId)}>
-                            Remove
-                          </button>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -349,13 +348,18 @@ export default function AdminClassManagement() {
                       <td>{s.studentCode || "—"}</td>
                       <td>
                         {enrolledStudentIds.has(s.userId)
-                          ? <span className="acm-enrolled-tag">✓ Enrolled</span>
+                          ? <button className="acm-btn-action acm-btn-danger"
+                            onClick={() => handleRemoveStudent(addStudentClass.classId, s.userId)}
+                            disabled={addingId === s.userId}>
+                            Remove
+                          </button>
                           : <button className="acm-btn-action acm-btn-student"
                             onClick={() => handleAddStudent(s.userId)}
                             disabled={addingId === s.userId}>
                             {addingId === s.userId ? <span className="acm-spinner-sm" /> : "Add"}
                           </button>
                         }
+
                       </td>
                     </tr>
                   )) : (

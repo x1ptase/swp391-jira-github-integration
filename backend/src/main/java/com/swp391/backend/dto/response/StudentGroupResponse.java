@@ -1,7 +1,12 @@
 package com.swp391.backend.dto.response;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 public class StudentGroupResponse {
     private Long groupId;
     private Long classId;
@@ -19,33 +24,6 @@ public class StudentGroupResponse {
 
     public StudentGroupResponse() {
     }
-
-    public Long getGroupId() { return groupId; }
-    public void setGroupId(Long groupId) { this.groupId = groupId; }
-    public Long getClassId() { return classId; }
-    public void setClassId(Long classId) { this.classId = classId; }
-    public String getClassCode() { return classCode; }
-    public void setClassCode(String classCode) { this.classCode = classCode; }
-    public String getGroupName() { return groupName; }
-    public void setGroupName(String groupName) { this.groupName = groupName; }
-    public String getCourseCode() { return courseCode; }
-    public void setCourseCode(String courseCode) { this.courseCode = courseCode; }
-    public String getSemesterCode() { return semesterCode; }
-    public void setSemesterCode(String semesterCode) { this.semesterCode = semesterCode; }
-    public Long getLecturerId() { return lecturerId; }
-    public void setLecturerId(Long lecturerId) { this.lecturerId = lecturerId; }
-    public String getLecturerName() { return lecturerName; }
-    public void setLecturerName(String lecturerName) { this.lecturerName = lecturerName; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public String getMemberRole() { return memberRole; }
-    public void setMemberRole(String memberRole) { this.memberRole = memberRole; }
-    public Long getTopicId() { return topicId; }
-    public void setTopicId(Long topicId) { this.topicId = topicId; }
-    public String getTopicName() { return topicName; }
-    public void setTopicName(String topicName) { this.topicName = topicName; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     public static StudentGroupResponseBuilder builder() {
         return new StudentGroupResponseBuilder();

@@ -19,6 +19,7 @@ function AdminUserManagement() {
     jiraAccountId: "",
     fullName: "",
     password: "",
+    studentCode: "",
     roleCode: "STUDENT",
   });
 
@@ -69,6 +70,7 @@ function AdminUserManagement() {
             roleCode: form.roleCode,
             githubUsername: form.githubUsername,
             jiraAccountId: form.jiraAccountId,
+            studentCode: form.studentCode,
           }),
         });
       } else {
@@ -87,6 +89,7 @@ function AdminUserManagement() {
             roleCode: form.roleCode,
             githubUsername: form.githubUsername,
             jiraAccountId: form.jiraAccountId,
+            studentCode: form.studentCode,
           }),
         });
       }
@@ -149,6 +152,7 @@ function AdminUserManagement() {
       roleCode: u.roleCode,
       githubUsername: u.githubUsername || "",
       jiraAccountId: u.jiraAccountId || "",
+      studentCode: u.studentCode || "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -164,6 +168,7 @@ function AdminUserManagement() {
       roleCode: "STUDENT",
       githubUsername: "",
       jiraAccountId: "",
+      studentCode: "",
     });
   };
 
@@ -201,6 +206,12 @@ function AdminUserManagement() {
           value={form.fullName}
           onChange={(e) => setForm({ ...form, fullName: e.target.value })}
           required
+        />
+
+        <input
+          placeholder="Student Code"
+          value={form.studentCode}
+          onChange={(e) => setForm({ ...form, studentCode: e.target.value })}
         />
 
         <select
@@ -277,6 +288,7 @@ function AdminUserManagement() {
           <tr>
             <th>#</th>
             <th>Username</th>
+            <th>Student Code</th>
             <th>Email</th>
             <th>Full Name</th>
             <th>GitHub</th>
@@ -291,6 +303,7 @@ function AdminUserManagement() {
               <tr key={u.userId}>
                 <td>{page * 7 + index + 1}</td>
                 <td>{u.username}</td>
+                <td>{u.studentCode}</td>
                 <td>{u.email}</td>
                 <td>{u.fullName}</td>
                 <td>{u.githubUsername || "-"}</td>
@@ -315,7 +328,7 @@ function AdminUserManagement() {
             ))
           ) : (
             <tr>
-              <td colSpan="8" style={{ textAlign: "center", padding: "32px", color: "var(--text-tertiary)" }}>
+              <td colSpan="9" style={{ textAlign: "center", padding: "32px", color: "var(--text-tertiary)" }}>
                 No users found
               </td>
             </tr>
