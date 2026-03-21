@@ -1,6 +1,6 @@
 package com.swp391.backend.controller;
 
-import com.swp391.backend.common.ApiResponse;
+import com.swp391.backend.dto.response.ApiResponse;
 import com.swp391.backend.dto.response.RequirementDashboardItemResponse;
 import com.swp391.backend.service.RequirementQueryService;
 import lombok.RequiredArgsConstructor;

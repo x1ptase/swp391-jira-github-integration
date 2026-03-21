@@ -7,7 +7,6 @@ import com.swp391.backend.integration.jira.dto.JiraBulkFetchResponse;
 import com.swp391.backend.integration.jira.dto.JiraSearchJqlResponse;
 import com.swp391.backend.integration.jira.dto.JiraSprintListResponse;
 import com.swp391.backend.integration.jira.dto.JiraVersion;
-import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -21,10 +20,13 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-@RequiredArgsConstructor
 public class JiraClient {
 
     private final RestTemplate restTemplate;
+
+    public JiraClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     private static final List<String> BULK_FIELDS = List.of(
             "summary", "description", "issuetype", "status", "priority", "assignee", "updated", "labels", "parent");
@@ -113,8 +115,6 @@ public class JiraClient {
         HttpEntity<Void> entity = new HttpEntity<>(buildAuthHeaders(jiraEmail, token));
 
         try {
-            System.out.println("JIRA_SEARCH_JQL_URL=" + uri);
-            System.out.println("JIRA_SEARCH_JQL=" + jql);
             ResponseEntity<JiraSearchJqlResponse> response = restTemplate.exchange(
                     uri,
                     HttpMethod.GET,

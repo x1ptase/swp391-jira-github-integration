@@ -1,6 +1,6 @@
 package com.swp391.backend.service.impl;
 
-import com.swp391.backend.common.IntegrationTypeIds;
+import com.swp391.backend.utils.IntegrationTypeIds;
 import com.swp391.backend.dto.response.JiraBoardDto;
 import com.swp391.backend.entity.IntegrationConfig;
 import com.swp391.backend.exception.BusinessException;

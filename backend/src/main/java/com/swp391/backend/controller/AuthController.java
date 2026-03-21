@@ -1,6 +1,6 @@
 package com.swp391.backend.controller;
 
-import com.swp391.backend.common.ApiResponse;
+import com.swp391.backend.dto.response.ApiResponse;
 import com.swp391.backend.dto.request.LoginRequest;
 import com.swp391.backend.dto.request.RegisterRequest;
 import com.swp391.backend.dto.response.LoginResponse;

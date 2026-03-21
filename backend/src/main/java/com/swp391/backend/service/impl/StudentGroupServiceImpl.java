@@ -5,13 +5,13 @@ import com.swp391.backend.dto.response.StudentGroupResponse;
 import com.swp391.backend.entity.AcademicClass;
 import com.swp391.backend.entity.GroupMember;
 import com.swp391.backend.entity.GroupMemberId;
-import com.swp391.backend.entity.LecturerAssignment;
 import com.swp391.backend.entity.StudentGroup;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.repository.AcademicClassRepository;
 import com.swp391.backend.repository.GroupMemberRepository;
 import com.swp391.backend.repository.LecturerAssignmentRepository;
 import com.swp391.backend.repository.StudentGroupRepository;
+import com.swp391.backend.repository.TopicRepository;
 import com.swp391.backend.repository.UserRepository;
 import com.swp391.backend.security.SecurityService;
 import com.swp391.backend.service.StudentGroupService;
@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +31,7 @@ public class StudentGroupServiceImpl implements StudentGroupService {
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final AcademicClassRepository academicClassRepository;
+    private final TopicRepository topicRepository;
     private final SecurityService securityService;
 
     public StudentGroupServiceImpl(StudentGroupRepository studentGroupRepository,
@@ -39,12 +39,14 @@ public class StudentGroupServiceImpl implements StudentGroupService {
                                    LecturerAssignmentRepository lecturerAssignmentRepository,
                                    GroupMemberRepository groupMemberRepository,
                                    AcademicClassRepository academicClassRepository,
+                                   TopicRepository topicRepository,
                                    SecurityService securityService) {
         this.studentGroupRepository = studentGroupRepository;
         this.userRepository = userRepository;
         this.lecturerAssignmentRepository = lecturerAssignmentRepository;
         this.groupMemberRepository = groupMemberRepository;
         this.academicClassRepository = academicClassRepository;
+        this.topicRepository = topicRepository;
         this.securityService = securityService;
     }
 
@@ -150,6 +152,10 @@ public class StudentGroupServiceImpl implements StudentGroupService {
                 .createdAt(group.getCreatedAt())
                 .build();
         resp.setStatus(group.getStatus());
+        if (group.getTopic() != null) {
+            resp.setTopicId(group.getTopic().getTopicId());
+            resp.setTopicName(group.getTopic().getTopicName());
+        }
 
         lecturerAssignmentRepository.findById(group.getAcademicClass().getClassId()).ifPresent(la -> {
             resp.setLecturerId(la.getLecturerId());
@@ -178,6 +184,25 @@ public class StudentGroupServiceImpl implements StudentGroupService {
         requireCanManageClass(existing.getAcademicClass().getClassId());
 
         existing.setStatus(status);
+        return mapToResponse(studentGroupRepository.save(existing));
+    }
+
+    @Override
+    @Transactional
+    public StudentGroupResponse assignTopic(Long groupId, Long topicId) {
+        StudentGroup existing = studentGroupRepository.findById(groupId)
+                .orElseThrow(() -> new BusinessException("StudentGroup not found: " + groupId, 404));
+
+        requireCanManageClass(existing.getAcademicClass().getClassId());
+
+        if (topicId == null) {
+            existing.setTopic(null);
+        } else {
+            com.swp391.backend.entity.Topic topic = topicRepository.findById(topicId)
+                    .orElseThrow(() -> new BusinessException("Topic not found: " + topicId, 404));
+            existing.setTopic(topic);
+        }
+
         return mapToResponse(studentGroupRepository.save(existing));
     }
 

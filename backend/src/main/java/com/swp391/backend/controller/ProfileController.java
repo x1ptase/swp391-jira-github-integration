@@ -1,6 +1,6 @@
 package com.swp391.backend.controller;
 
-import com.swp391.backend.common.ApiResponse;
+import com.swp391.backend.dto.response.ApiResponse;
 import com.swp391.backend.dto.request.UpdateProfileRequest;
 import com.swp391.backend.dto.response.UserResponse;
 import com.swp391.backend.service.UserService;

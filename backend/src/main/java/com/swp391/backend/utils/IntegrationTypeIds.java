@@ -1,4 +1,4 @@
-package com.swp391.backend.common;
+package com.swp391.backend.utils;
 
 /**
  * Constants for IntegrationType IDs (as seeded in DB).

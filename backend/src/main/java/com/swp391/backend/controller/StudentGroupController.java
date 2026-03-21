@@ -1,6 +1,8 @@
 package com.swp391.backend.controller;
 
-import com.swp391.backend.common.ApiResponse;
+import com.swp391.backend.dto.response.ApiResponse;
+import com.swp391.backend.dto.request.AssignTopicRequest;
+import com.swp391.backend.dto.request.ChangeGroupStatusRequest;
 import com.swp391.backend.dto.request.CreateGroupRequest;
 import com.swp391.backend.dto.response.StudentGroupResponse;
 import com.swp391.backend.entity.StudentGroup;
@@ -62,7 +64,14 @@ public class StudentGroupController {
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('LECTURER')")
     public ApiResponse<StudentGroupResponse> changeGroupStatus(@PathVariable Long id,
-            @Valid @RequestBody com.swp391.backend.dto.request.ChangeGroupStatusRequest request) {
+            @Valid @RequestBody ChangeGroupStatusRequest request) {
         return ApiResponse.success(studentGroupService.changeGroupStatus(id, request.getStatus()));
+    }
+
+    @PutMapping("/{id}/topic")
+    @PreAuthorize("hasRole('LECTURER')")
+    public ApiResponse<StudentGroupResponse> assignTopic(@PathVariable Long id,
+            @RequestBody AssignTopicRequest request) {
+        return ApiResponse.success(studentGroupService.assignTopic(id, request.getTopicId()));
     }
 }

@@ -1,4 +1,4 @@
-package com.swp391.backend.common;
+package com.swp391.backend.utils;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;

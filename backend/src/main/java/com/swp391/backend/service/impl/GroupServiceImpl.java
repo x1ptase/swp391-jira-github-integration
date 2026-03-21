@@ -4,18 +4,22 @@ import com.swp391.backend.entity.User;
 import com.swp391.backend.repository.GroupMemberRepository;
 import com.swp391.backend.repository.UserRepository;
 import com.swp391.backend.service.GroupService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
 
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
+
+    public GroupServiceImpl(GroupMemberRepository groupMemberRepository,
+                            UserRepository userRepository) {
+        this.groupMemberRepository = groupMemberRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     public boolean isUserAuthorized(Long userId, Long groupId, List<String> allowedRoles) {

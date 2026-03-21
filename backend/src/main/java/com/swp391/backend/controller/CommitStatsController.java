@@ -1,6 +1,6 @@
 package com.swp391.backend.controller;
 
-import com.swp391.backend.common.ApiResponse;
+import com.swp391.backend.dto.response.ApiResponse;
 import com.swp391.backend.dto.response.CommitStatsDTO;
 import com.swp391.backend.dto.response.PersonalCommitStatsDTO;
 import com.swp391.backend.service.CommitStatsService;
@@ -65,11 +65,7 @@ public class CommitStatsController {
 
         if (stats.isEmpty()) {
             return ResponseEntity.ok(
-                    ApiResponse.<List<CommitStatsDTO>>builder()
-                            .status(200)
-                            .message("No commits found for this group yet. Please sync GitHub data first.")
-                            .data(List.of())
-                            .build());
+                    new ApiResponse<>(200, "No commits found for this group yet. Please sync GitHub data first.", List.of()));
         }
 
         return ResponseEntity.ok(ApiResponse.success(stats));

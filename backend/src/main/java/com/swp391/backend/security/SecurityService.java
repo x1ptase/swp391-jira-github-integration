@@ -5,19 +5,27 @@ import com.swp391.backend.repository.GroupMemberRepository;
 import com.swp391.backend.repository.LecturerAssignmentRepository;
 import com.swp391.backend.repository.StudentGroupRepository;
 import com.swp391.backend.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service("securityService")
-@RequiredArgsConstructor
 public class SecurityService {
 
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
     private final StudentGroupRepository studentGroupRepository;
+
+    public SecurityService(LecturerAssignmentRepository lecturerAssignmentRepository,
+                           GroupMemberRepository groupMemberRepository,
+                           UserRepository userRepository,
+                           StudentGroupRepository studentGroupRepository) {
+        this.lecturerAssignmentRepository = lecturerAssignmentRepository;
+        this.groupMemberRepository = groupMemberRepository;
+        this.userRepository = userRepository;
+        this.studentGroupRepository = studentGroupRepository;
+    }
 
     public Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -41,16 +49,11 @@ public class SecurityService {
             return true;
 
         Long userId = getCurrentUserId();
-        System.out.println(">>> hasAccessToGroup groupId=" + groupId + " userId=" + userId);
         if (userId == null)
             return false;
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_STUDENT"))) {
-            boolean exists = groupMemberRepository.existsByGroup_GroupIdAndUser_UserId(groupId, userId);
-            System.out.println(">>> STUDENT check exists=" + exists);
-            return exists;
-        }
+
         // Lecturer assigned to group
         if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_LECTURER"))) {
             return studentGroupRepository.findById(groupId)
