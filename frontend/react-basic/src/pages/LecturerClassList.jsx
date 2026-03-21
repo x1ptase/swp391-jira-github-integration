@@ -182,7 +182,7 @@ export default function LecturerClassList() {
 
   //  Render 
   if (loading) return (
-    <div className="lcl-root"><div className="lcl-loading"><span className="lcl-spinner"/>Loading...</div></div>
+    <div className="lcl-root"><div className="lcl-loading"><span className="lcl-spinner" />Loading...</div></div>
   );
 
   if (error) return (
@@ -198,7 +198,7 @@ export default function LecturerClassList() {
         </div>
         <button className="lcl-refresh-btn" onClick={fetchClasses}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
+            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" />
           </svg>
           Refresh
         </button>
@@ -207,7 +207,7 @@ export default function LecturerClassList() {
       {classes.length === 0 ? (
         <div className="lcl-empty">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
           </svg>
           <p>No classes assigned yet</p>
           <span>Contact your admin to assign you to classes</span>
@@ -234,13 +234,8 @@ export default function LecturerClassList() {
                 </div>
               </div>
               <div className="lcl-card-actions">
-                <button className="lcl-btn-groups" onClick={() => openGroupsModal(cls)}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
-                  Manage Groups
+                <button className="lcl-btn-groups" onClick={() => navigate(`/lecturer/classes/${cls.classId}`)}>
+                  Manage Class
                 </button>
               </div>
             </div>
@@ -284,7 +279,7 @@ export default function LecturerClassList() {
               </div>
 
               {groupsLoading ? (
-                <div className="lcl-loading"><span className="lcl-spinner"/>Loading groups...</div>
+                <div className="lcl-loading"><span className="lcl-spinner" />Loading groups...</div>
               ) : groups.length === 0 ? (
                 <div className="lcl-empty-sm">No groups yet. Create one above.</div>
               ) : (
@@ -391,7 +386,7 @@ export default function LecturerClassList() {
               </table>
 
               {/* Add student */}
-              <div className="lcl-section-title" style={{marginTop: 20}}>Add Student</div>
+              <div className="lcl-section-title" style={{ marginTop: 20 }}>Add Student</div>
               <input
                 className="lcl-input lcl-search-input"
                 placeholder="Search by name or username..."

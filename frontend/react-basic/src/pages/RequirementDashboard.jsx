@@ -55,7 +55,7 @@ function RequirementDashboard({ groupId }) {
   const [error, setError] = useState("");
   const [fetched, setFetched] = useState(false);
 
-  // ── Drill-down state ──────────────────────────────────────────────────────
+  //  Drill-down state 
   const [selectedEpic, setSelectedEpic] = useState(null);
 
   const authHeader = () => ({
@@ -111,7 +111,7 @@ function RequirementDashboard({ groupId }) {
     });
   };
 
-  // ── Show StoryDashboard when epic selected ────────────────────────────────
+  //  Show StoryDashboard when epic selected 
   if (selectedEpic) {
     return (
       <div className="rd-root">
