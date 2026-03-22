@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import CommitStats from "./CommitStats";
 import RequirementDashboard from "./RequirementDashboard";
@@ -17,13 +17,11 @@ export default function LecturerGroupManagement() {
   const [activeTab, setActiveTab] = useState("home");
   const [classInfo, setClassInfo] = useState(null);
 
-  // Home tab
   const [groupSummaries, setGroupSummaries] = useState([]);
   const [expandedGroupId, setExpandedGroupId] = useState(null);
   const [homeLoading, setHomeLoading] = useState(false);
   const [selectedGroupForStats, setSelectedGroupForStats] = useState(null);
 
-  // Students tab (inside Home)
   const [classStudents, setClassStudents] = useState([]);
   const [studentSearch, setStudentSearch] = useState("");
   const [hasGroupFilter, setHasGroupFilter] = useState("");
@@ -31,7 +29,6 @@ export default function LecturerGroupManagement() {
   const [studentTotalPages, setStudentTotalPages] = useState(0);
   const [studentsLoading, setStudentsLoading] = useState(false);
 
-  // Groups tab
   const [groups, setGroups] = useState([]);
   const [groupsLoading, setGroupsLoading] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -40,8 +37,8 @@ export default function LecturerGroupManagement() {
   const [editGroupId, setEditGroupId] = useState(null);
   const [editGroupName, setEditGroupName] = useState("");
   const [editError, setEditError] = useState("");
+  const [expandedStatsGroupId, setExpandedStatsGroupId] = useState(null);
 
-  // Members modal
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [members, setMembers] = useState([]);
@@ -50,7 +47,6 @@ export default function LecturerGroupManagement() {
   const [memberPage, setMemberPage] = useState(0);
   const [memberTotalPages, setMemberTotalPages] = useState(0);
 
-  // Topic modal
   const [showTopicModal, setShowTopicModal] = useState(false);
   const [topicGroup, setTopicGroup] = useState(null);
   const [topics, setTopics] = useState([]);
@@ -58,9 +54,11 @@ export default function LecturerGroupManagement() {
   const [assigningTopic, setAssigningTopic] = useState(null);
   const [topicError, setTopicError] = useState("");
 
+  const username = localStorage.getItem("username") || "Lecturer";
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
   const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
+  const handleLogout = () => { localStorage.clear(); navigate("/login"); };
 
   useEffect(() => {
     fetchClassInfo();
@@ -76,14 +74,11 @@ export default function LecturerGroupManagement() {
     setClassInfo(classes.find(c => String(c.classId) === String(classId)) || null);
   };
 
-  //  Home 
   const fetchGroupSummaries = async () => {
     setHomeLoading(true);
     const res = await fetch(GROUP_SUMMARY_API, { headers: auth() });
     const data = await res.json();
-    const all = data.data || [];
-    // filter by classId via classCode matching
-    setGroupSummaries(all);
+    setGroupSummaries(data.data || []);
     setHomeLoading(false);
   };
 
@@ -100,7 +95,6 @@ export default function LecturerGroupManagement() {
     setStudentsLoading(false);
   };
 
-  //  Groups ─
   const fetchGroups = async () => {
     setGroupsLoading(true);
     const res = await fetch(`${GROUP_API}?class_id=${classId}`, { headers: auth() });
@@ -146,7 +140,6 @@ export default function LecturerGroupManagement() {
     else { const err = await res.json(); alert(err.message || "Failed"); }
   };
 
-  //  Members 
   const openMemberModal = async (group) => {
     setSelectedGroup(group); setMemberKeyword("");
     await fetchMembers(group.groupId);
@@ -191,7 +184,6 @@ export default function LecturerGroupManagement() {
     else { const err = await res.json(); alert("Failed: " + (err.message || "Unknown")); }
   };
 
-  //  Topic 
   const openTopicModal = async (group) => {
     setTopicGroup(group); setTopicSearch(""); setTopicError("");
     const res = await fetch(`${TOPIC_API}?page=0&size=999`, { headers: auth() });
@@ -227,13 +219,17 @@ export default function LecturerGroupManagement() {
       <div className="lgm-topbar">
         <button className="lgm-back-btn" onClick={() => navigate(-1)}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
+            <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
           Back
         </button>
         <div className="lgm-class-info">
           <span className="lgm-class-code">{classInfo?.classCode || `Class #${classId}`}</span>
           <span className="lgm-class-meta">{classInfo?.semesterCode} · {classInfo?.courseCode}</span>
+        </div>
+        <div className="lgm-topbar-right">
+          <span className="lgm-topbar-user">Welcome, {username}</span>
+          <button className="lgm-logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
@@ -252,79 +248,14 @@ export default function LecturerGroupManagement() {
 
       <div className="lgm-content">
 
-        {/*  HOME TAB  */}
+        {/* HOME TAB */}
         {activeTab === "home" && (
           <div className="lgm-home">
-            {/* Group summaries */}
-            <div className="lgm-section-title">Groups Overview</div>
-            {homeLoading ? (
-              <div className="lgm-loading"><span className="lgm-spinner"/> Loading...</div>
-            ) : groupSummaries.length === 0 ? (
-              <div className="lgm-empty-sm">No groups yet.</div>
-            ) : (
-              <div className="lgm-summary-list">
-                {groupSummaries.map((g, i) => (
-                  <div key={g.groupId} className="lgm-summary-card">
-                    <div className="lgm-summary-header" onClick={() => setExpandedGroupId(expandedGroupId === g.groupId ? null : g.groupId)}>
-                      <div className="lgm-summary-left">
-                        <span className="lgm-summary-num">{i + 1}</span>
-                        <div>
-                          <div className="lgm-summary-name">{g.groupName}</div>
-                          <div className="lgm-summary-topic">
-                            {g.topicName
-                              ? <span className="lgm-topic-badge">{g.topicName}</span>
-                              : <span className="lgm-no-topic">No topic assigned</span>}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="lgm-summary-right">
-                        <span className="lgm-member-count">{g.members?.length || 0} members</span>
-                        <button className="lgm-stats-btn" onClick={e => { e.stopPropagation(); setSelectedGroupForStats(selectedGroupForStats === g.groupId ? null : g.groupId); }}>
-                          {selectedGroupForStats === g.groupId ? "Hide Stats" : "Stats"}
-                        </button>
-                        <span className="lgm-expand-icon">{expandedGroupId === g.groupId ? "▲" : "▼"}</span>
-                      </div>
-                    </div>
-
-                    {/* Members list */}
-                    {expandedGroupId === g.groupId && (
-                      <div className="lgm-summary-members">
-                        <table className="lgm-table">
-                          <thead><tr><th>#</th><th>Student Code</th><th>Full Name</th></tr></thead>
-                          <tbody>
-                            {(g.members || []).length === 0
-                              ? <tr><td colSpan="3" className="lgm-empty-row">No members</td></tr>
-                              : (g.members || []).map((m, mi) => (
-                                <tr key={m.userId}>
-                                  <td className="lgm-td-num">{mi + 1}</td>
-                                  <td><span className="lgm-student-code">{m.studentCode || "—"}</span></td>
-                                  <td>{m.fullName}</td>
-                                </tr>
-                              ))
-                            }
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-
-                    {/* Stats */}
-                    {selectedGroupForStats === g.groupId && (
-                      <div className="lgm-stats-section">
-                        <CommitStats groupId={g.groupId} />
-                        <RequirementDashboard groupId={g.groupId} />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Class Students */}
-            <div className="lgm-section-title" style={{marginTop: 28}}>Class Students</div>
+            <div className="lgm-section-title">Class Students</div>
             <div className="lgm-filter-bar">
               <div className="lgm-search-wrap">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
                 </svg>
                 <input className="lgm-search-input" placeholder="Search by name or student code..."
                   value={studentSearch} onChange={e => setStudentSearch(e.target.value)}
@@ -339,7 +270,7 @@ export default function LecturerGroupManagement() {
             </div>
 
             {studentsLoading ? (
-              <div className="lgm-loading"><span className="lgm-spinner"/> Loading...</div>
+              <div className="lgm-loading"><span className="lgm-spinner" /> Loading...</div>
             ) : (
               <div className="lgm-card lgm-table-card">
                 <table className="lgm-table">
@@ -375,10 +306,9 @@ export default function LecturerGroupManagement() {
           </div>
         )}
 
-        {/*  GROUPS TAB  */}
+        {/* GROUPS TAB */}
         {activeTab === "groups" && (
           <div className="lgm-groups">
-            {/* Create */}
             <div className="lgm-create-bar">
               {!showCreateGroup ? (
                 <button className="lgm-btn-primary" onClick={() => setShowCreateGroup(true)}>+ New Group</button>
@@ -395,7 +325,7 @@ export default function LecturerGroupManagement() {
             </div>
 
             {groupsLoading ? (
-              <div className="lgm-loading"><span className="lgm-spinner"/> Loading...</div>
+              <div className="lgm-loading"><span className="lgm-spinner" /> Loading...</div>
             ) : groups.length === 0 ? (
               <div className="lgm-empty-sm">No groups yet.</div>
             ) : (
@@ -407,46 +337,67 @@ export default function LecturerGroupManagement() {
                   <tbody>
                     {groups.map((g, i) => {
                       const st = getStatusStyle(g.status);
+                      const statsExpanded = expandedStatsGroupId === g.groupId;
                       return (
-                        <tr key={g.groupId}>
-                          <td className="lgm-td-num">{i + 1}</td>
-                          <td>
-                            {editGroupId === g.groupId ? (
-                              <div className="lgm-inline-edit">
-                                <input className="lgm-input lgm-input-sm" value={editGroupName}
-                                  onChange={e => setEditGroupName(e.target.value)}
-                                  onKeyDown={e => e.key === "Enter" && handleUpdateGroup(g.groupId)} autoFocus />
-                                <button className="lgm-btn-xs lgm-btn-primary" onClick={() => handleUpdateGroup(g.groupId)}>Save</button>
-                                <button className="lgm-btn-xs lgm-btn-ghost" onClick={() => { setEditGroupId(null); setEditError(""); }}>Cancel</button>
-                                {editError && <span className="lgm-error-text">{editError}</span>}
+                        <React.Fragment key={g.groupId}>
+                          <tr className="lgm-group-row"
+                            onClick={() => setExpandedStatsGroupId(statsExpanded ? null : g.groupId)}
+                            style={{ cursor: "pointer" }}>
+                            <td className="lgm-td-num">{i + 1}</td>
+                            <td>
+                              {editGroupId === g.groupId ? (
+                                <div className="lgm-inline-edit" onClick={e => e.stopPropagation()}>
+                                  <input className="lgm-input lgm-input-sm" value={editGroupName}
+                                    onChange={e => setEditGroupName(e.target.value)}
+                                    onKeyDown={e => e.key === "Enter" && handleUpdateGroup(g.groupId)} autoFocus />
+                                  <button className="lgm-btn-xs lgm-btn-primary" onClick={() => handleUpdateGroup(g.groupId)}>Save</button>
+                                  <button className="lgm-btn-xs lgm-btn-ghost" onClick={() => { setEditGroupId(null); setEditError(""); }}>Cancel</button>
+                                  {editError && <span className="lgm-error-text">{editError}</span>}
+                                </div>
+                              ) : (
+                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                  <strong>{g.groupName}</strong>
+                                  <span style={{ fontSize: 10, color: "#94a3b8" }}>{statsExpanded ? "▲" : "▼"}</span>
+                                </div>
+                              )}
+                            </td>
+                            <td>
+                              {g.topicName
+                                ? <span className="lgm-topic-badge">{g.topicName}</span>
+                                : <span className="lgm-null">—</span>}
+                            </td>
+                            <td>
+                              <span className="lgm-status-badge" style={{ background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>
+                                {g.status || "OPEN"}
+                              </span>
+                            </td>
+                            <td onClick={e => e.stopPropagation()}>
+                              <div className="lgm-row-actions">
+                                <button className="lgm-btn-action lgm-btn-members" onClick={() => openMemberModal(g)}>Members</button>
+                                <button className="lgm-btn-action lgm-btn-topic" onClick={() => openTopicModal(g)}
+                                  disabled={g.status === "CLOSED"}>Topic</button>
+                                <button className="lgm-btn-action lgm-btn-edit2"
+                                  onClick={() => { setEditGroupId(g.groupId); setEditGroupName(g.groupName); setEditError(""); }}
+                                  disabled={g.status === "CLOSED"}>Edit</button>
+                                {g.status !== "CLOSED"
+                                  ? <button className="lgm-btn-action lgm-btn-close" onClick={() => handleChangeStatus(g.groupId, "CLOSED")}>Close</button>
+                                  : <button className="lgm-btn-action lgm-btn-open" onClick={() => handleChangeStatus(g.groupId, "OPEN")}>Reopen</button>
+                                }
+                                <button className="lgm-btn-action lgm-btn-danger" onClick={() => handleDeleteGroup(g.groupId)}>Delete</button>
                               </div>
-                            ) : <strong>{g.groupName}</strong>}
-                          </td>
-                          <td>
-                            {g.topicName
-                              ? <span className="lgm-topic-badge">{g.topicName}</span>
-                              : <span className="lgm-null">—</span>}
-                          </td>
-                          <td>
-                            <span className="lgm-status-badge" style={{ background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>
-                              {g.status || "OPEN"}
-                            </span>
-                          </td>
-                          <td>
-                            <div className="lgm-row-actions">
-                              <button className="lgm-btn-action lgm-btn-members" onClick={() => openMemberModal(g)}>Members</button>
-                              <button className="lgm-btn-action lgm-btn-topic" onClick={() => openTopicModal(g)}
-                                disabled={g.status === "CLOSED"}>Topic</button>
-                              <button className="lgm-btn-action lgm-btn-edit2" onClick={() => { setEditGroupId(g.groupId); setEditGroupName(g.groupName); setEditError(""); }}
-                                disabled={g.status === "CLOSED"}>Edit</button>
-                              {g.status !== "CLOSED"
-                                ? <button className="lgm-btn-action lgm-btn-close" onClick={() => handleChangeStatus(g.groupId, "CLOSED")}>Close</button>
-                                : <button className="lgm-btn-action lgm-btn-open" onClick={() => handleChangeStatus(g.groupId, "OPEN")}>Reopen</button>
-                              }
-                              <button className="lgm-btn-action lgm-btn-danger" onClick={() => handleDeleteGroup(g.groupId)}>Delete</button>
-                            </div>
-                          </td>
-                        </tr>
+                            </td>
+                          </tr>
+                          {statsExpanded && (
+                            <tr>
+                              <td colSpan="5" style={{ padding: 0, background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+                                <div style={{ padding: "16px 20px" }}>
+                                  <CommitStats groupId={g.groupId} />
+                                  <RequirementDashboard groupId={g.groupId} />
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
                       );
                     })}
                   </tbody>
@@ -457,7 +408,7 @@ export default function LecturerGroupManagement() {
         )}
       </div>
 
-      {/*  Members Modal  */}
+      {/* Members Modal */}
       {showMemberModal && (
         <div className="lgm-modal-overlay" onClick={() => setShowMemberModal(false)}>
           <div className="lgm-modal lgm-modal-xl" onClick={e => e.stopPropagation()}>
@@ -493,12 +444,11 @@ export default function LecturerGroupManagement() {
                   }
                 </tbody>
               </table>
-
-              <div className="lgm-section-label" style={{marginTop: 18}}>Add Student</div>
+              <div className="lgm-section-label" style={{ marginTop: 18 }}>Add Student</div>
               <input className="lgm-input lgm-search-input" placeholder="Search by name or username..."
                 value={memberKeyword}
                 onChange={e => { setMemberKeyword(e.target.value); fetchEligibleStudents(selectedGroup.groupId, e.target.value.trim(), 0); }} />
-              <table className="lgm-table" style={{marginTop: 8}}>
+              <table className="lgm-table" style={{ marginTop: 8 }}>
                 <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Action</th></tr></thead>
                 <tbody>
                   {eligibleStudents.length === 0
@@ -516,7 +466,7 @@ export default function LecturerGroupManagement() {
                 </tbody>
               </table>
               {memberTotalPages > 1 && (
-                <div className="lgm-pagination" style={{marginTop: 8}}>
+                <div className="lgm-pagination" style={{ marginTop: 8 }}>
                   {Array.from({ length: memberTotalPages }, (_, i) => (
                     <button key={i} className={`lgm-page-num ${i === memberPage ? "active" : ""}`}
                       onClick={() => fetchEligibleStudents(selectedGroup.groupId, memberKeyword, i)}>{i + 1}</button>
@@ -528,7 +478,7 @@ export default function LecturerGroupManagement() {
         </div>
       )}
 
-      {/*  Topic Modal  */}
+      {/* Topic Modal */}
       {showTopicModal && (
         <div className="lgm-modal-overlay" onClick={() => setShowTopicModal(false)}>
           <div className="lgm-modal lgm-modal-lg" onClick={e => e.stopPropagation()}>
@@ -541,9 +491,9 @@ export default function LecturerGroupManagement() {
             </div>
             <div className="lgm-modal-body">
               {topicError && <div className="lgm-error-banner">{topicError}</div>}
-              <div className="lgm-search-wrap" style={{marginBottom: 12}}>
+              <div className="lgm-search-wrap" style={{ marginBottom: 12 }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
                 </svg>
                 <input className="lgm-search-input" placeholder="Search topics..." value={topicSearch}
                   onChange={e => setTopicSearch(e.target.value)} autoFocus />
@@ -561,7 +511,7 @@ export default function LecturerGroupManagement() {
                           <button className="lgm-btn-action lgm-btn-topic"
                             onClick={() => handleAssignTopic(t.topicId)}
                             disabled={assigningTopic === t.topicId}>
-                            {assigningTopic === t.topicId ? <span className="lgm-spinner-sm"/> : "Assign"}
+                            {assigningTopic === t.topicId ? <span className="lgm-spinner-sm" /> : "Assign"}
                           </button>
                         </td>
                       </tr>

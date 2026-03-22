@@ -11,6 +11,9 @@ export default function LecturerClassList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const username = localStorage.getItem("username") || "Lecturer";
+  const handleLogout = () => { localStorage.clear(); navigate("/login"); };
+
 
   // Groups modal
   const [showGroupsModal, setShowGroupsModal] = useState(false);
@@ -196,12 +199,19 @@ export default function LecturerClassList() {
           <h1 className="lcl-page-title">My Assigned Classes</h1>
           <p className="lcl-page-desc">You are assigned to {classes.length} class(es)</p>
         </div>
+
+        <div className="lgm-topbar-right">
+          <span className="lgm-topbar-user">Welcome, {username}</span>
+          <button className="lgm-logout-btn" onClick={handleLogout}>Logout</button>
+        </div>
+
         <button className="lcl-refresh-btn" onClick={fetchClasses}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" />
           </svg>
           Refresh
         </button>
+
       </div>
 
       {classes.length === 0 ? (

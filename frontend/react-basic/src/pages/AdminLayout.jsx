@@ -24,13 +24,15 @@ function AdminLayout() {
               <span className="nav-icon">👤</span>
               <span>Users</span>
             </Link>
+
             <Link
-              to="classes"
-              className={`nav-item ${location.pathname.includes('classes') ? 'active' : ''}`}
+              to="lecturers"
+              className={`nav-item ${location.pathname.includes('lecturers') ? 'active' : ''}`}
             >
-              <span className="nav-icon">👥</span>
-              <span>Classes</span>
+              <span className="nav-icon">🎓</span>
+              <span>Lecturers</span>
             </Link>
+
             <Link
               to="semesters"
               className={`nav-item ${location.pathname.includes('semesters') ? 'active' : ''}`}
@@ -40,11 +42,11 @@ function AdminLayout() {
             </Link>
 
             <Link
-              to="lecturers"
-              className={`nav-item ${location.pathname.includes('lecturers') ? 'active' : ''}`}
+              to="classes"
+              className={`nav-item ${location.pathname.includes('classes') ? 'active' : ''}`}
             >
-              <span className="nav-icon">🎓</span>
-              <span>Lecturers</span>
+              <span className="nav-icon">👥</span>
+              <span>Classes</span>
             </Link>
 
             <Link to="topics" className={`nav-item ${location.pathname.includes('topics') ? 'active' : ''}`}>

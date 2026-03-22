@@ -5,7 +5,7 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* Topbar */
+/* ── Topbar ── */
 .ld-topbar {
   display: flex;
   align-items: center;
@@ -36,12 +36,12 @@
   border: 1.5px solid #bfdbfe;
 }
 
-/* Page header */
+/* ── Page header ── */
 .ld-page-header { margin-bottom: 24px; }
 .ld-page-title { font-size: 24px; font-weight: 700; color: #1e293b; margin: 0 0 6px; }
 .ld-page-desc { font-size: 14px; color: #64748b; margin: 0; }
 
-/* Tabs */
+/* ── Tabs ── */
 .ld-tabs {
   display: flex;
   gap: 4px;
@@ -62,7 +62,7 @@
 
 .ld-tab-icon { display: flex; align-items: center; }
 
-/* Content */
+/* ── Content ── */
 .ld-content { animation: ld-fadein 0.2s ease; }
 @keyframes ld-fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
@@ -77,4 +77,13 @@
 /* Overview layout */
 .ld-overview {
   display: flex; flex-direction: column; gap: 32px;
+}
+
+/* Topic chip in topbar */
+.ld-group-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ld-topic-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+  background: #fefce8; color: #ca8a04; border: 1px solid #fde68a;
 }
