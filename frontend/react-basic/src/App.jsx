@@ -3,7 +3,6 @@ import Login from './pages/Login';
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminClassManagement from './pages/AdminClassManagement';
 import AdminLayout from './pages/AdminLayout';
-import LecturerLayout from './pages/LecturerLayout';
 import LecturerClassList from "./pages/LecturerClassList";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import GitHubConfig from './pages/GitHubConfig';
@@ -38,8 +37,7 @@ function App() {
         </Route>
 
         {/* Lecturer */}
-        <Route path="/lecturer" element={<LecturerLayout />}>
-          <Route index element={<Navigate to="groups" replace />} />
+        <Route path="/lecturer">
           <Route path="groups" element={<LecturerClassList />} />
           <Route path="groups/:groupId/jira-issues" element={<JiraIssuesPreview />} />
           <Route path="classes/:classId" element={<LecturerGroupManagement />} />

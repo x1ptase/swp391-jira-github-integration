@@ -124,12 +124,7 @@ export default function StudentDashboard() {
           </div>
 
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <button className="sgl-enroll-btn" onClick={openEnrollModal}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-              </svg>
-              Find &amp; Enroll Class
-            </button>
+            
             <button className="sgl-refresh-btn" onClick={fetchGroups} disabled={loading}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
                 className={loading ? "sgl-spin" : ""}>
