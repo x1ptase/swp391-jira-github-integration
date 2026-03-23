@@ -60,6 +60,14 @@ public class LecturerAssignmentController {
         return ApiResponse.success(lecturerAssignmentService.getGroupsForCurrentLecturer());
     }
 
+    @PreAuthorize("hasRole('LECTURER')")
+    @GetMapping("/lecturer/classes/{classId}/groups")
+    public ApiResponse<List<LecturerGroupSummaryResponse>> getGroupsForClass(@PathVariable Long classId) {
+        return ApiResponse.success(
+                lecturerAssignmentService.getGroupsForCurrentLecturerByClass(classId)
+        );
+    }
+
     /**
      * Retrieves the paginated list of students in a specific class for the lecturer,
      * with optional filtering by search (name/studentCode) and hasGroup status.

@@ -9,4 +9,5 @@ public interface LecturerAssignmentService {
     void assignLecturer(Long classId, Long lecturerId);
     List<AcademicClassResponse> getAssignedClassesForCurrentLecturer();
     List<LecturerGroupSummaryResponse> getGroupsForCurrentLecturer();
+    List<LecturerGroupSummaryResponse> getGroupsForCurrentLecturerByClass(Long classId);
 }

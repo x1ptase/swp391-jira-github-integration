@@ -140,6 +140,55 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
         return result;
     }
 
+    @Override
+    public List<LecturerGroupSummaryResponse> getGroupsForCurrentLecturerByClass(Long classId) {
+        Long lecturerId = currentUserId();
+        if (lecturerId == null) {
+            throw new BusinessException("Unauthorized", 401);
+        }
+
+        if (!academicClassRepository.existsById(classId)) {
+            throw new BusinessException("Class not found: " + classId, 404);
+        }
+
+        boolean isAssigned = lecturerAssignmentRepository.existsByClassIdAndLecturerId(classId, lecturerId);
+        if (!isAssigned) {
+            throw new BusinessException("You are not assigned to this class", 403);
+        }
+
+        List<StudentGroup> groups = studentGroupRepository.findByAcademicClass_ClassId(classId);
+
+        return groups.stream()
+                .map(this::mapToLecturerGroupSummary)
+                .collect(Collectors.toList());
+    }
+
+    private LecturerGroupSummaryResponse mapToLecturerGroupSummary(StudentGroup sg) {
+        List<GroupMember> rawMembers = groupMemberRepository.findByGroup_GroupId(sg.getGroupId());
+
+        List<GroupMemberResponse> memberDtos = new ArrayList<>();
+        for (GroupMember gm : rawMembers) {
+            GroupMemberResponse dto = new GroupMemberResponse();
+            dto.setUserId(gm.getUser().getUserId());
+            dto.setUsername(gm.getUser().getUsername());
+            dto.setFullName(gm.getUser().getFullName());
+            dto.setEmail(gm.getUser().getEmail());
+            dto.setMemberRole(gm.getMemberRole() == null ? null : gm.getMemberRole().getCode());
+            dto.setStudentCode(gm.getUser().getStudentCode());
+            memberDtos.add(dto);
+        }
+
+        return LecturerGroupSummaryResponse.builder()
+                .groupId(sg.getGroupId())
+                .groupName(sg.getGroupName())
+                .classCode(sg.getAcademicClass() != null ? sg.getAcademicClass().getClassCode() : null)
+                .semesterCode(sg.getAcademicClass() != null && sg.getAcademicClass().getSemester() != null
+                        ? sg.getAcademicClass().getSemester().getSemesterCode() : null)
+                .topicName(sg.getTopic() != null ? sg.getTopic().getTopicName() : null)
+                .members(memberDtos)
+                .build();
+    }
+
     private Long currentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) return null;
