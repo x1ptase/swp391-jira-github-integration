@@ -113,14 +113,6 @@
 .lgm-error-text { font-size: 12px; color: #dc2626; }
 .lgm-error-banner { padding: 9px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #dc2626; font-size: 13px; margin-bottom: 12px; }
 
-/* Pagination */
-.lgm-pagination { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-top: 1px solid #f1f5f9; flex-wrap: wrap; }
-.lgm-page-btn { padding: 5px 10px; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 12px; color: #475569; cursor: pointer; }
-.lgm-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.lgm-page-numbers { display: flex; gap: 3px; }
-.lgm-page-num { width: 28px; height: 28px; border: 1.5px solid #e2e8f0; border-radius: 5px; font-size: 12px; color: #475569; background: #fff; cursor: pointer; }
-.lgm-page-num.active { background: #1e293b; color: #fff; border-color: #1e293b; }
-
 /* Modal */
 .lgm-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
 .lgm-modal { background: #fff; border-radius: 14px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: lgm-in 0.18s ease; }

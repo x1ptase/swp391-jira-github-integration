@@ -258,6 +258,18 @@
   color: #64748b;
 }
 
+.sgl-enrolled-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 3px 4px;
+}
+
+.sgl-enrolled-label{
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
 
 /* Status */
 .sgl-enrolled-status {

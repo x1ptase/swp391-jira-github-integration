@@ -174,11 +174,11 @@ export default function StudentDashboard() {
                 </div>
                 <div className="sgl-enrolled-card-right">
                   <div className="sgl-enrolled-meta">
-                    <span className="sgl-enrolled-label">Semester</span>
+                    <span className="sgl-enrolled-label">Semester: </span>
                     <span className="sgl-enrolled-val">{enrolledClass.semesterCode}</span>
                   </div>
                   <div className="sgl-enrolled-meta">
-                    <span className="sgl-enrolled-label">Lecturer</span>
+                    <span className="sgl-enrolled-label">Lecturer: </span>
                     <span className="sgl-enrolled-val">{enrolledClass.lecturerName || "Not assigned"}</span>
                   </div>
                 </div>

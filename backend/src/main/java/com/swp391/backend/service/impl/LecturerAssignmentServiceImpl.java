@@ -121,6 +121,7 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
                 dto.setFullName(gm.getUser().getFullName());
                 dto.setEmail(gm.getUser().getEmail());
                 dto.setMemberRole(gm.getMemberRole() == null ? null : gm.getMemberRole().getCode());
+                dto.setStudentCode(gm.getUser().getStudentCode());
                 memberDtos.add(dto);
             }
 
