@@ -11,5 +11,6 @@ public class GroupMemberResponse {
     private String fullName;
     private String memberRole;
     private String email;
+    private String studentCode;
     public GroupMemberResponse() {}
 }

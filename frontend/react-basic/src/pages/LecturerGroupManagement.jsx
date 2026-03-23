@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import CommitStats from "./CommitStats";
 import RequirementDashboard from "./RequirementDashboard";
@@ -17,18 +17,22 @@ export default function LecturerGroupManagement() {
   const [activeTab, setActiveTab] = useState("home");
   const [classInfo, setClassInfo] = useState(null);
 
+  // Home tab
   const [groupSummaries, setGroupSummaries] = useState([]);
   const [expandedGroupId, setExpandedGroupId] = useState(null);
   const [homeLoading, setHomeLoading] = useState(false);
   const [selectedGroupForStats, setSelectedGroupForStats] = useState(null);
 
+  // Students tab (inside Home)
   const [classStudents, setClassStudents] = useState([]);
   const [studentSearch, setStudentSearch] = useState("");
   const [hasGroupFilter, setHasGroupFilter] = useState("");
-  const [studentPage, setStudentPage] = useState(0);
-  const [studentTotalPages, setStudentTotalPages] = useState(0);
   const [studentsLoading, setStudentsLoading] = useState(false);
+  const [studentPage, setStudentPage] = useState(0);           // thêm
+  const [studentTotalPages, setStudentTotalPages] = useState(0);
 
+
+  // Groups tab
   const [groups, setGroups] = useState([]);
   const [groupsLoading, setGroupsLoading] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -37,8 +41,8 @@ export default function LecturerGroupManagement() {
   const [editGroupId, setEditGroupId] = useState(null);
   const [editGroupName, setEditGroupName] = useState("");
   const [editError, setEditError] = useState("");
-  const [expandedStatsGroupId, setExpandedStatsGroupId] = useState(null);
 
+  // Members modal
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [members, setMembers] = useState([]);
@@ -47,6 +51,7 @@ export default function LecturerGroupManagement() {
   const [memberPage, setMemberPage] = useState(0);
   const [memberTotalPages, setMemberTotalPages] = useState(0);
 
+  // Topic modal
   const [showTopicModal, setShowTopicModal] = useState(false);
   const [topicGroup, setTopicGroup] = useState(null);
   const [topics, setTopics] = useState([]);
@@ -54,11 +59,9 @@ export default function LecturerGroupManagement() {
   const [assigningTopic, setAssigningTopic] = useState(null);
   const [topicError, setTopicError] = useState("");
 
-  const username = localStorage.getItem("username") || "Lecturer";
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
   const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
-  const handleLogout = () => { localStorage.clear(); navigate("/login"); };
 
   useEffect(() => {
     fetchClassInfo();
@@ -74,11 +77,14 @@ export default function LecturerGroupManagement() {
     setClassInfo(classes.find(c => String(c.classId) === String(classId)) || null);
   };
 
+  //  Home 
   const fetchGroupSummaries = async () => {
     setHomeLoading(true);
     const res = await fetch(GROUP_SUMMARY_API, { headers: auth() });
     const data = await res.json();
-    setGroupSummaries(data.data || []);
+    const all = data.data || [];
+    // filter by classId via classCode matching
+    setGroupSummaries(all);
     setHomeLoading(false);
   };
 
@@ -95,6 +101,7 @@ export default function LecturerGroupManagement() {
     setStudentsLoading(false);
   };
 
+  //  Groups ─
   const fetchGroups = async () => {
     setGroupsLoading(true);
     const res = await fetch(`${GROUP_API}?class_id=${classId}`, { headers: auth() });
@@ -140,6 +147,7 @@ export default function LecturerGroupManagement() {
     else { const err = await res.json(); alert(err.message || "Failed"); }
   };
 
+  //  Members 
   const openMemberModal = async (group) => {
     setSelectedGroup(group); setMemberKeyword("");
     await fetchMembers(group.groupId);
@@ -184,6 +192,7 @@ export default function LecturerGroupManagement() {
     else { const err = await res.json(); alert("Failed: " + (err.message || "Unknown")); }
   };
 
+  //  Topic 
   const openTopicModal = async (group) => {
     setTopicGroup(group); setTopicSearch(""); setTopicError("");
     const res = await fetch(`${TOPIC_API}?page=0&size=999`, { headers: auth() });
@@ -227,10 +236,6 @@ export default function LecturerGroupManagement() {
           <span className="lgm-class-code">{classInfo?.classCode || `Class #${classId}`}</span>
           <span className="lgm-class-meta">{classInfo?.semesterCode} · {classInfo?.courseCode}</span>
         </div>
-        <div className="lgm-topbar-right">
-          <span className="lgm-topbar-user">Welcome, {username}</span>
-          <button className="lgm-logout-btn" onClick={handleLogout}>Logout</button>
-        </div>
       </div>
 
       {/* Tabs */}
@@ -238,6 +243,7 @@ export default function LecturerGroupManagement() {
         {[
           { id: "home", label: "Home", icon: "🏠" },
           { id: "groups", label: "Groups", icon: "👥" },
+          { id: "students", label: "Students", icon: "🎓" },
         ].map(t => (
           <button key={t.id} className={`lgm-tab ${activeTab === t.id ? "lgm-tab-active" : ""}`}
             onClick={() => setActiveTab(t.id)}>
@@ -248,67 +254,83 @@ export default function LecturerGroupManagement() {
 
       <div className="lgm-content">
 
-        {/* HOME TAB */}
+        {/*  HOME TAB  */}
         {activeTab === "home" && (
           <div className="lgm-home">
-            <div className="lgm-section-title">Class Students</div>
-            <div className="lgm-filter-bar">
-              <div className="lgm-search-wrap">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-                </svg>
-                <input className="lgm-search-input" placeholder="Search by name or student code..."
-                  value={studentSearch} onChange={e => setStudentSearch(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && fetchClassStudents(0)} />
-              </div>
-              <select className="lgm-select" value={hasGroupFilter} onChange={e => { setHasGroupFilter(e.target.value); fetchClassStudents(0, studentSearch, e.target.value); }}>
-                <option value="">All Students</option>
-                <option value="true">Has Group</option>
-                <option value="false">No Group</option>
-              </select>
-              <button className="lgm-btn-primary lgm-btn-sm" onClick={() => fetchClassStudents(0)}>Search</button>
-            </div>
-
-            {studentsLoading ? (
+            {/* Group summaries */}
+            <div className="lgm-section-title">Groups Overview</div>
+            {homeLoading ? (
               <div className="lgm-loading"><span className="lgm-spinner" /> Loading...</div>
+            ) : groupSummaries.length === 0 ? (
+              <div className="lgm-empty-sm">No groups yet.</div>
             ) : (
-              <div className="lgm-card lgm-table-card">
-                <table className="lgm-table">
-                  <thead><tr><th>#</th><th>Student Code</th><th>Full Name</th><th>Email</th><th>Group</th></tr></thead>
-                  <tbody>
-                    {classStudents.length === 0
-                      ? <tr><td colSpan="5" className="lgm-empty-row">No students found</td></tr>
-                      : classStudents.map((s, i) => (
-                        <tr key={s.userId}>
-                          <td className="lgm-td-num">{studentPage * 10 + i + 1}</td>
-                          <td><span className="lgm-student-code">{s.studentCode || "—"}</span></td>
-                          <td>{s.fullName}</td>
-                          <td className="lgm-email">{s.email}</td>
-                          <td>{s.groupName ? <span className="lgm-group-chip">{s.groupName}</span> : <span className="lgm-null">No group</span>}</td>
-                        </tr>
-                      ))
-                    }
-                  </tbody>
-                </table>
-                {studentTotalPages > 1 && (
-                  <div className="lgm-pagination">
-                    <button className="lgm-page-btn" onClick={() => fetchClassStudents(studentPage - 1)} disabled={studentPage === 0}>← Prev</button>
-                    <div className="lgm-page-numbers">
-                      {Array.from({ length: studentTotalPages }, (_, i) => (
-                        <button key={i} className={`lgm-page-num ${i === studentPage ? "active" : ""}`} onClick={() => fetchClassStudents(i)}>{i + 1}</button>
-                      ))}
+              <div className="lgm-summary-list">
+                {groupSummaries.map((g, i) => (
+                  <div key={g.groupId} className="lgm-summary-card">
+                    <div className="lgm-summary-header" onClick={() => setExpandedGroupId(expandedGroupId === g.groupId ? null : g.groupId)}>
+                      <div className="lgm-summary-left">
+                        <span className="lgm-summary-num">{i + 1}</span>
+                        <div>
+                          <div className="lgm-summary-name">{g.groupName}</div>
+                          <div className="lgm-summary-topic">
+                            {g.topicName
+                              ? <span className="lgm-topic-badge">{g.topicName}</span>
+                              : <span className="lgm-no-topic">No topic assigned</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="lgm-summary-right">
+                        <span className="lgm-member-count">{g.members?.length || 0} members</span>
+                        <button className="lgm-stats-btn" onClick={e => { e.stopPropagation(); setSelectedGroupForStats(selectedGroupForStats === g.groupId ? null : g.groupId); }}>
+                          {selectedGroupForStats === g.groupId ? "Hide Stats" : "Stats"}
+                        </button>
+                        <span className="lgm-expand-icon">{expandedGroupId === g.groupId ? "▲" : "▼"}</span>
+                      </div>
                     </div>
-                    <button className="lgm-page-btn" onClick={() => fetchClassStudents(studentPage + 1)} disabled={studentPage >= studentTotalPages - 1}>Next →</button>
+
+                    {/* Members list */}
+                    {expandedGroupId === g.groupId && (
+                      <div className="lgm-summary-members">
+                        <table className="lgm-table">
+                          <thead><tr><th>#</th><th>Student Code</th><th>Full Name</th><th>Role</th></tr></thead>
+                          <tbody>
+                            {(g.members || []).length === 0
+                              ? <tr><td colSpan="4" className="lgm-empty-row">No members</td></tr>
+                              : (g.members || []).map((m, mi) => (
+                                <tr key={m.userId}>
+                                  <td className="lgm-td-num">{mi + 1}</td>
+                                  <td><span className="lgm-student-code">{m.studentCode || "—"}</span></td>
+                                  <td>{m.fullName}</td>
+                                  <td>{m.memberRole}</td>
+                                </tr>
+                              ))
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* Stats */}
+                    {selectedGroupForStats === g.groupId && (
+                      <div className="lgm-stats-section">
+                        <CommitStats groupId={g.groupId} />
+                        <RequirementDashboard groupId={g.groupId} />
+                      </div>
+                    )}
                   </div>
-                )}
+                ))}
               </div>
             )}
+
           </div>
         )}
 
-        {/* GROUPS TAB */}
+
+
+        {/*  GROUPS TAB  */}
         {activeTab === "groups" && (
           <div className="lgm-groups">
+            {/* Create */}
             <div className="lgm-create-bar">
               {!showCreateGroup ? (
                 <button className="lgm-btn-primary" onClick={() => setShowCreateGroup(true)}>+ New Group</button>
@@ -337,67 +359,46 @@ export default function LecturerGroupManagement() {
                   <tbody>
                     {groups.map((g, i) => {
                       const st = getStatusStyle(g.status);
-                      const statsExpanded = expandedStatsGroupId === g.groupId;
                       return (
-                        <React.Fragment key={g.groupId}>
-                          <tr className="lgm-group-row"
-                            onClick={() => setExpandedStatsGroupId(statsExpanded ? null : g.groupId)}
-                            style={{ cursor: "pointer" }}>
-                            <td className="lgm-td-num">{i + 1}</td>
-                            <td>
-                              {editGroupId === g.groupId ? (
-                                <div className="lgm-inline-edit" onClick={e => e.stopPropagation()}>
-                                  <input className="lgm-input lgm-input-sm" value={editGroupName}
-                                    onChange={e => setEditGroupName(e.target.value)}
-                                    onKeyDown={e => e.key === "Enter" && handleUpdateGroup(g.groupId)} autoFocus />
-                                  <button className="lgm-btn-xs lgm-btn-primary" onClick={() => handleUpdateGroup(g.groupId)}>Save</button>
-                                  <button className="lgm-btn-xs lgm-btn-ghost" onClick={() => { setEditGroupId(null); setEditError(""); }}>Cancel</button>
-                                  {editError && <span className="lgm-error-text">{editError}</span>}
-                                </div>
-                              ) : (
-                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                  <strong>{g.groupName}</strong>
-                                  <span style={{ fontSize: 10, color: "#94a3b8" }}>{statsExpanded ? "▲" : "▼"}</span>
-                                </div>
-                              )}
-                            </td>
-                            <td>
-                              {g.topicName
-                                ? <span className="lgm-topic-badge">{g.topicName}</span>
-                                : <span className="lgm-null">—</span>}
-                            </td>
-                            <td>
-                              <span className="lgm-status-badge" style={{ background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>
-                                {g.status || "OPEN"}
-                              </span>
-                            </td>
-                            <td onClick={e => e.stopPropagation()}>
-                              <div className="lgm-row-actions">
-                                <button className="lgm-btn-action lgm-btn-members" onClick={() => openMemberModal(g)}>Members</button>
-                                <button className="lgm-btn-action lgm-btn-topic" onClick={() => openTopicModal(g)}
-                                  disabled={g.status === "CLOSED"}>Topic</button>
-                                <button className="lgm-btn-action lgm-btn-edit2"
-                                  onClick={() => { setEditGroupId(g.groupId); setEditGroupName(g.groupName); setEditError(""); }}
-                                  disabled={g.status === "CLOSED"}>Edit</button>
-                                {g.status !== "CLOSED"
-                                  ? <button className="lgm-btn-action lgm-btn-close" onClick={() => handleChangeStatus(g.groupId, "CLOSED")}>Close</button>
-                                  : <button className="lgm-btn-action lgm-btn-open" onClick={() => handleChangeStatus(g.groupId, "OPEN")}>Reopen</button>
-                                }
-                                <button className="lgm-btn-action lgm-btn-danger" onClick={() => handleDeleteGroup(g.groupId)}>Delete</button>
+                        <tr key={g.groupId}>
+                          <td className="lgm-td-num">{i + 1}</td>
+                          <td>
+                            {editGroupId === g.groupId ? (
+                              <div className="lgm-inline-edit">
+                                <input className="lgm-input lgm-input-sm" value={editGroupName}
+                                  onChange={e => setEditGroupName(e.target.value)}
+                                  onKeyDown={e => e.key === "Enter" && handleUpdateGroup(g.groupId)} autoFocus />
+                                <button className="lgm-btn-xs lgm-btn-primary" onClick={() => handleUpdateGroup(g.groupId)}>Save</button>
+                                <button className="lgm-btn-xs lgm-btn-ghost" onClick={() => { setEditGroupId(null); setEditError(""); }}>Cancel</button>
+                                {editError && <span className="lgm-error-text">{editError}</span>}
                               </div>
-                            </td>
-                          </tr>
-                          {statsExpanded && (
-                            <tr>
-                              <td colSpan="5" style={{ padding: 0, background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-                                <div style={{ padding: "16px 20px" }}>
-                                  <CommitStats groupId={g.groupId} />
-                                  <RequirementDashboard groupId={g.groupId} />
-                                </div>
-                              </td>
-                            </tr>
-                          )}
-                        </React.Fragment>
+                            ) : <strong>{g.groupName}</strong>}
+                          </td>
+                          <td>
+                            {g.topicName
+                              ? <span className="lgm-topic-badge">{g.topicName}</span>
+                              : <span className="lgm-null">—</span>}
+                          </td>
+                          <td>
+                            <span className="lgm-status-badge" style={{ background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>
+                              {g.status || "OPEN"}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="lgm-row-actions">
+                              <button className="lgm-btn-action lgm-btn-members" onClick={() => openMemberModal(g)} disabled={g.status === "CLOSED"}>Members</button>
+                              <button className="lgm-btn-action lgm-btn-topic" onClick={() => openTopicModal(g)}
+                                disabled={g.status === "CLOSED"}>Topic</button>
+                              <button className="lgm-btn-action lgm-btn-edit2" onClick={() => { setEditGroupId(g.groupId); setEditGroupName(g.groupName); setEditError(""); }}
+                                disabled={g.status === "CLOSED"}>Edit</button>
+                              {g.status !== "CLOSED"
+                                ? <button className="lgm-btn-action lgm-btn-close" onClick={() => handleChangeStatus(g.groupId, "CLOSED")}>Close</button>
+                                : <button className="lgm-btn-action lgm-btn-open" onClick={() => handleChangeStatus(g.groupId, "OPEN")}>Reopen</button>
+                              }
+                              <button className="lgm-btn-action lgm-btn-danger" onClick={() => handleDeleteGroup(g.groupId)}>Delete</button>
+                            </div>
+                          </td>
+                        </tr>
                       );
                     })}
                   </tbody>
@@ -408,7 +409,52 @@ export default function LecturerGroupManagement() {
         )}
       </div>
 
-      {/* Members Modal */}
+      {/* STUDENTS TAB */}
+      {activeTab === "students" && (
+        <div className="lgm-students">
+          <div className="lgm-filter-bar">
+            <div className="lgm-search-wrap">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+              </svg>
+              <input className="lgm-search-input" placeholder="Search by name or student code..."
+                value={studentSearch} onChange={e => setStudentSearch(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && fetchClassStudents(0)} />
+            </div>
+            <select className="lgm-select" value={hasGroupFilter} onChange={e => { setHasGroupFilter(e.target.value); fetchClassStudents(0, studentSearch, e.target.value); }}>
+              <option value="">All Students</option>
+              <option value="true">Has Group</option>
+              <option value="false">No Group</option>
+            </select>
+            <button className="lgm-btn-primary lgm-btn-sm" onClick={() => fetchClassStudents(0)}>Search</button>
+          </div>
+          {studentsLoading ? (
+            <div className="lgm-loading"><span className="lgm-spinner" /> Loading...</div>
+          ) : (
+            <div className="lgm-card lgm-table-card">
+              <table className="lgm-table">
+                <thead><tr><th>#</th><th>Student Code</th><th>Full Name</th><th>Email</th><th>Group</th></tr></thead>
+                <tbody>
+                  {classStudents.length === 0
+                    ? <tr><td colSpan="5" className="lgm-empty-row">No students found</td></tr>
+                    : classStudents.map((s, i) => (
+                      <tr key={s.userId}>
+                        <td className="lgm-td-num">{i + 1}</td>
+                        <td><span className="lgm-student-code">{s.studentCode || "—"}</span></td>
+                        <td>{s.fullName}</td>
+                        <td className="lgm-email">{s.email}</td>
+                        <td>{s.groupName ? <span className="lgm-group-chip">{s.groupName}</span> : <span className="lgm-null">No group</span>}</td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/*  Members Modal  */}
       {showMemberModal && (
         <div className="lgm-modal-overlay" onClick={() => setShowMemberModal(false)}>
           <div className="lgm-modal lgm-modal-xl" onClick={e => e.stopPropagation()}>
@@ -444,6 +490,7 @@ export default function LecturerGroupManagement() {
                   }
                 </tbody>
               </table>
+
               <div className="lgm-section-label" style={{ marginTop: 18 }}>Add Student</div>
               <input className="lgm-input lgm-search-input" placeholder="Search by name or username..."
                 value={memberKeyword}
@@ -478,7 +525,7 @@ export default function LecturerGroupManagement() {
         </div>
       )}
 
-      {/* Topic Modal */}
+      {/*  Topic Modal  */}
       {showTopicModal && (
         <div className="lgm-modal-overlay" onClick={() => setShowTopicModal(false)}>
           <div className="lgm-modal lgm-modal-lg" onClick={e => e.stopPropagation()}>

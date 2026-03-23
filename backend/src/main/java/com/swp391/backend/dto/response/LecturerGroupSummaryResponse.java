@@ -17,5 +17,6 @@ public class LecturerGroupSummaryResponse {
     private String classCode;
     private String semesterCode;
     private String topicName;
+    private String studentCode;
     private List<GroupMemberResponse> members;
 }
