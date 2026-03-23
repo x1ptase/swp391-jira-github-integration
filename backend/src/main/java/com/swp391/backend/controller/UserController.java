@@ -53,6 +53,16 @@ public class UserController {
         return ApiResponse.success(result);
     }
 
+    @GetMapping("/unassigned-students")
+    public ApiResponse<Page<UserResponse>> listUnassignedStudents(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<UserResponse> result = userService.listUnassignedStudents(keyword, pageable);
+        return ApiResponse.success(result);
+    }
+
     @DeleteMapping("/{id}")
     public ApiResponse<Object> delete(@PathVariable("id") Long id) {
         userService.deleteUser(id);

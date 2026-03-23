@@ -69,4 +69,39 @@ public interface UserRepository extends JpaRepository<User, Long> {
         Page<User> searchEligibleStudentsForGroup(@Param("kw") String keyword,
                                                   @Param("classId") Long classId,
                                                   Pageable pageable);
+
+        @Query(
+                value = """
+                SELECT u.*
+                FROM Users u
+                JOIN Role r ON u.role_id = r.role_id
+                LEFT JOIN StudentClassAssignment sca ON sca.student_id = u.user_id
+                WHERE LOWER(r.role_code) = 'student'
+                  AND sca.student_id IS NULL
+                  AND (
+                        :kw IS NULL OR :kw = '' OR
+                        LOWER(u.username) LIKE LOWER(CONCAT('%', :kw, '%')) OR
+                        LOWER(u.email) LIKE LOWER(CONCAT('%', :kw, '%')) OR
+                        LOWER(u.full_name) LIKE LOWER(CONCAT('%', :kw, '%')) OR
+                        LOWER(u.student_code) LIKE LOWER(CONCAT('%', :kw, '%'))
+                  )
+                """,
+                countQuery = """
+                SELECT COUNT(*)
+                FROM Users u
+                JOIN Role r ON u.role_id = r.role_id
+                LEFT JOIN StudentClassAssignment sca ON sca.student_id = u.user_id
+                WHERE LOWER(r.role_code) = 'student'
+                  AND sca.student_id IS NULL
+                  AND (
+                        :kw IS NULL OR :kw = '' OR
+                        LOWER(u.username) LIKE LOWER(CONCAT('%', :kw, '%')) OR
+                        LOWER(u.email) LIKE LOWER(CONCAT('%', :kw, '%')) OR
+                        LOWER(u.full_name) LIKE LOWER(CONCAT('%', :kw, '%')) OR
+                        LOWER(u.student_code) LIKE LOWER(CONCAT('%', :kw, '%'))
+                  )
+                """,
+                nativeQuery = true
+        )
+        Page<User> searchUnassignedStudents(@Param("kw") String keyword, Pageable pageable);
 }
