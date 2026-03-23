@@ -180,6 +180,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Page<UserResponse> listUnassignedStudents(String keyword, Pageable pageable) {
+        if (keyword != null) {
+            keyword = keyword.trim();
+            if (keyword.isEmpty()) {
+                keyword = null;
+            }
+        }
+
+        Page<User> page = userRepository.searchUnassignedStudents(keyword, pageable);
+        List<User> users = page.getContent();
+
+        List<UserResponse> dtoList = new ArrayList<UserResponse>();
+        for (int i = 0; i < users.size(); i++) {
+            dtoList.add(toResponse(users.get(i)));
+        }
+
+        return new PageImpl<UserResponse>(dtoList, pageable, page.getTotalElements());
+    }
+
+    @Override
     public void deleteUser(Long userId) {
         // Nếu user đang dính FK (GroupMember, LecturerAssignment, ...) -> DB sẽ chặn
         User user = getUserOrThrow(userId);
