@@ -3,7 +3,7 @@ import "./AdminClassManagement.css";
 
 const CLASS_API = "/api/classes";
 const SEMESTER_API = "/api/semesters?page=0&size=999";
-const STUDENT_API = "/api/admin/users?roleCode=STUDENT&page=0&size=999";
+const STUDENT_API = "/api/admin/users/unassigned-students";
 const ASSIGN_STUDENT_API = "/api/admin/classes";
 
 const COURSE_ID = 1;
@@ -59,7 +59,7 @@ export default function AdminClassManagement() {
   };
 
 
-  const fetchAllStudents = async () => {
+  const fetchAllUnassignedStudents = async () => {
     const res = await fetch(STUDENT_API, { headers: auth() });
     const data = await res.json();
     setAllStudents(data.data?.content || data.data || []);
@@ -115,7 +115,7 @@ export default function AdminClassManagement() {
   const openAddStudent = async (cls) => {
     setAddStudentClass(cls); setStudentSearch(""); setAddError(""); setAddSuccess("");
     const [studentsRes, enrolledRes] = await Promise.all([
-      fetchAllStudents(),
+      fetchAllUnassignedStudents(),
       fetch(`${ASSIGN_STUDENT_API}/${cls.classId}/students`, { headers: auth() })
     ]);
     const enrolledData = await enrolledRes.json();

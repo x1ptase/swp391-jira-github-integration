@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LecturerClassList.css";
+import LogoutButton from "./LogoutButton";
 
 const CLASS_API = "/api/lecturer/classes";
 const GROUP_API = "/api/student_group";
@@ -172,7 +173,7 @@ export default function LecturerClassList() {
 
   //  Render 
   if (loading) return (
-    <div className="lcl-root"><div className="lcl-loading"><span className="lcl-spinner"/>Loading...</div></div>
+    <div className="lcl-root"><div className="lcl-loading"><span className="lcl-spinner" />Loading...</div></div>
   );
 
   if (error) return (
@@ -182,6 +183,11 @@ export default function LecturerClassList() {
   return (
     <div className="lcl-root">
       <div className="lcl-page-header">
+        <div className="lcl-page-header">
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <LogoutButton />
+          </div>
+        </div>
         <div>
           <h1 className="lcl-page-title">My Assigned Classes</h1>
           <p className="lcl-page-desc">You are assigned to {classes.length} class(es)</p>
@@ -269,7 +275,7 @@ export default function LecturerClassList() {
               </div>
 
               {groupsLoading ? (
-                <div className="lcl-loading"><span className="lcl-spinner"/>Loading groups...</div>
+                <div className="lcl-loading"><span className="lcl-spinner" />Loading groups...</div>
               ) : groups.length === 0 ? (
                 <div className="lcl-empty-sm">No groups yet. Create one above.</div>
               ) : (
@@ -376,7 +382,7 @@ export default function LecturerClassList() {
               </table>
 
               {/* Add student */}
-              <div className="lcl-section-title" style={{marginTop: 20}}>Add Student</div>
+              <div className="lcl-section-title" style={{ marginTop: 20 }}>Add Student</div>
               <div className="lcl-section-title" style={{ marginTop: 20 }}>Add Student</div>
               <input
                 className="lcl-input lcl-search-input"
