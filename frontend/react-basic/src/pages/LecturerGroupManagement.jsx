@@ -3,9 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import CommitStats from "./CommitStats";
 import RequirementDashboard from "./RequirementDashboard";
 import "./LecturerGroupManagement.css";
+import LogoutButton from "./LogoutButton";
 
 const CLASS_API = "/api/lecturer/classes";
-const GROUP_SUMMARY_API = "/api/lecturer/groups";
 const CLASS_STUDENTS_API = "/api/lecturer/classes";
 const GROUP_API = "/api/student_group";
 const MEMBER_API = "/api/groups";
@@ -28,7 +28,7 @@ export default function LecturerGroupManagement() {
   const [studentSearch, setStudentSearch] = useState("");
   const [hasGroupFilter, setHasGroupFilter] = useState("");
   const [studentsLoading, setStudentsLoading] = useState(false);
-  const [studentPage, setStudentPage] = useState(0);           // thêm
+  const [studentPage, setStudentPage] = useState(0);
   const [studentTotalPages, setStudentTotalPages] = useState(0);
 
 
@@ -80,11 +80,9 @@ export default function LecturerGroupManagement() {
   //  Home 
   const fetchGroupSummaries = async () => {
     setHomeLoading(true);
-    const res = await fetch(GROUP_SUMMARY_API, { headers: auth() });
+    const res = await fetch(`/api/lecturer/classes/${classId}/groups`, { headers: auth() });
     const data = await res.json();
-    const all = data.data || [];
-    // filter by classId via classCode matching
-    setGroupSummaries(all);
+    setGroupSummaries(data.data || []);
     setHomeLoading(false);
   };
 
@@ -236,6 +234,7 @@ export default function LecturerGroupManagement() {
           <span className="lgm-class-code">{classInfo?.classCode || `Class #${classId}`}</span>
           <span className="lgm-class-meta">{classInfo?.semesterCode} · {classInfo?.courseCode}</span>
         </div>
+        <LogoutButton />
       </div>
 
       {/* Tabs */}

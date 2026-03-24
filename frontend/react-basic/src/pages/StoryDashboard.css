@@ -375,3 +375,12 @@
 .sd-page-num.active { background: #7c3aed; border-color: #7c3aed; color: #fff; }
 
 .sd-page-info { margin-left: auto; font-size: 12px; color: #94a3b8; }
+
+.sd-expand-btn {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer;
+  border-radius: 4px; color: #94a3b8; padding: 0;
+  transition: background 0.1s, color 0.1s;
+}
+.sd-expand-btn:hover { background: #f1f5f9; color: #475569; }
