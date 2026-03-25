@@ -200,6 +200,14 @@ public class StudentGroupServiceImpl implements StudentGroupService {
         } else {
             com.swp391.backend.entity.Topic topic = topicRepository.findById(topicId)
                     .orElseThrow(() -> new BusinessException("Topic not found: " + topicId, 404));
+
+            Long groupSemesterId = existing.getAcademicClass().getSemester().getSemesterId();
+            Long topicSemesterId = topic.getSemester().getSemesterId();
+
+            if (!groupSemesterId.equals(topicSemesterId)) {
+                throw new BusinessException("Topic does not belong to the same semester as the group", 409);
+            }
+
             existing.setTopic(topic);
         }
 

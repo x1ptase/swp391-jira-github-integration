@@ -1,6 +1,7 @@
 package com.swp391.backend.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,9 @@ public class CreateTopicRequest {
     private String topicName;
 
     private String description;
+
+    @NotNull(message = "Semester id is required")
+    private Long semesterId;
 
     public CreateTopicRequest() {}
 
