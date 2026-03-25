@@ -14,16 +14,16 @@ const TOPIC_API = "/api/topics";
 export default function LecturerGroupManagement() {
   const { classId } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTab] = useState("overview");
   const [classInfo, setClassInfo] = useState(null);
 
-  // Home tab
+  // Overview tab
   const [groupSummaries, setGroupSummaries] = useState([]);
   const [expandedGroupId, setExpandedGroupId] = useState(null);
-  const [homeLoading, setHomeLoading] = useState(false);
+  const [overviewLoading, setOverviewLoading] = useState(false);
   const [selectedGroupForStats, setSelectedGroupForStats] = useState(null);
 
-  // Students tab (inside Home)
+  // Students tab (inside Overview)
   const [classStudents, setClassStudents] = useState([]);
   const [studentSearch, setStudentSearch] = useState("");
   const [hasGroupFilter, setHasGroupFilter] = useState("");
@@ -77,13 +77,13 @@ export default function LecturerGroupManagement() {
     setClassInfo(classes.find(c => String(c.classId) === String(classId)) || null);
   };
 
-  //  Home 
+  //  Overview tab
   const fetchGroupSummaries = async () => {
-    setHomeLoading(true);
+    setOverviewLoading(true);
     const res = await fetch(`/api/lecturer/classes/${classId}/groups`, { headers: auth() });
     const data = await res.json();
     setGroupSummaries(data.data || []);
-    setHomeLoading(false);
+    setOverviewLoading(false);
   };
 
   const fetchClassStudents = async (p = 0, search = studentSearch, hg = hasGroupFilter) => {
@@ -240,7 +240,7 @@ export default function LecturerGroupManagement() {
       {/* Tabs */}
       <div className="lgm-tabs">
         {[
-          { id: "home", label: "Home", icon: "🏠" },
+          { id: "overview", label: "Overview", icon: "📋" },
           { id: "groups", label: "Groups", icon: "👥" },
           { id: "students", label: "Students", icon: "🎓" },
         ].map(t => (
@@ -253,12 +253,12 @@ export default function LecturerGroupManagement() {
 
       <div className="lgm-content">
 
-        {/*  HOME TAB  */}
-        {activeTab === "home" && (
+        {/*  OVERVIEW TAB  */}
+        {activeTab === "overview" && (
           <div className="lgm-home">
             {/* Group summaries */}
             <div className="lgm-section-title">Groups Overview</div>
-            {homeLoading ? (
+            {overviewLoading ? (
               <div className="lgm-loading"><span className="lgm-spinner" /> Loading...</div>
             ) : groupSummaries.length === 0 ? (
               <div className="lgm-empty-sm">No groups yet.</div>
