@@ -14,7 +14,7 @@ public interface TopicService {
 
     TopicResponse getTopic(Long id);
 
-    Page<TopicResponse> listTopics(String keyword, Pageable pageable);
+    Page<TopicResponse> listTopics(Long semesterId, String keyword, Pageable pageable);
 
     void deleteTopic(Long id);
 }

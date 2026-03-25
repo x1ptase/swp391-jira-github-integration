@@ -3,8 +3,10 @@ package com.swp391.backend.service.impl;
 import com.swp391.backend.dto.request.CreateTopicRequest;
 import com.swp391.backend.dto.request.UpdateTopicRequest;
 import com.swp391.backend.dto.response.TopicResponse;
+import com.swp391.backend.entity.Semester;
 import com.swp391.backend.entity.Topic;
 import com.swp391.backend.exception.BusinessException;
+import com.swp391.backend.repository.SemesterRepository;
 import com.swp391.backend.repository.StudentGroupRepository;
 import com.swp391.backend.repository.TopicRepository;
 import com.swp391.backend.service.TopicService;
@@ -12,19 +14,21 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
+import org.springframework.util.StringUtils;
 
 @Service
 public class TopicServiceImpl implements TopicService {
 
     private final TopicRepository topicRepository;
     private final StudentGroupRepository studentGroupRepository;
+    private final SemesterRepository semesterRepository;
 
     public TopicServiceImpl(TopicRepository topicRepository,
-                            StudentGroupRepository studentGroupRepository) {
+                            StudentGroupRepository studentGroupRepository,
+                            SemesterRepository semesterRepository) {
         this.topicRepository = topicRepository;
         this.studentGroupRepository = studentGroupRepository;
+        this.semesterRepository = semesterRepository;
     }
 
     @Override
@@ -33,19 +37,23 @@ public class TopicServiceImpl implements TopicService {
         String name = safeTrim(request.getTopicName());
         String desc = request.getDescription();
 
-        if (topicRepository.existsByTopicCode(code)) {
-            throw new BusinessException("Topic code already exists: " + code, 409);
+        Semester semester = semesterRepository.findById(request.getSemesterId())
+                .orElseThrow(() -> new BusinessException("Semester not found: " + request.getSemesterId(), 404));
+
+        if (topicRepository.existsBySemester_SemesterIdAndTopicCode(semester.getSemesterId(), code)) {
+            throw new BusinessException("Topic code already exists in this semester: " + code, 409);
         }
 
         Topic topic = new Topic();
         topic.setTopicCode(code);
         topic.setTopicName(name);
         topic.setDescription(desc);
+        topic.setSemester(semester);
 
         try {
             return toResponse(topicRepository.save(topic));
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Unique constraint violated (topicCode/topicName)", 409);
+            throw new BusinessException("Unique constraint violated (semesterId + topicCode)", 409);
         }
     }
 
@@ -61,7 +69,7 @@ public class TopicServiceImpl implements TopicService {
         try {
             return toResponse(topicRepository.save(topic));
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Unique constraint violated (topicName)", 409);
+            throw new BusinessException("Unique constraint violated", 409);
         }
     }
 
@@ -71,12 +79,18 @@ public class TopicServiceImpl implements TopicService {
     }
 
     @Override
-    public Page<TopicResponse> listTopics(String keyword, Pageable pageable) {
-        if (keyword != null) {
-            keyword = keyword.trim();
-            if (keyword.isEmpty()) keyword = null;
+    public Page<TopicResponse> listTopics(Long semesterId, String keyword, Pageable pageable) {
+        if (semesterId != null && !semesterRepository.existsById(semesterId)) {
+            throw new BusinessException("Semester not found: " + semesterId, 404);
         }
-        return topicRepository.search(keyword, pageable).map(this::toResponse);
+
+        if (StringUtils.hasText(keyword)) {
+            keyword = keyword.trim();
+        } else {
+            keyword = null;
+        }
+
+        return topicRepository.search(semesterId, keyword, pageable).map(this::toResponse);
     }
 
     @Override
@@ -96,11 +110,8 @@ public class TopicServiceImpl implements TopicService {
     }
 
     private Topic getTopicOrThrow(Long id) {
-        Optional<Topic> opt = topicRepository.findById(id);
-        if (!opt.isPresent()) {
-            throw new BusinessException("Topic not found: " + id, 404);
-        }
-        return opt.get();
+        return topicRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Topic not found: " + id, 404));
     }
 
     private TopicResponse toResponse(Topic t) {
@@ -109,13 +120,19 @@ public class TopicServiceImpl implements TopicService {
         r.setTopicCode(t.getTopicCode());
         r.setTopicName(t.getTopicName());
         r.setDescription(t.getDescription());
+
+        if (t.getSemester() != null) {
+            r.setSemesterId(t.getSemester().getSemesterId());
+            r.setSemesterCode(t.getSemester().getSemesterCode());
+            r.setSemesterName(t.getSemester().getSemesterName());
+        }
+
         r.setCreatedAt(t.getCreatedAt());
         r.setUpdatedAt(t.getUpdatedAt());
         return r;
     }
 
     private String safeTrim(String s) {
-        if (s == null) return "";
-        return s.trim();
+        return s == null ? "" : s.trim();
     }
 }

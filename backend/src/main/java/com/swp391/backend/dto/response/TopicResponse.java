@@ -15,6 +15,9 @@ public class TopicResponse {
     private String description;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long semesterId;
+    private String semesterCode;
+    private String semesterName;
 
     public TopicResponse() {}
 

@@ -17,6 +17,10 @@ public class Topic {
     @Column(name = "topic_id")
     private Long topicId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "semester_id", nullable = false)
+    private Semester semester;
+
     @Column(name = "topic_code", nullable = false, length = 50, unique = true)
     private String topicCode;
 
