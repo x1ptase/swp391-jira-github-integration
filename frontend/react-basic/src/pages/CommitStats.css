@@ -1,11 +1,11 @@
-/*  Root  */
+/* ── Root ── */
 .cs-root {
   margin-top: 32px;
   border-top: 1px solid #e2e8f0;
   padding-top: 28px;
 }
 
-/*  Header  */
+/* ── Header ── */
 .cs-header {
   display: flex;
   align-items: center;
@@ -38,7 +38,7 @@
   border: 1px solid #e2e8f0;
 }
 
-/*  Refresh button  */
+/* ── Refresh button ── */
 .cs-refresh-btn {
   display: flex;
   align-items: center;
@@ -67,7 +67,7 @@
 
 @keyframes cs-spin { to { transform: rotate(360deg); } }
 
-/*  Search  */
+/* ── Search ── */
 .cs-search-wrap {
   display: flex;
   align-items: center;
@@ -117,7 +117,7 @@
   white-space: nowrap;
 }
 
-/*  Error  */
+/* ── Error ── */
 .cs-error {
   background: #fef2f2;
   border: 1px solid #fecaca;
@@ -128,7 +128,7 @@
   margin-bottom: 12px;
 }
 
-/*  Loading  */
+/* ── Loading ── */
 .cs-loading {
   display: flex;
   align-items: center;
@@ -150,7 +150,7 @@
   flex-shrink: 0;
 }
 
-/*  Empty  */
+/* ── Empty ── */
 .cs-empty {
   display: flex;
   flex-direction: column;
@@ -164,7 +164,7 @@
 .cs-empty p { font-size: 14px; font-weight: 500; margin: 0; color: #64748b; }
 .cs-empty span { font-size: 12px; }
 
-/*  Table  */
+/* ── Table ── */
 .cs-table-wrap {
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -184,7 +184,7 @@
 
 .cs-table th {
   padding: 10px 14px;
-  text-align: center;
+  text-align: left;
   font-weight: 600;
   color: #64748b;
   font-size: 12px;
@@ -221,7 +221,7 @@
   vertical-align: middle;
 }
 
-/*  Contributor cell  */
+/* ── Contributor cell ── */
 .cs-contributor {
   display: flex;
   align-items: center;
@@ -275,7 +275,7 @@
   color: #94a3b8;
 }
 
-/*  Commit bar  */
+/* ── Commit bar ── */
 .cs-bar-wrap {
   display: flex;
   align-items: center;
@@ -305,12 +305,43 @@
   color: #1e293b;
   white-space: nowrap;
   min-width: 24px;
-  text-align: center;
+  text-align: right;
 }
 
-/*  Stats values  */
+/* ── Stats values ── */
 .cs-additions { color: #16a34a; font-weight: 500; font-size: 13px; }
 .cs-deletions { color: #dc2626; font-weight: 500; font-size: 13px; }
 .cs-files     { color: #475569; font-weight: 500; font-size: 13px; }
 .cs-null      { color: #cbd5e1; font-size: 12px; }
 .cs-date      { white-space: nowrap; color: #64748b; font-size: 12px; }
+
+/* View toggle */
+.cs-header-right { display: flex; align-items: center; gap: 10px; }
+.cs-view-toggle { display: flex; gap: 2px; background: #f1f5f9; border-radius: 8px; padding: 3px; }
+.cs-view-btn { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border: none; background: none; border-radius: 6px; font-size: 12px; font-weight: 500; color: #64748b; cursor: pointer; transition: all 0.15s; }
+.cs-view-btn.active { background: #fff; color: #1e293b; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+/* Charts grid */
+.cs-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 700px) { .cs-charts-grid { grid-template-columns: 1fr; } }
+
+.cs-chart-wrap { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
+.cs-chart-title { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 16px; }
+
+/* Horizontal bar chart */
+.cs-bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.cs-bar-row { display: flex; align-items: center; gap: 10px; }
+.cs-bar-label { font-size: 12px; color: #475569; width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; text-align: right; }
+.cs-bar-track-h { flex: 1; display: flex; align-items: center; gap: 8px; background: #f1f5f9; border-radius: 999px; height: 22px; overflow: hidden; position: relative; }
+.cs-bar-fill-h { height: 100%; border-radius: 999px; transition: width 0.5s ease; min-width: 4px; }
+.cs-bar-val { position: absolute; right: 8px; font-size: 11px; font-weight: 600; color: #1e293b; }
+
+/* Donut */
+.cs-donut-layout { display: flex; align-items: center; gap: 16px; }
+.cs-donut-total-num { font-size: 20px; font-weight: 700; fill: #1e293b; }
+.cs-donut-total-label { font-size: 11px; fill: #94a3b8; }
+.cs-donut-legend { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.cs-legend-row { display: flex; align-items: center; gap: 7px; font-size: 12px; }
+.cs-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.cs-legend-name { flex: 1; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-legend-pct { font-weight: 600; color: #1e293b; }

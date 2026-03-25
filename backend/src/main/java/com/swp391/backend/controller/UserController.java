@@ -68,4 +68,9 @@ public class UserController {
         userService.deleteUser(id);
         return ApiResponse.success(null);
     }
+
+    @GetMapping("/me")
+    public ApiResponse<UserResponse> getMe() {
+        return ApiResponse.success(userService.getMe());
+    }
 }

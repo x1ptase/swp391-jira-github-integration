@@ -17,6 +17,8 @@ import org.springframework.data.domain.Pageable;
         Page<UserResponse> listUnassignedStudents(String keyword, Pageable pageable);
         void deleteUser(Long userId);
         UserResponse updateProfile(UpdateProfileRequest request);
+
+        UserResponse getMe();
     }
 
 
