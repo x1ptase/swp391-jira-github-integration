@@ -17,3 +17,14 @@ body {
 .sidebar{
   text-align: center;
 }
+
+.ld-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-icon {
+  width: 18px;
+  height: 18px;
+}

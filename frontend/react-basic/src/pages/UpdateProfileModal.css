@@ -1,0 +1,40 @@
+.upm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
+.upm-modal { background: #fff; border-radius: 14px; width: 100%; max-width: 460px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: upm-in 0.18s ease; }
+@keyframes upm-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+.upm-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid #f1f5f9; }
+.upm-title { font-size: 15px; font-weight: 600; color: #1e293b; }
+.upm-subtitle { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+.upm-close { background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.upm-close:hover { background: #f1f5f9; color: #1e293b; }
+
+.upm-body { padding: 20px 22px 22px; }
+.upm-loading { display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 13px; padding: 16px 0; }
+
+.upm-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+.upm-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+.upm-hint { font-size: 11px; color: #94a3b8; }
+
+.upm-input-wrap { position: relative; display: flex; align-items: center; }
+.upm-prefix { position: absolute; left: 10px; color: #94a3b8; display: flex; align-items: center; }
+.upm-input {
+  width: 100%; padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+  font-size: 13px; color: #1e293b; background: #fff; outline: none;
+  transition: border-color 0.15s; box-sizing: border-box;
+}
+.upm-input:focus { border-color: #6366f1; }
+.upm-input-prefixed { padding-left: 32px; }
+
+.upm-error { padding: 9px 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #dc2626; font-size: 12px; margin-bottom: 14px; }
+.upm-success { padding: 9px 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; color: #16a34a; font-size: 12px; margin-bottom: 14px; }
+
+.upm-actions { display: flex; gap: 8px; margin-top: 4px; }
+.upm-btn-primary { display: flex; align-items: center; gap: 6px; padding: 9px 20px; background: #1e293b; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+.upm-btn-primary:hover:not(:disabled) { background: #0f172a; }
+.upm-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.upm-btn-ghost { padding: 9px 16px; background: #fff; color: #475569; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; cursor: pointer; }
+.upm-btn-ghost:hover { border-color: #94a3b8; }
+
+.upm-spinner { width: 14px; height: 14px; border: 2px solid #e2e8f0; border-top-color: #6366f1; border-radius: 50%; animation: upm-spin 0.7s linear infinite; display: inline-block; }
+.upm-spinner-sm { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: upm-spin 0.7s linear infinite; display: inline-block; }
+@keyframes upm-spin { to { transform: rotate(360deg); } }

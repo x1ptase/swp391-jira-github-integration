@@ -6,6 +6,8 @@ import MyWork from "./MyWork";
 import "./LeaderDashboard.css";
 import GroupMemberList from "./GroupMemberList";
 import CommitStats from "./CommitStats";
+import UpdateProfileModal from "./UpdateProfileModal";
+import user from "../assets/user.png";
 
 import RequirementDashboard from "./RequirementDashboard";
 
@@ -18,19 +20,19 @@ function useMemberRole() {
 const ALL_TABS = [
   {
     id: "members", label: "Members", leaderOnly: false,
-    icon: (<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>),
+    icon: (<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>),
   },
   {
     id: "mywork", label: "My Tasks", leaderOnly: false,
-    icon: (<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>),
+    icon: (<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>),
   },
   {
     id: "github", label: "GitHub", leaderOnly: false,
-    icon: (<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>),
+    icon: (<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" /></svg>),
   },
   {
     id: "jira", label: "Jira", leaderOnly: false,
-    icon: (<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M11.53 2.034a.9.9 0 0 1 .94 0l8.1 4.95a.9.9 0 0 1 .43.768v9.496a.9.9 0 0 1-.43.768l-8.1 4.95a.9.9 0 0 1-.94 0l-8.1-4.95A.9.9 0 0 1 3 17.248V7.752a.9.9 0 0 1 .43-.768l8.1-4.95z" fill="#0052CC"/><path d="M12 7.5L8 12l4 4.5 4-4.5L12 7.5z" fill="white"/></svg>),
+    icon: (<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M11.53 2.034a.9.9 0 0 1 .94 0l8.1 4.95a.9.9 0 0 1 .43.768v9.496a.9.9 0 0 1-.43.768l-8.1 4.95a.9.9 0 0 1-.94 0l-8.1-4.95A.9.9 0 0 1 3 17.248V7.752a.9.9 0 0 1 .43-.768l8.1-4.95z" fill="#0052CC" /><path d="M12 7.5L8 12l4 4.5 4-4.5L12 7.5z" fill="white" /></svg>),
   },
 ];
 
@@ -42,6 +44,7 @@ export default function LeaderDashboard() {
   const tabs = ALL_TABS.filter(t => !t.leaderOnly || isLeader);
   const [activeTab, setActiveTab] = useState("members");
   const [groupInfo, setGroupInfo] = useState(null);
+  const [showProfile, setShowProfile] = useState(false);
 
   const auth = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
 
@@ -62,21 +65,21 @@ export default function LeaderDashboard() {
       <div className="ld-topbar">
         <button className="ld-back-btn" onClick={() => navigate(-1)}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
+            <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
           Back
         </button>
         <div className="ld-group-info">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
           <span>{groupInfo?.groupName || `Group #${groupId}`}</span>
           {groupInfo?.topicName && (
             <span className="ld-topic-chip">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
               </svg>
               {groupInfo.topicName}
             </span>
@@ -85,16 +88,20 @@ export default function LeaderDashboard() {
         <span className={`ld-role-chip ${isLeader ? "ld-role-leader" : "ld-role-member"}`}>
           {isLeader ? (
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
           ) : (
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
             </svg>
           )}
           {isLeader ? "Leader" : "Member"}
         </span>
+        <button className="ld-profile-btn" onClick={() => setShowProfile(true)}>
+          <img src={user} alt="icon" className="btn-icon" />
+          Profile
+        </button>
       </div>
 
       {/* Page title */}
@@ -119,8 +126,8 @@ export default function LeaderDashboard() {
       {/* Content */}
       <div className="ld-content">
         {activeTab === "members" && <GroupMemberList groupId={groupId} />}
-        {activeTab === "mywork"  && <MyWork groupId={groupId} />}
-        {activeTab === "github"  && (
+        {activeTab === "mywork" && <MyWork groupId={groupId} />}
+        {activeTab === "github" && (
           isLeader
             ? <GitHubConfig />
             : <CommitStats groupId={groupId} />
@@ -130,6 +137,7 @@ export default function LeaderDashboard() {
             ? <JiraConfig />
             : <RequirementDashboard groupId={groupId} />
         )}
+        {showProfile && <UpdateProfileModal onClose={() => setShowProfile(false)} />}
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./StudentDashboard.css";
+import UpdateProfileModal from "./UpdateProfileModal";
+import user from "../assets/user.png";
 
 const API_URL = "/api/student_group";
 
@@ -8,6 +10,7 @@ const API_URL = "/api/student_group";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
+  const [showProfile, setShowProfile] = useState(false);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -113,6 +116,10 @@ export default function StudentDashboard() {
           </span>
           <button className="sgl-logout-btn" onClick={handleLogout}>Logout</button>
         </div>
+        <button className="ld-profile-btn" onClick={() => setShowProfile(true)}>
+          <img src={user} alt="icon" className="btn-icon" />
+           Profile
+        </button>
       </div>
 
       {/* Main */}
@@ -124,7 +131,7 @@ export default function StudentDashboard() {
           </div>
 
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            
+
             <button className="sgl-refresh-btn" onClick={fetchGroups} disabled={loading}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
                 className={loading ? "sgl-spin" : ""}>
@@ -277,14 +284,7 @@ export default function StudentDashboard() {
               <button className="sgl-modal-close" onClick={() => setShowEnrollModal(false)}>×</button>
             </div>
             <div className="sgl-modal-body">
-              <div className="sgl-search-wrap">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-                </svg>
-                <input className="sgl-search-input" placeholder="Search class code, e.g. SE1921..."
-                  value={classSearch} onChange={e => searchClasses(e.target.value)} autoFocus />
-                {searchLoading && <span className="sgl-spinner-sm" />}
-              </div>
+             
               {enrollSuccess && <div className="sgl-enroll-success">{enrollSuccess}</div>}
               {enrollError && <div className="sgl-enroll-error">{enrollError}</div>}
               {classResults.length > 0 && (
@@ -306,14 +306,12 @@ export default function StudentDashboard() {
                   </tbody>
                 </table>
               )}
-              {classSearch && !searchLoading && classResults.length === 0 && (
-                <div className="sgl-no-results">No classes found for "{classSearch}"</div>
-              )}
-              {!classSearch && <div className="sgl-search-hint">Type a class code to search</div>}
+             
             </div>
           </div>
         </div>
       )}
+                {showProfile && <UpdateProfileModal onClose={() => setShowProfile(false)} />}
     </div>
   );
 }

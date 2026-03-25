@@ -301,5 +301,19 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new BusinessException("User not found", 404));
     }
 
+    public UserResponse getMe() {
+        User user = getCurrentUser();
+        UserResponse res = new UserResponse();
+        res.setUserId(user.getUserId());
+        res.setUsername(user.getUsername());
+        res.setFullName(user.getFullName());
+        res.setEmail(user.getEmail());
+        res.setStudentCode(user.getStudentCode());
+        res.setGithubUsername(user.getGithubUsername());
+        res.setJiraAccountId(user.getJiraAccountId());
+        res.setRoleCode(user.getRole() == null ? null : user.getRole().getRoleCode());
+        return res;
+    }
+
 
 }
