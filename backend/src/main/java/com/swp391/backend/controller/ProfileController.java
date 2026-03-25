@@ -22,4 +22,8 @@ public class ProfileController {
         UserResponse updated = userService.updateProfile(request);
         return ApiResponse.success(updated);
     }
+    @GetMapping("/me")
+    public ApiResponse<UserResponse> getMe() {
+        return ApiResponse.success(userService.getMe());
+    }
 }
