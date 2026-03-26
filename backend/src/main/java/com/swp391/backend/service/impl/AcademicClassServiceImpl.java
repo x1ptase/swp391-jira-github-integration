@@ -97,6 +97,10 @@ public class AcademicClassServiceImpl implements AcademicClassService {
         Semester semester = semesterRepository.findById(semesterId)
                 .orElseThrow(() -> new RuntimeException("Semester not found"));
 
+        if (semester.getEndDate() != null && semester.getEndDate().isBefore(LocalDate.now())) {
+            throw new BusinessException("Cannot assign/update class to a semester that has already ended", 409);
+        }
+
         c.setClassCode(classCode);
         c.setCourse(course);
         c.setSemester(semester);
