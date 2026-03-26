@@ -10,12 +10,12 @@ import java.util.Optional;
 public interface IntegrationConfigRepository extends JpaRepository<IntegrationConfig, Long> {
 
     /**
-     * @deprecated Use {@link #findByGroupIdAndIntegrationTypeId(Long, Integer)}
+     * @deprecated Use {@link #findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(Long, Integer)}
      *             instead.
      *             Kept for backward compatibility with existing unit tests.
      */
     @Deprecated
-    Optional<IntegrationConfig> findByGroupId(Long groupId);
+    Optional<IntegrationConfig> findByStudentGroup_GroupId(Long groupId);
 
     /**
      * Find the integration config for a specific group and integration type.
@@ -25,5 +25,5 @@ public interface IntegrationConfigRepository extends JpaRepository<IntegrationCo
      * @param integrationTypeId use
      *                          {@link com.swp391.backend.utils.IntegrationTypeIds}
      */
-    Optional<IntegrationConfig> findByGroupIdAndIntegrationTypeId(Long groupId, Integer integrationTypeId);
+    Optional<IntegrationConfig> findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(Long groupId, Integer integrationTypeId);
 }

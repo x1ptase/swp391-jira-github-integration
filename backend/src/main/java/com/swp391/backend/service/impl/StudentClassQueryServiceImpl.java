@@ -62,10 +62,8 @@ public class StudentClassQueryServiceImpl implements StudentClassQueryService {
 
     private AcademicClassResponse toResponse(AcademicClass c) {
         var lecturerAssignment = lecturerAssignmentRepository.findByClassId(c.getClassId());
-        Long lecturerId = lecturerAssignment.map(LecturerAssignment::getLecturerId).orElse(null);
-        String lecturerName = lecturerId != null
-                ? userRepository.findById(lecturerId).map(User::getFullName).orElse(null)
-                : null;
+        Long lecturerId = lecturerAssignment.map(la -> la.getLecturer().getUserId()).orElse(null);
+        String lecturerName = lecturerAssignment.map(la -> la.getLecturer().getFullName()).orElse(null);
 
         return new AcademicClassResponse(
                 c.getClassId(),

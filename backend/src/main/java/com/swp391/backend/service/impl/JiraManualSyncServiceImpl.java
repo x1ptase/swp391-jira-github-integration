@@ -559,7 +559,7 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
 
     private IntegrationConfig loadAndValidateConfig(Long groupId) {
         IntegrationConfig config = integrationConfigRepository
-                .findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
+                .findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
                 .orElseThrow(() -> new BusinessException(
                         "Jira integration configuration not found for group: " + groupId, 404));
 

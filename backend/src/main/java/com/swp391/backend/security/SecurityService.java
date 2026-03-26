@@ -57,7 +57,7 @@ public class SecurityService {
         // Lecturer assigned to group
         if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_LECTURER"))) {
             return studentGroupRepository.findById(groupId)
-                    .map(group -> lecturerAssignmentRepository.existsByClassIdAndLecturerId(group.getAcademicClass().getClassId(), userId))
+                    .map(group -> lecturerAssignmentRepository.existsByClassIdAndLecturer_UserId(group.getAcademicClass().getClassId(), userId))
                     .orElse(false);
         }
 
@@ -84,7 +84,7 @@ public class SecurityService {
         // Lecturer assigned to group
         if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_LECTURER"))) {
             return studentGroupRepository.findById(groupId)
-                    .map(group -> lecturerAssignmentRepository.existsByClassIdAndLecturerId(group.getAcademicClass().getClassId(), userId))
+                    .map(group -> lecturerAssignmentRepository.existsByClassIdAndLecturer_UserId(group.getAcademicClass().getClassId(), userId))
                     .orElse(false);
         }
 
@@ -122,7 +122,7 @@ public class SecurityService {
         if (userId == null || groupId == null) return false;
 
         return studentGroupRepository.findById(groupId)
-                .map(group -> lecturerAssignmentRepository.existsByClassIdAndLecturerId(group.getAcademicClass().getClassId(), userId))
+                .map(group -> lecturerAssignmentRepository.existsByClassIdAndLecturer_UserId(group.getAcademicClass().getClassId(), userId))
                 .orElse(false);
     }
 

@@ -53,7 +53,7 @@ public class Requirement {
     private String jiraStatusRaw;
 
     /** Raw priority name từ Jira (e.g. "High", "Medium"). Nullable. */
-    @Column(name = "jira_priority_raw", length = 50)
+    @Column(name = "jira_priority_raw", length = 100)
     private String jiraPriorityRaw;
 
     /** Timestamp updated cuối từ Jira. Nullable. */

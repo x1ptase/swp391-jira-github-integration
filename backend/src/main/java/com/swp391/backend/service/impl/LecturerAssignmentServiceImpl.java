@@ -85,9 +85,9 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
             la = existing.get();
         } else {
             la = new LecturerAssignment();
-            la.setClassId(classId);
+            la.setAcademicClass(classOpt.get());
         }
-        la.setLecturerId(lecturerId);
+        la.setLecturer(lectOpt.get());
         la.setAssignedAt(LocalDateTime.now());
         lecturerAssignmentRepository.save(la);
     }
@@ -96,7 +96,7 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
         Long lecturerId = currentUserId();
         if (lecturerId == null) throw new BusinessException("Unauthorized", 401);
 
-        return lecturerAssignmentRepository.findByLecturerId(lecturerId)
+        return lecturerAssignmentRepository.findByLecturer_UserId(lecturerId)
                 .stream()
                 .map(a -> academicClassService.getClass(a.getClassId()))
                 .collect(Collectors.toList());
@@ -151,7 +151,7 @@ public class LecturerAssignmentServiceImpl implements LecturerAssignmentService 
             throw new BusinessException("Class not found: " + classId, 404);
         }
 
-        boolean isAssigned = lecturerAssignmentRepository.existsByClassIdAndLecturerId(classId, lecturerId);
+        boolean isAssigned = lecturerAssignmentRepository.existsByClassIdAndLecturer_UserId(classId, lecturerId);
         if (!isAssigned) {
             throw new BusinessException("You are not assigned to this class", 403);
         }

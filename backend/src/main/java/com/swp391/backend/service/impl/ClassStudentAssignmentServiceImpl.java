@@ -182,7 +182,7 @@ public class ClassStudentAssignmentServiceImpl implements ClassStudentAssignment
         boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if (isAdmin) return;
 
-        boolean assigned = lecturerAssignmentRepository.existsByClassIdAndLecturerId(classId, currentUserId);
+        boolean assigned = lecturerAssignmentRepository.existsByClassIdAndLecturer_UserId(classId, currentUserId);
         if (!assigned) {
             throw new BusinessException("Access denied. Lecturer not assigned to this class.", 403);
         }

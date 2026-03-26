@@ -33,7 +33,7 @@ public class JiraBoardServiceImpl implements JiraBoardService {
     public List<JiraBoardDto> listBoards(Long groupId) {
         // 1. Load config
         IntegrationConfig cfg = integrationConfigRepository
-                .findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
+                .findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
                 .orElseThrow(() -> new BusinessException(
                         "Jira integration configuration not found for group: " + groupId, 404));
 

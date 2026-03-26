@@ -246,7 +246,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         }
 
         if ("LECTURER".equalsIgnoreCase(roleCode)) {
-            boolean assigned = lecturerAssignmentRepository.existsByClassIdAndLecturerId(group.getAcademicClass().getClassId(), actor.getUserId());
+            boolean assigned = lecturerAssignmentRepository.existsByClassIdAndLecturer_UserId(group.getAcademicClass().getClassId(), actor.getUserId());
             if (!assigned) {
                 throw new BusinessException("Lecturer is not assigned to this class.", 403);
             }
