@@ -120,10 +120,8 @@ public class AcademicClassServiceImpl implements AcademicClassService {
     // CONVERT ENTITY -> RESPONSE
     private AcademicClassResponse toResponse(AcademicClass c) {
         var assignment = lecturerAssignmentRepository.findByClassId(c.getClassId());
-        Long lecturerId = assignment.map(LecturerAssignment::getLecturerId).orElse(null);
-        String lecturerName = lecturerId != null
-                ? userRepository.findById(lecturerId).map(User::getFullName).orElse(null)
-                : null;
+        Long lecturerId = assignment.map(la -> la.getLecturer().getUserId()).orElse(null);
+        String lecturerName = assignment.map(la -> la.getLecturer().getFullName()).orElse(null);
         return new AcademicClassResponse(
                 c.getClassId(),
                 c.getClassCode(),

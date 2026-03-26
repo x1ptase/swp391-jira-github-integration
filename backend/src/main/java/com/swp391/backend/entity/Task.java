@@ -84,7 +84,7 @@ public class Task {
     private String jiraStatusRaw;
 
     /** Raw priority name từ Jira (e.g. "High", "Medium"). Nullable. */
-    @Column(name = "jira_priority_raw", length = 50)
+    @Column(name = "jira_priority_raw", length = 100)
     private String jiraPriorityRaw;
 
     /** Jira accountId của assignee. Dùng để map với Users.jira_account_id. */

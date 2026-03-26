@@ -3,6 +3,7 @@ package com.swp391.backend.integration.github;
 import com.swp391.backend.utils.DateTimeUtils;
 import com.swp391.backend.dto.request.CommitSearchRequest;
 import com.swp391.backend.dto.response.GitHubCommitDTO;
+import com.swp391.backend.dto.response.GitHubCommitDetailedDTO;
 import com.swp391.backend.dto.response.GitHubCommitResponse;
 import com.swp391.backend.dto.response.GitHubRepoResponse;
 import com.swp391.backend.exception.BusinessException;
@@ -89,6 +90,26 @@ public class GitHubClient {
         }
 
         return allCommits;
+    }
+
+    public GitHubCommitDetailedDTO fetchSingleCommit(String repoFullName, String sha, String token) {
+        String url = String.format("https://api.github.com/repos/%s/commits/%s", repoFullName, sha);
+
+        HttpEntity<Void> entity = new HttpEntity<>(buildHeaders(token));
+
+        try {
+            ResponseEntity<GitHubCommitDetailedDTO> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    GitHubCommitDetailedDTO.class);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            handleException(e);
+            return null;
+        } catch (Exception e) {
+            throw new BusinessException("GitHub Connection Error: " + e.getMessage(), 500);
+        }
     }
 
     public List<GitHubCommitResponse> fetchCommitsWithCriteria(String repoFullName, String token,

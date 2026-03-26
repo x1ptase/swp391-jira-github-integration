@@ -18,11 +18,13 @@ public class IntegrationConfig {
     @Column(name = "config_id")
     private Long id;
 
-    @Column(name = "group_id", nullable = false)
-    private Long groupId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id", nullable = false)
+    private StudentGroup studentGroup;
 
-    @Column(name = "integration_type_id", nullable = false)
-    private Integer integrationTypeId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "integration_type_id", nullable = false)
+    private IntegrationType integrationType;
 
     // Jira config
     @Column(name = "base_url")

@@ -42,7 +42,7 @@ public class JiraLabelServiceImpl implements JiraLabelService {
     public List<String> suggestLabels(Long groupId, String q, int limit) {
         // 1. Load config
         IntegrationConfig cfg = integrationConfigRepository
-                .findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
+                .findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
                 .orElseThrow(() -> new BusinessException(
                         "Jira integration configuration not found for group: " + groupId, 404));
 

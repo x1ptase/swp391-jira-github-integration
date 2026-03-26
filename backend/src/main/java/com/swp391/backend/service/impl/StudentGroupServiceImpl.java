@@ -158,8 +158,10 @@ public class StudentGroupServiceImpl implements StudentGroupService {
         }
 
         lecturerAssignmentRepository.findById(group.getAcademicClass().getClassId()).ifPresent(la -> {
-            resp.setLecturerId(la.getLecturerId());
-            userRepository.findById(la.getLecturerId()).ifPresent(u -> resp.setLecturerName(u.getFullName()));
+            if (la.getLecturer() != null) {
+                resp.setLecturerId(la.getLecturer().getUserId());
+                resp.setLecturerName(la.getLecturer().getFullName());
+            }
         });
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -222,7 +224,7 @@ public class StudentGroupServiceImpl implements StudentGroupService {
         boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if (isAdmin) return;
 
-        boolean assigned = lecturerAssignmentRepository.existsByClassIdAndLecturerId(classId, currentUserId);
+        boolean assigned = lecturerAssignmentRepository.existsByClassIdAndLecturer_UserId(classId, currentUserId);
         if (!assigned) {
             throw new BusinessException("Access denied. Lecturer not assigned to this class.", 403);
         }

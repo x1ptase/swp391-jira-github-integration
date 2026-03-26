@@ -16,8 +16,14 @@ public class LecturerAssignment {
     @Column(name = "class_id", nullable = false)
     private Long classId;
 
-    @Column(name = "lecturer_id", nullable = false)
-    private Long lecturerId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "class_id")
+    private AcademicClass academicClass;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lecturer_id", nullable = false)
+    private User lecturer;
 
     @Column(name = "assigned_at", nullable = false)
     private LocalDateTime assignedAt;

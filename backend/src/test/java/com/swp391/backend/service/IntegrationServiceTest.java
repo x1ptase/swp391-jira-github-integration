@@ -3,6 +3,8 @@ package com.swp391.backend.service;
 import com.swp391.backend.utils.IntegrationTypeIds;
 import com.swp391.backend.dto.response.JiraProjectResponse;
 import com.swp391.backend.entity.IntegrationConfig;
+import com.swp391.backend.entity.IntegrationType;
+import com.swp391.backend.entity.StudentGroup;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.integration.jira.JiraClient;
 import com.swp391.backend.repository.IntegrationConfigRepository;
@@ -53,7 +55,7 @@ class IntegrationServiceTest {
                 String repo = "owner/repo";
                 String token = "raw-token";
 
-                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
                                 .thenReturn(Optional.empty());
                 when(tokenHelper.encryptToBytes(token)).thenReturn("encrypted-token".getBytes());
                 when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -61,7 +63,7 @@ class IntegrationServiceTest {
                 IntegrationConfig result = integrationService.saveOrUpdate(groupId, repo, token);
 
                 assertNotNull(result);
-                assertEquals(groupId, result.getGroupId());
+                assertEquals(groupId, result.getStudentGroup().getGroupId());
                 assertEquals(repo, result.getRepoFullName());
                 assertArrayEquals("encrypted-token".getBytes(), result.getTokenEncrypted());
                 verify(repository).save(any(IntegrationConfig.class));
@@ -69,7 +71,7 @@ class IntegrationServiceTest {
 
         @Test
         void saveOrUpdate_NewMissingToken_ShouldThrow400() {
-                when(repository.findByGroupIdAndIntegrationTypeId(anyLong(), eq(IntegrationTypeIds.GITHUB)))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(anyLong(), eq(IntegrationTypeIds.GITHUB)))
                                 .thenReturn(Optional.empty());
 
                 BusinessException ex1 = assertThrows(BusinessException.class,
@@ -93,13 +95,16 @@ class IntegrationServiceTest {
                 Long groupId = 1L;
                 String newRepo = "new/repo";
                 String newToken = "new-token";
+                StudentGroup sg = new StudentGroup(); sg.setGroupId(groupId);
+                IntegrationType it = new IntegrationType(); it.setIntegrationTypeId(IntegrationTypeIds.GITHUB);
                 IntegrationConfig existing = IntegrationConfig.builder()
-                                .groupId(groupId)
+                                .studentGroup(sg)
+                                .integrationType(it)
                                 .repoFullName("old/repo")
                                 .tokenEncrypted("old-encrypted".getBytes())
                                 .build();
 
-                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
                                 .thenReturn(Optional.of(existing));
                 when(tokenHelper.encryptToBytes(newToken)).thenReturn("new-encrypted".getBytes());
                 when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -115,13 +120,16 @@ class IntegrationServiceTest {
         void saveOrUpdate_UpdateWithoutToken_ShouldKeepOldToken() {
                 Long groupId = 1L;
                 String newRepo = "new/repo";
+                StudentGroup sg = new StudentGroup(); sg.setGroupId(groupId);
+                IntegrationType it = new IntegrationType(); it.setIntegrationTypeId(IntegrationTypeIds.GITHUB);
                 IntegrationConfig existing = IntegrationConfig.builder()
-                                .groupId(groupId)
+                                .studentGroup(sg)
+                                .integrationType(it)
                                 .repoFullName("old/repo")
                                 .tokenEncrypted("old-encrypted".getBytes())
                                 .build();
 
-                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
                                 .thenReturn(Optional.of(existing));
                 when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
 
@@ -142,7 +150,7 @@ class IntegrationServiceTest {
                 String jiraEmail = "leader@gmail.com";
                 String token = "ATATTxxxxxxx";
 
-                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
                                 .thenReturn(Optional.empty());
                 when(tokenHelper.encryptToBytes(token)).thenReturn("jira-encrypted".getBytes());
                 when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -151,8 +159,8 @@ class IntegrationServiceTest {
                                 token);
 
                 assertNotNull(result);
-                assertEquals(groupId, result.getGroupId());
-                assertEquals(IntegrationTypeIds.JIRA, result.getIntegrationTypeId());
+                assertEquals(groupId, result.getStudentGroup().getGroupId());
+                assertEquals(IntegrationTypeIds.JIRA, result.getIntegrationType().getIntegrationTypeId());
                 assertEquals(baseUrl, result.getBaseUrl());
                 assertEquals(projectKey, result.getProjectKey());
                 assertEquals(jiraEmail, result.getJiraEmail());
@@ -161,7 +169,7 @@ class IntegrationServiceTest {
 
         @Test
         void saveOrUpdateJira_NewMissingToken_ShouldThrow400() {
-                when(repository.findByGroupIdAndIntegrationTypeId(anyLong(), eq(IntegrationTypeIds.JIRA)))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(anyLong(), eq(IntegrationTypeIds.JIRA)))
                                 .thenReturn(Optional.empty());
 
                 BusinessException ex = assertThrows(BusinessException.class,
@@ -172,7 +180,7 @@ class IntegrationServiceTest {
 
         @Test
         void saveOrUpdateJira_InvalidBaseUrl_ShouldThrow400() {
-                when(repository.findByGroupIdAndIntegrationTypeId(anyLong(), eq(IntegrationTypeIds.JIRA)))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(anyLong(), eq(IntegrationTypeIds.JIRA)))
                                 .thenReturn(Optional.empty());
 
                 BusinessException ex = assertThrows(BusinessException.class,
@@ -184,16 +192,18 @@ class IntegrationServiceTest {
         @Test
         void saveOrUpdateJira_UpdateKeepsOldTokenWhenNotProvided() {
                 Long groupId = 2L;
+                StudentGroup sg = new StudentGroup(); sg.setGroupId(groupId);
+                IntegrationType it = new IntegrationType(); it.setIntegrationTypeId(IntegrationTypeIds.JIRA);
                 IntegrationConfig existing = IntegrationConfig.builder()
-                                .groupId(groupId)
-                                .integrationTypeId(IntegrationTypeIds.JIRA)
+                                .studentGroup(sg)
+                                .integrationType(it)
                                 .baseUrl("https://old.atlassian.net")
                                 .projectKey("OLD")
                                 .jiraEmail("old@gmail.com")
                                 .tokenEncrypted("old-jira-encrypted".getBytes())
                                 .build();
 
-                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
                                 .thenReturn(Optional.of(existing));
                 when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
 
@@ -209,16 +219,18 @@ class IntegrationServiceTest {
         @Test
         void saveOrUpdateJira_UpdateWithNewToken_ShouldReEncrypt() {
                 Long groupId = 2L;
+                StudentGroup sg = new StudentGroup(); sg.setGroupId(groupId);
+                IntegrationType it = new IntegrationType(); it.setIntegrationTypeId(IntegrationTypeIds.JIRA);
                 IntegrationConfig existing = IntegrationConfig.builder()
-                                .groupId(groupId)
-                                .integrationTypeId(IntegrationTypeIds.JIRA)
+                                .studentGroup(sg)
+                                .integrationType(it)
                                 .baseUrl("https://old.atlassian.net")
                                 .projectKey("OLD")
                                 .jiraEmail("old@gmail.com")
                                 .tokenEncrypted("old-jira-encrypted".getBytes())
                                 .build();
 
-                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
                                 .thenReturn(Optional.of(existing));
                 when(tokenHelper.encryptToBytes("new-token")).thenReturn("new-jira-encrypted".getBytes());
                 when(repository.save(any(IntegrationConfig.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -237,9 +249,11 @@ class IntegrationServiceTest {
                 Long groupId = 3L;
                 byte[] encryptedToken = "encrypted".getBytes();
 
+                StudentGroup sg = new StudentGroup(); sg.setGroupId(groupId);
+                IntegrationType it = new IntegrationType(); it.setIntegrationTypeId(IntegrationTypeIds.JIRA);
                 IntegrationConfig config = IntegrationConfig.builder()
-                                .groupId(groupId)
-                                .integrationTypeId(IntegrationTypeIds.JIRA)
+                                .studentGroup(sg)
+                                .integrationType(it)
                                 .baseUrl("https://myorg.atlassian.net")
                                 .projectKey("SWP391")
                                 .jiraEmail("leader@gmail.com")
@@ -248,7 +262,7 @@ class IntegrationServiceTest {
 
                 JiraProjectResponse expected = new JiraProjectResponse("SWP391", "SWP391 Jira Project");
 
-                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
                                 .thenReturn(Optional.of(config));
                 when(tokenCryptoService.decryptFromBytes(encryptedToken)).thenReturn("raw-token");
                 when(jiraClient.getProjectInfo(
@@ -268,7 +282,7 @@ class IntegrationServiceTest {
         void testJiraConnection_ConfigNotFound_ShouldThrow404() {
                 Long groupId = 99L;
 
-                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
                                 .thenReturn(Optional.empty());
 
                 BusinessException ex = assertThrows(BusinessException.class,
@@ -280,16 +294,18 @@ class IntegrationServiceTest {
         void testJiraConnection_TokenMissing_ShouldThrow400() {
                 Long groupId = 3L;
 
+                StudentGroup sg = new StudentGroup(); sg.setGroupId(groupId);
+                IntegrationType it = new IntegrationType(); it.setIntegrationTypeId(IntegrationTypeIds.JIRA);
                 IntegrationConfig config = IntegrationConfig.builder()
-                                .groupId(groupId)
-                                .integrationTypeId(IntegrationTypeIds.JIRA)
+                                .studentGroup(sg)
+                                .integrationType(it)
                                 .baseUrl("https://myorg.atlassian.net")
                                 .projectKey("SWP391")
                                 .jiraEmail("leader@gmail.com")
                                 .tokenEncrypted(null) // token bị thiếu
                                 .build();
 
-                when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+                when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
                                 .thenReturn(Optional.of(config));
 
                 BusinessException ex = assertThrows(BusinessException.class,

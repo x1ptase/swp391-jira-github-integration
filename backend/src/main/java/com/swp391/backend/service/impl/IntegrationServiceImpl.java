@@ -6,6 +6,8 @@ import com.swp391.backend.dto.response.GitHubCommitResponse;
 import com.swp391.backend.dto.response.GitHubRepoResponse;
 import com.swp391.backend.dto.response.JiraProjectResponse;
 import com.swp391.backend.entity.IntegrationConfig;
+import com.swp391.backend.entity.IntegrationType;
+import com.swp391.backend.entity.StudentGroup;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.integration.jira.JiraClient;
 import com.swp391.backend.repository.IntegrationConfigRepository;
@@ -42,7 +44,7 @@ public class IntegrationServiceImpl implements IntegrationService {
             throw new BusinessException("Invalid repoFullName format. Expected: owner/repo", 400);
         }
 
-        Optional<IntegrationConfig> existingConfig = repository.findByGroupIdAndIntegrationTypeId(groupId,
+        Optional<IntegrationConfig> existingConfig = repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId,
                 IntegrationTypeIds.GITHUB);
 
         if (existingConfig.isPresent()) {
@@ -59,9 +61,14 @@ public class IntegrationServiceImpl implements IntegrationService {
                 throw new BusinessException("Token is required for new GitHub integration configuration", 400);
             }
 
+            StudentGroup sg = new StudentGroup();
+            sg.setGroupId(groupId);
+            IntegrationType it = new IntegrationType();
+            it.setIntegrationTypeId(IntegrationTypeIds.GITHUB);
+
             IntegrationConfig newConfig = IntegrationConfig.builder()
-                    .groupId(groupId)
-                    .integrationTypeId(IntegrationTypeIds.GITHUB)
+                    .studentGroup(sg)
+                    .integrationType(it)
                     .repoFullName(repoFullName)
                     .tokenEncrypted(tokenHelper.encryptToBytes(token))
                     .build();
@@ -97,7 +104,7 @@ public class IntegrationServiceImpl implements IntegrationService {
             throw new BusinessException("jiraEmail must be a valid email address", 400);
         }
 
-        Optional<IntegrationConfig> existingOpt = repository.findByGroupIdAndIntegrationTypeId(groupId,
+        Optional<IntegrationConfig> existingOpt = repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId,
                 IntegrationTypeIds.JIRA);
 
         if (existingOpt.isPresent()) {
@@ -122,9 +129,14 @@ public class IntegrationServiceImpl implements IntegrationService {
                         400);
             }
 
+            StudentGroup sg = new StudentGroup();
+            sg.setGroupId(groupId);
+            IntegrationType it = new IntegrationType();
+            it.setIntegrationTypeId(IntegrationTypeIds.JIRA);
+
             IntegrationConfig newConfig = IntegrationConfig.builder()
-                    .groupId(groupId)
-                    .integrationTypeId(IntegrationTypeIds.JIRA)
+                    .studentGroup(sg)
+                    .integrationType(it)
                     .baseUrl(baseUrl)
                     .projectKey(projectKey)
                     .jiraEmail(jiraEmail)
@@ -160,7 +172,7 @@ public class IntegrationServiceImpl implements IntegrationService {
     public JiraProjectResponse testJiraConnection(Long groupId) {
         // 1. Load Jira config từ DB
         IntegrationConfig config = repository
-                .findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
+                .findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
                 .orElseThrow(() -> new BusinessException(
                         "Jira integration configuration not found for group: " + groupId, 404));
 
@@ -198,7 +210,7 @@ public class IntegrationServiceImpl implements IntegrationService {
     @Transactional(readOnly = true)
     public GitHubRepoResponse testGitHubConnection(Long groupId) {
         // 1. Get IntegrationConfig from DB
-        IntegrationConfig config = repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
+        IntegrationConfig config = repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
                 .orElseThrow(() -> new BusinessException(
                         "GitHub integration configuration not found for group: " + groupId, 404));
 
@@ -221,7 +233,7 @@ public class IntegrationServiceImpl implements IntegrationService {
     @Override
     @Transactional(readOnly = true)
     public java.util.List<GitHubCommitResponse> fetchCommitsWithCriteria(Long groupId, CommitSearchRequest criteria) {
-        IntegrationConfig config = repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
+        IntegrationConfig config = repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
                 .orElseThrow(() -> new BusinessException(
                         "GitHub integration configuration not found for group: " + groupId, 404));
 

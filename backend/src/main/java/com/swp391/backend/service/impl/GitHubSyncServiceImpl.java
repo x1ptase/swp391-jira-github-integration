@@ -75,7 +75,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         try {
             // ── Bước 2: Lấy cấu hình & giải mã token ─────────────────────
             IntegrationConfig config = configRepository
-                    .findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
+                    .findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.NOT_FOUND, "GitHub integration not configured"));
 
@@ -137,6 +137,24 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
                 if (commit.getAuthorEmail() != null) {
                     userRepository.findByEmailIgnoreCase(commit.getAuthorEmail())
                             .ifPresent(u -> commit.setAuthorUserId(u.getUserId()));
+                }
+
+                // Fetch detailed stats (additions, deletions, filesChanged) if missing
+                if (commit.getAdditions() == null || commit.getDeletions() == null) {
+                    try {
+                        com.swp391.backend.dto.response.GitHubCommitDetailedDTO detailed = gitHubClient.fetchSingleCommit(config.getRepoFullName(), dto.getSha(), token);
+                        if (detailed != null) {
+                            if (detailed.getStats() != null) {
+                                commit.setAdditions(detailed.getStats().getAdditions());
+                                commit.setDeletions(detailed.getStats().getDeletions());
+                            }
+                            if (detailed.getFiles() != null) {
+                                commit.setFilesChanged(detailed.getFiles().size());
+                            }
+                        }
+                    } catch (Exception ex) {
+                         log.warn("Could not fetch detailed stats for commit {}", dto.getSha());
+                    }
                 }
 
                 gitCommitRepository.save(commit);

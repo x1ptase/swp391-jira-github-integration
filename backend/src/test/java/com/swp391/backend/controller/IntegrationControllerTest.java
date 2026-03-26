@@ -96,7 +96,7 @@ class IntegrationControllerTest {
         IntegrationConfig config = new IntegrationConfig();
 
         when(groupService.isUserAuthorized(eq(1L), eq(groupId), anyList())).thenReturn(true);
-        when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
+        when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
                 .thenReturn(Optional.of(config));
         when(integrationMapper.toResponse(config)).thenReturn(new IntegrationResponse());
 
@@ -110,7 +110,7 @@ class IntegrationControllerTest {
         Long groupId = 100L;
 
         when(groupService.isUserAuthorized(eq(1L), eq(groupId), anyList())).thenReturn(true);
-        when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
+        when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.GITHUB))
                 .thenReturn(Optional.empty());
 
         ResponseEntity<IntegrationResponse> result = integrationController.getGitHubConfig(groupId);
@@ -154,7 +154,7 @@ class IntegrationControllerTest {
         IntegrationConfig config = new IntegrationConfig();
 
         when(groupService.isUserAuthorized(eq(1L), eq(groupId), anyList())).thenReturn(true);
-        when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+        when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
                 .thenReturn(Optional.of(config));
         when(integrationMapper.toJiraResponse(config)).thenReturn(new JiraIntegrationResponse());
 
@@ -168,7 +168,7 @@ class IntegrationControllerTest {
         Long groupId = 100L;
 
         when(groupService.isUserAuthorized(eq(1L), eq(groupId), anyList())).thenReturn(true);
-        when(repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
+        when(repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA))
                 .thenReturn(Optional.empty());
 
         ResponseEntity<JiraIntegrationResponse> result = integrationController.getJiraConfig(groupId);

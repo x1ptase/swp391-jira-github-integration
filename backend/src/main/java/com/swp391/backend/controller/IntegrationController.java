@@ -59,7 +59,7 @@ public class IntegrationController {
 
         checkAuthority(groupId);
 
-        return repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
+        return repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.GITHUB)
                 .map(config -> ResponseEntity.ok(integrationMapper.toResponse(config)))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -120,7 +120,7 @@ public class IntegrationController {
 
         checkAuthority(groupId);
 
-        return repository.findByGroupIdAndIntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
+        return repository.findByStudentGroup_GroupIdAndIntegrationType_IntegrationTypeId(groupId, IntegrationTypeIds.JIRA)
                 .map(config -> ResponseEntity.ok(integrationMapper.toJiraResponse(config)))
                 .orElse(ResponseEntity.notFound().build());
     }
