@@ -2,12 +2,15 @@ package com.swp391.backend.service.impl;
 
 import com.swp391.backend.dto.response.AcademicClassResponse;
 import com.swp391.backend.entity.*;
+import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.repository.*;
 import com.swp391.backend.service.AcademicClassService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 @Service
 public class AcademicClassServiceImpl implements AcademicClassService {
@@ -55,6 +58,10 @@ public class AcademicClassServiceImpl implements AcademicClassService {
 
         Semester semester = semesterRepository.findById(semesterId)
                 .orElseThrow(() -> new RuntimeException("Semester not found"));
+
+        if (semester.getEndDate() != null && semester.getEndDate().isBefore(LocalDate.now())) {
+            throw new BusinessException("Cannot create class because the semester has ended", 409);
+        }
 
         AcademicClass c = new AcademicClass();
         c.setClassCode(classCode);
