@@ -16,6 +16,7 @@ function useMemberRole() {
   const params = new URLSearchParams(location.search);
   return params.get("memberRole") || "MEMBER";
 }
+const username = localStorage.getItem("username") || "";
 
 const ALL_TABS = [
   {
@@ -100,7 +101,7 @@ export default function LeaderDashboard() {
         </span>
         <button className="ld-profile-btn" onClick={() => setShowProfile(true)}>
           <img src={user} alt="icon" className="btn-icon" />
-          Profile
+          {username}
         </button>
       </div>
 

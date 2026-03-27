@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import "./StudentDashboard.css";
 import UpdateProfileModal from "./UpdateProfileModal";
 import user from "../assets/user.png";
+import logo from "../assets/logo.png";
 
 const API_URL = "/api/student_group";
-
-
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
@@ -28,8 +27,10 @@ export default function StudentDashboard() {
   const username = localStorage.getItem("username") || "";
   const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
 
-  useEffect(() => { fetchGroups(); fetchEnrolledClass(); }, []);
-
+  useEffect(() => {
+    fetchGroups();
+    fetchEnrolledClass();
+  }, []);
 
   const fetchEnrolledClass = async () => {
     setEnrolledClassLoading(true);
@@ -38,47 +39,70 @@ export default function StudentDashboard() {
       if (!res.ok) { setEnrolledClass(null); return; }
       const data = await res.json();
       setEnrolledClass(data.data || null);
-    } catch { setEnrolledClass(null); }
-    finally { setEnrolledClassLoading(false); }
+    } catch {
+      setEnrolledClass(null);
+    } finally {
+      setEnrolledClassLoading(false);
+    }
   };
 
   const searchClasses = async (keyword) => {
     setClassSearch(keyword);
-    if (!keyword.trim()) { setClassResults([]); return; }
+    if (!keyword.trim()) {
+      setClassResults([]);
+      return;
+    }
     setSearchLoading(true);
     try {
       const res = await fetch(`/api/classes?keyword=${encodeURIComponent(keyword)}&page=0&size=10`, { headers: auth() });
       const data = await res.json();
       setClassResults(data.data?.content || data.data || []);
-    } catch { setClassResults([]); }
-    finally { setSearchLoading(false); }
+    } catch {
+      setClassResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
   const handleEnroll = async (classId) => {
-    setEnrollingId(classId); setEnrollError(""); setEnrollSuccess("");
+    setEnrollingId(classId);
+    setEnrollError("");
+    setEnrollSuccess("");
     try {
       const res = await fetch(`/api/classes/${classId}/enroll`, { method: "POST", headers: authJson() });
       const data = await res.json();
-      if (!res.ok) { setEnrollError(data.message || "Failed to enroll"); return; }
+      if (!res.ok) {
+        setEnrollError(data.message || "Failed to enroll");
+        return;
+      }
       setEnrollSuccess("Enrolled! Your lecturer can now add you to a group.");
       setClassResults(prev => prev.filter(c => c.classId !== classId));
       fetchEnrolledClass();
-    } catch { setEnrollError("Network error"); }
-    finally { setEnrollingId(null); }
+    } catch {
+      setEnrollError("Network error");
+    } finally {
+      setEnrollingId(null);
+    }
   };
 
   const openEnrollModal = () => {
     setShowEnrollModal(true);
-    setClassSearch(""); setClassResults([]);
-    setEnrollError(""); setEnrollSuccess("");
+    setClassSearch("");
+    setClassResults([]);
+    setEnrollError("");
+    setEnrollSuccess("");
   };
 
   const fetchGroups = async () => {
-    setLoading(true); setError("");
+    setLoading(true);
+    setError("");
     try {
       const res = await fetch(API_URL, { headers: auth() });
       const data = await res.json();
-      if (!res.ok) { setError(data.message || "Failed to load groups"); return; }
+      if (!res.ok) {
+        setError(data.message || "Failed to load groups");
+        return;
+      }
       setGroups((data.data || []).filter(g => g.memberRole != null));
     } catch {
       setError("Network error");
@@ -95,10 +119,11 @@ export default function StudentDashboard() {
   const isLeader = (g) => g.memberRole === "LEADER";
 
   return (
-    <div className="sgl-root">
+    <div className="sd-root">
       {/* Navbar */}
-      <div className="sgl-navbar">
-        <div className="sgl-navbar-brand">
+      <header className="sd-navbar">
+        <img src={logo} alt="Logo" className="lcl-navbar-logo" />
+        <div className="sd-navbar-brand">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
@@ -106,35 +131,25 @@ export default function StudentDashboard() {
           </svg>
           Student Portal
         </div>
-        <div className="sgl-navbar-right">
-          <span className="sgl-navbar-user">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            {username}
+        <div className="sd-navbar-actions">
+          <span className="sd-navbar-user">
           </span>
-          <button className="sgl-logout-btn" onClick={handleLogout}>Logout</button>
+          <button className="sd-profile-btn" onClick={() => setShowProfile(true)}>
+            <img src={user} alt="profile icon" className="sd-profile-icon" /> {username}
+          </button>
         </div>
-        <button className="ld-profile-btn" onClick={() => setShowProfile(true)}>
-          <img src={user} alt="icon" className="btn-icon" />
-           Profile
-        </button>
-      </div>
+      </header>
 
-      {/* Main */}
-      <div className="sgl-main">
-        <div className="sgl-page-header">
+      {/* Main Content */}
+      <main className="sd-main">
+        <div className="sd-page-header">
           <div>
-            <h1 className="sgl-page-title">My Groups</h1>
-            <p className="sgl-page-desc">Groups you are currently a member of</p>
+            <h1 className="sd-page-title">My Groups</h1>
+            <p className="sd-page-desc">Groups you are currently a member of</p>
           </div>
-
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-
-            <button className="sgl-refresh-btn" onClick={fetchGroups} disabled={loading}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                className={loading ? "sgl-spin" : ""}>
+          <div className="sd-header-actions">
+            <button className="sd-refresh-btn" onClick={fetchGroups} disabled={loading}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={loading ? "sd-spin" : ""}>
                 <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
                 <path d="M21 3v5h-5" />
               </svg>
@@ -143,8 +158,9 @@ export default function StudentDashboard() {
           </div>
         </div>
 
+
         {error && (
-          <div className="sgl-error">
+          <div className="sd-error">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
@@ -153,55 +169,14 @@ export default function StudentDashboard() {
         )}
 
         {loading && (
-          <div className="sgl-loading">
-            <span className="sgl-spinner" />
+          <div className="sd-loading">
+            <span className="sd-spinner" />
             <span>Loading your groups...</span>
-          </div>
-        )}
-        {/* Enrolled Class Section */}
-        {(enrolledClass || enrolledClassLoading) && (
-          <div className="sgl-enrolled-section">
-            <div className="sgl-enrolled-header">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-              </svg>
-              <span>My Enrolled Class</span>
-            </div>
-            {enrolledClassLoading ? (
-              <div className="sgl-enrolled-loading"><span className="sgl-spinner-sm" /> Loading...</div>
-            ) : enrolledClass && (
-              <div className="sgl-enrolled-card">
-                <div className="sgl-enrolled-card-left">
-                  <div className="sgl-enrolled-icon">{enrolledClass.classCode?.charAt(0) || "C"}</div>
-                  <div>
-                    <div className="sgl-enrolled-code">{enrolledClass.classCode}</div>
-                    <div className="sgl-enrolled-course">{enrolledClass.courseName || enrolledClass.courseCode}</div>
-                  </div>
-                </div>
-                <div className="sgl-enrolled-card-right">
-                  <div className="sgl-enrolled-meta">
-                    <span className="sgl-enrolled-label">Semester: </span>
-                    <span className="sgl-enrolled-val">{enrolledClass.semesterCode}</span>
-                  </div>
-                  <div className="sgl-enrolled-meta">
-                    <span className="sgl-enrolled-label">Lecturer: </span>
-                    <span className="sgl-enrolled-val">{enrolledClass.lecturerName || "Not assigned"}</span>
-                  </div>
-                </div>
-                <div className="sgl-enrolled-status">
-                  <span className="sgl-enrolled-badge">Enrolled</span>
-                  {groups.length === 0 && (
-                    <span className="sgl-enrolled-hint">Waiting to be added to a group</span>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         )}
 
         {!loading && groups.length === 0 && !error && (
-          <div className="sgl-empty">
+          <div className="sd-empty">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
@@ -213,50 +188,45 @@ export default function StudentDashboard() {
         )}
 
         {!loading && groups.length > 0 && (
-          <div className="sgl-grid">
+          <div className="sd-grid">
             {groups.map((g) => (
-              <div key={g.groupId} className="sgl-card">
-                {/* Card header */}
-                <div className="sgl-card-header">
-                  <div className="sgl-card-icon">
+              <div key={g.groupId} className="sd-card">
+                <div className="sd-card-header">
+                  <div className="sd-card-icon">
                     {g.groupName?.charAt(0).toUpperCase() || "G"}
                   </div>
-                  <div className="sgl-card-title-wrap">
-                    <h3 className="sgl-card-title">{g.groupName}</h3>
-                    <span className="sgl-card-code">{g.classCode}</span>
+                  <div className="sd-card-title-wrap">
+                    <h3 className="sd-card-title">{g.groupName}</h3>
+                    <span className="sd-card-code">{g.classCode}</span>
                   </div>
-                  {g.memberRole && (
-                    <span className={`sgl-role-badge ${isLeader(g) ? "sgl-leader" : "sgl-member"}`}>
-                      {isLeader(g) && (
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                        </svg>
-                      )}
-                      {g.memberRole}
-                    </span>
-                  )}
+                  <span className={`sd-role-badge ${isLeader(g) ? "sd-leader" : "sd-member"}`}>
+                    {isLeader(g) && (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                      </svg>
+                    )}
+                    {g.memberRole}
+                  </span>
                 </div>
 
-                {/* Card body */}
-                <div className="sgl-card-body">
-                  <div className="sgl-card-row">
-                    <span className="sgl-card-label">Course</span>
-                    <span className="sgl-card-val">{g.courseCode || "—"}</span>
+                <div className="sd-card-body">
+                  <div className="sd-card-row">
+                    <span className="sd-card-label">Course</span>
+                    <span className="sd-card-val">{g.courseCode || "—"}</span>
                   </div>
-                  <div className="sgl-card-row">
-                    <span className="sgl-card-label">Semester</span>
-                    <span className="sgl-card-val">{g.semesterCode || "—"}</span>
+                  <div className="sd-card-row">
+                    <span className="sd-card-label">Semester</span>
+                    <span className="sd-card-val">{g.semesterCode || "—"}</span>
                   </div>
-                  <div className="sgl-card-row">
-                    <span className="sgl-card-label">Lecturer</span>
-                    <span className="sgl-card-val">{g.lecturerName || "—"}</span>
+                  <div className="sd-card-row">
+                    <span className="sd-card-label">Lecturer</span>
+                    <span className="sd-card-val">{g.lecturerName || "—"}</span>
                   </div>
                 </div>
 
-                {/* Card actions — tất cả đều có nút Group Detail */}
-                <div className="sgl-card-actions">
+                <div className="sd-card-actions">
                   <button
-                    className={isLeader(g) ? "sgl-btn-manage" : "sgl-btn-view"}
+                    className={isLeader(g) ? "sd-btn-manage" : "sd-btn-view"}
                     onClick={() => navigate(`/leader/groups/${g.groupId}?memberRole=${g.memberRole || "MEMBER"}`)}
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -272,33 +242,57 @@ export default function StudentDashboard() {
             ))}
           </div>
         )}
-      </div>
+      </main>
+
+      {/* Enroll Modal */}
       {showEnrollModal && (
-        <div className="sgl-modal-overlay" onClick={() => setShowEnrollModal(false)}>
-          <div className="sgl-modal" onClick={e => e.stopPropagation()}>
-            <div className="sgl-modal-header">
+        <div className="sd-modal-overlay" onClick={() => setShowEnrollModal(false)}>
+          <div className="sd-modal" onClick={e => e.stopPropagation()}>
+            <div className="sd-modal-header">
               <div>
-                <div className="sgl-modal-title">Find &amp; Enroll Class</div>
-                <div className="sgl-modal-subtitle">Search by class code to enroll</div>
+                <div className="sd-modal-title">Find &amp; Enroll Class</div>
+                <div className="sd-modal-subtitle">Search by class code to enroll</div>
               </div>
-              <button className="sgl-modal-close" onClick={() => setShowEnrollModal(false)}>×</button>
+              <button className="sd-modal-close" onClick={() => setShowEnrollModal(false)}>×</button>
             </div>
-            <div className="sgl-modal-body">
-             
-              {enrollSuccess && <div className="sgl-enroll-success">{enrollSuccess}</div>}
-              {enrollError && <div className="sgl-enroll-error">{enrollError}</div>}
+            <div className="sd-modal-body">
+              <div className="sd-search-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                </svg>
+                <input
+                  className="sd-search-input"
+                  placeholder="Enter class code..."
+                  value={classSearch}
+                  onChange={e => searchClasses(e.target.value)}
+                />
+                {searchLoading && <span className="sd-spinner-sm" />}
+              </div>
+
+              {enrollSuccess && <div className="sd-enroll-success">{enrollSuccess}</div>}
+              {enrollError && <div className="sd-enroll-error">{enrollError}</div>}
+
+              {classResults.length === 0 && classSearch.trim() !== "" && !searchLoading && (
+                <div className="sd-no-results">No classes found</div>
+              )}
               {classResults.length > 0 && (
-                <table className="sgl-enroll-table">
-                  <thead><tr><th>Class Code</th><th>Course</th><th>Semester</th><th>Action</th></tr></thead>
+                <table className="sd-enroll-table">
+                  <thead>
+                    <tr><th>Class Code</th><th>Course</th><th>Semester</th><th>Action</th></tr>
+                  </thead>
                   <tbody>
                     {classResults.map(c => (
                       <tr key={c.classId}>
                         <td><strong>{c.classCode}</strong></td>
                         <td>{c.courseCode}</td>
-                        <td><span className="sgl-sem-badge">{c.semesterCode}</span></td>
+                        <td><span className="sd-sem-badge">{c.semesterCode}</span></td>
                         <td>
-                          <button className="sgl-btn-enroll" onClick={() => handleEnroll(c.classId)} disabled={enrollingId === c.classId}>
-                            {enrollingId === c.classId ? <span className="sgl-spinner-sm" /> : "Enroll"}
+                          <button
+                            className="sd-btn-enroll"
+                            onClick={() => handleEnroll(c.classId)}
+                            disabled={enrollingId === c.classId}
+                          >
+                            {enrollingId === c.classId ? <span className="sd-spinner-sm" /> : "Enroll"}
                           </button>
                         </td>
                       </tr>
@@ -306,12 +300,15 @@ export default function StudentDashboard() {
                   </tbody>
                 </table>
               )}
-             
+              {classSearch.trim() === "" && !searchLoading && (
+                <div className="sd-search-hint">Start typing to search for classes</div>
+              )}
             </div>
           </div>
         </div>
       )}
-                {showProfile && <UpdateProfileModal onClose={() => setShowProfile(false)} />}
+
+      {showProfile && <UpdateProfileModal onClose={() => setShowProfile(false)} />}
     </div>
   );
 }

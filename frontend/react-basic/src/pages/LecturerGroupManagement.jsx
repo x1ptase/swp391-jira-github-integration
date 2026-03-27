@@ -4,6 +4,7 @@ import CommitStats from "./CommitStats";
 import RequirementDashboard from "./RequirementDashboard";
 import "./LecturerGroupManagement.css";
 import LogoutButton from "./LogoutButton";
+import logo from "../assets/logo.png";
 
 const CLASS_API = "/api/lecturer/classes";
 const CLASS_STUDENTS_API = "/api/lecturer/classes";
@@ -30,7 +31,6 @@ export default function LecturerGroupManagement() {
   const [studentsLoading, setStudentsLoading] = useState(false);
   const [studentPage, setStudentPage] = useState(0);
   const [studentTotalPages, setStudentTotalPages] = useState(0);
-
 
   // Groups tab
   const [groups, setGroups] = useState([]);
@@ -220,82 +220,124 @@ export default function LecturerGroupManagement() {
     return { bg: "#f8fafc", color: "#94a3b8", border: "#e2e8f0" };
   };
 
+  // --- Render helpers for better readability ---
+  const renderLoadingSpinner = () => (
+    <div className="lgm-loading">
+      <span className="lgm-spinner" />
+      <span>Loading...</span>
+    </div>
+  );
+
+  const renderEmptyState = (message) => (
+    <div className="lgm-empty-sm">{message}</div>
+  );
+
   return (
     <div className="lgm-root">
       {/* Topbar */}
-      <div className="lgm-topbar">
-        <button className="lgm-back-btn" onClick={() => navigate(-1)}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M19 12H5M12 5l-7 7 7 7" />
-          </svg>
-          Back
-        </button>
-        <div className="lgm-class-info">
-          <span className="lgm-class-code">{classInfo?.classCode || `Class #${classId}`}</span>
-          <span className="lgm-class-meta">{classInfo?.semesterCode} · {classInfo?.courseCode}</span>
+      <header className="lgm-topbar" role="banner">
+        <div className="lgm-topbar-left">
+          <button className="lgm-back-btn" onClick={() => navigate(-1)} aria-label="Back">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+              <path d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
+            Back
+          </button>
+
+          <div className="lgm-class-info" aria-live="polite">
+            <span className="lgm-class-code">{classInfo?.classCode || `Class #${classId}`}</span>
+            <span className="lgm-class-meta">{classInfo?.semesterCode} · {classInfo?.courseCode}</span>
+          </div>
         </div>
-        <LogoutButton />
-      </div>
+        <img src={logo} alt="Logo" className="lcl-navbar-logo" />
+        <div className="lgm-topbar-right">
+          <div className="lgm-top-actions">
+            <button className="lgm-btn-ghost" onClick={() => { fetchGroupSummaries(); fetchGroups(); fetchClassStudents(0); }}>
+              Refresh
+            </button>
+            <LogoutButton />
+          </div>
+        </div>
+      </header>
 
       {/* Tabs */}
-      <div className="lgm-tabs">
+      <nav className="lgm-tabs" role="tablist" aria-label="Group management tabs">
         {[
           { id: "overview", label: "Overview", icon: "📋" },
           { id: "groups", label: "Groups", icon: "👥" },
           { id: "students", label: "Students", icon: "🎓" },
         ].map(t => (
-          <button key={t.id} className={`lgm-tab ${activeTab === t.id ? "lgm-tab-active" : ""}`}
-            onClick={() => setActiveTab(t.id)}>
-            <span>{t.icon}</span> {t.label}
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={activeTab === t.id}
+            className={`lgm-tab ${activeTab === t.id ? "lgm-tab-active" : ""}`}
+            onClick={() => setActiveTab(t.id)}
+          >
+            <span className="lgm-tab-icon" aria-hidden>{t.icon}</span>
+            <span>{t.label}</span>
           </button>
         ))}
-      </div>
+      </nav>
 
-      <div className="lgm-content">
-
-        {/*  OVERVIEW TAB  */}
+      <main className="lgm-content" role="main">
+        {/* OVERVIEW */}
         {activeTab === "overview" && (
-          <div className="lgm-home">
-            {/* Group summaries */}
-            <div className="lgm-section-title">Groups Overview</div>
+          <section className="lgm-home" aria-labelledby="overview-title">
+            <h2 id="overview-title" className="lgm-section-title">Groups Overview</h2>
+
             {overviewLoading ? (
-              <div className="lgm-loading"><span className="lgm-spinner" /> Loading...</div>
+              renderLoadingSpinner()
             ) : groupSummaries.length === 0 ? (
-              <div className="lgm-empty-sm">No groups yet.</div>
+              renderEmptyState("No groups yet.")
             ) : (
               <div className="lgm-summary-list">
                 {groupSummaries.map((g, i) => (
-                  <div key={g.groupId} className="lgm-summary-card">
-                    <div className="lgm-summary-header" onClick={() => setExpandedGroupId(expandedGroupId === g.groupId ? null : g.groupId)}>
+                  <article key={g.groupId} className="lgm-summary-card" aria-expanded={expandedGroupId === g.groupId}>
+                    <header
+                      className="lgm-summary-header"
+                      onClick={() => setExpandedGroupId(expandedGroupId === g.groupId ? null : g.groupId)}
+                      tabIndex={0}
+                      role="button"
+                      aria-expanded={expandedGroupId === g.groupId}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setExpandedGroupId(expandedGroupId === g.groupId ? null : g.groupId); }}
+                    >
                       <div className="lgm-summary-left">
                         <span className="lgm-summary-num">{i + 1}</span>
                         <div>
                           <div className="lgm-summary-name">{g.groupName}</div>
                           <div className="lgm-summary-topic">
-                            {g.topicName
-                              ? <span className="lgm-topic-badge">{g.topicName}</span>
-                              : <span className="lgm-no-topic">No topic assigned</span>}
+                            {g.topicName ? <span className="lgm-topic-badge">{g.topicName}</span> : <span className="lgm-no-topic">No topic assigned</span>}
                           </div>
                         </div>
                       </div>
+
                       <div className="lgm-summary-right">
                         <span className="lgm-member-count">{g.members?.length || 0} members</span>
-                        <button className="lgm-stats-btn" onClick={e => { e.stopPropagation(); setSelectedGroupForStats(selectedGroupForStats === g.groupId ? null : g.groupId); }}>
-                          {selectedGroupForStats === g.groupId ? "Hide Stats" : "Stats"}
-                        </button>
-                        <span className="lgm-expand-icon">{expandedGroupId === g.groupId ? "▲" : "▼"}</span>
+                        <div className="lgm-summary-actions">
+                          <button
+                            className="lgm-stats-btn"
+                            onClick={(e) => { e.stopPropagation(); setSelectedGroupForStats(selectedGroupForStats === g.groupId ? null : g.groupId); }}
+                            aria-pressed={selectedGroupForStats === g.groupId}
+                          >
+                            {selectedGroupForStats === g.groupId ? "Hide Stats" : "Stats"}
+                          </button>
+                          <span className="lgm-expand-icon" aria-hidden>{expandedGroupId === g.groupId ? "▲" : "▼"}</span>
+                        </div>
                       </div>
-                    </div>
+                    </header>
 
-                    {/* Members list */}
                     {expandedGroupId === g.groupId && (
                       <div className="lgm-summary-members">
-                        <table className="lgm-table">
-                          <thead><tr><th>#</th><th>Student Code</th><th>Full Name</th><th>Role</th></tr></thead>
+                        <table className="lgm-table" role="table" aria-label={`Members of ${g.groupName}`}>
+                          <thead>
+                            <tr><th>#</th><th>Student Code</th><th>Full Name</th><th>Role</th></tr>
+                          </thead>
                           <tbody>
-                            {(g.members || []).length === 0
-                              ? <tr><td colSpan="4" className="lgm-empty-row">No members</td></tr>
-                              : (g.members || []).map((m, mi) => (
+                            {(g.members || []).length === 0 ? (
+                              <tr><td colSpan="4" className="lgm-empty-row">No members</td></tr>
+                            ) : (
+                              (g.members || []).map((m, mi) => (
                                 <tr key={m.userId}>
                                   <td className="lgm-td-num">{mi + 1}</td>
                                   <td><span className="lgm-student-code">{m.studentCode || "—"}</span></td>
@@ -303,33 +345,30 @@ export default function LecturerGroupManagement() {
                                   <td>{m.memberRole}</td>
                                 </tr>
                               ))
-                            }
+                            )}
                           </tbody>
                         </table>
                       </div>
                     )}
 
-                    {/* Stats */}
                     {selectedGroupForStats === g.groupId && (
                       <div className="lgm-stats-section">
                         <CommitStats groupId={g.groupId} />
                         <RequirementDashboard groupId={g.groupId} />
                       </div>
                     )}
-                  </div>
+                  </article>
                 ))}
               </div>
             )}
-
-          </div>
+          </section>
         )}
 
-
-
-        {/*  GROUPS TAB  */}
+        {/* GROUPS */}
         {activeTab === "groups" && (
-          <div className="lgm-groups">
-            {/* Create */}
+          <section className="lgm-groups" aria-labelledby="groups-title">
+            <h2 id="groups-title" className="lgm-section-title">Groups</h2>
+
             <div className="lgm-create-bar">
               {!showCreateGroup ? (
                 <button className="lgm-btn-primary" onClick={() => setShowCreateGroup(true)}>+ New Group</button>
@@ -340,18 +379,18 @@ export default function LecturerGroupManagement() {
                     onKeyDown={e => e.key === "Enter" && handleCreateGroup()} autoFocus />
                   <button className="lgm-btn-primary" onClick={handleCreateGroup}>Create</button>
                   <button className="lgm-btn-ghost" onClick={() => { setShowCreateGroup(false); setNewGroupName(""); setCreateError(""); }}>Cancel</button>
-                  {createError && <span className="lgm-error-text">{createError}</span>}
+                  {createError && <span className="lgm-error-text" role="alert">{createError}</span>}
                 </div>
               )}
             </div>
 
             {groupsLoading ? (
-              <div className="lgm-loading"><span className="lgm-spinner" /> Loading...</div>
+              renderLoadingSpinner()
             ) : groups.length === 0 ? (
-              <div className="lgm-empty-sm">No groups yet.</div>
+              renderEmptyState("No groups yet.")
             ) : (
               <div className="lgm-card lgm-table-card">
-                <table className="lgm-table">
+                <table className="lgm-table" role="table" aria-label="Groups table">
                   <thead>
                     <tr><th>#</th><th>Group Name</th><th>Topic</th><th>Status</th><th>Actions</th></tr>
                   </thead>
@@ -373,23 +412,13 @@ export default function LecturerGroupManagement() {
                               </div>
                             ) : <strong>{g.groupName}</strong>}
                           </td>
-                          <td>
-                            {g.topicName
-                              ? <span className="lgm-topic-badge">{g.topicName}</span>
-                              : <span className="lgm-null">—</span>}
-                          </td>
-                          <td>
-                            <span className="lgm-status-badge" style={{ background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>
-                              {g.status || "OPEN"}
-                            </span>
-                          </td>
+                          <td>{g.topicName ? <span className="lgm-topic-badge">{g.topicName}</span> : <span className="lgm-null">—</span>}</td>
+                          <td><span className="lgm-status-badge" style={{ background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>{g.status || "OPEN"}</span></td>
                           <td>
                             <div className="lgm-row-actions">
                               <button className="lgm-btn-action lgm-btn-members" onClick={() => openMemberModal(g)} disabled={g.status === "CLOSED"}>Members</button>
-                              <button className="lgm-btn-action lgm-btn-topic" onClick={() => openTopicModal(g)}
-                                disabled={g.status === "CLOSED"}>Topic</button>
-                              <button className="lgm-btn-action lgm-btn-edit2" onClick={() => { setEditGroupId(g.groupId); setEditGroupName(g.groupName); setEditError(""); }}
-                                disabled={g.status === "CLOSED"}>Edit</button>
+                              <button className="lgm-btn-action lgm-btn-topic" onClick={() => openTopicModal(g)} disabled={g.status === "CLOSED"}>Topic</button>
+                              <button className="lgm-btn-action lgm-btn-edit2" onClick={() => { setEditGroupId(g.groupId); setEditGroupName(g.groupName); setEditError(""); }} disabled={g.status === "CLOSED"}>Edit</button>
                               {g.status !== "CLOSED"
                                 ? <button className="lgm-btn-action lgm-btn-close" onClick={() => handleChangeStatus(g.groupId, "CLOSED")}>Close</button>
                                 : <button className="lgm-btn-action lgm-btn-open" onClick={() => handleChangeStatus(g.groupId, "OPEN")}>Reopen</button>
@@ -404,54 +433,117 @@ export default function LecturerGroupManagement() {
                 </table>
               </div>
             )}
-          </div>
+          </section>
         )}
-      </div>
 
-      {/* STUDENTS TAB */}
-      {activeTab === "students" && (
-        <div className="lgm-students">
-          <div className="lgm-filter-bar">
-            <div className="lgm-search-wrap">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-              </svg>
-              <input className="lgm-search-input" placeholder="Search by name or student code..."
-                value={studentSearch} onChange={e => setStudentSearch(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && fetchClassStudents(0)} />
+        {/* STUDENTS */}
+        {activeTab === "students" && (
+          <section className="lgm-students" aria-labelledby="students-title">
+            <h2 id="students-title" className="lgm-section-title">Students by Group</h2>
+
+            <div className="lgm-filter-bar">
+              <div className="lgm-search-wrap">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                </svg>
+                <input
+                  className="lgm-search-input"
+                  placeholder="Search by group name or student name..."
+                  value={studentSearch}
+                  onChange={e => setStudentSearch(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && fetchClassStudents(0)}
+                />
+              </div>
+
+              <select
+                className="lgm-select"
+                value={hasGroupFilter}
+                onChange={e => {
+                  setHasGroupFilter(e.target.value);
+                  fetchClassStudents(0, studentSearch, e.target.value);
+                }}
+              >
+                <option value="">All Groups</option>
+                <option value="true">Has Members</option>
+                <option value="false">Empty Groups</option>
+              </select>
+
+              <button className="lgm-btn-primary lgm-btn-sm" onClick={() => fetchClassStudents(0)}>
+                Search
+              </button>
             </div>
-            <select className="lgm-select" value={hasGroupFilter} onChange={e => { setHasGroupFilter(e.target.value); fetchClassStudents(0, studentSearch, e.target.value); }}>
-              <option value="">All Students</option>
-              <option value="true">Has Group</option>
-              <option value="false">No Group</option>
-            </select>
-            <button className="lgm-btn-primary lgm-btn-sm" onClick={() => fetchClassStudents(0)}>Search</button>
-          </div>
-          {studentsLoading ? (
-            <div className="lgm-loading"><span className="lgm-spinner" /> Loading...</div>
-          ) : (
-            <div className="lgm-card lgm-table-card">
-              <table className="lgm-table">
-                <thead><tr><th>#</th><th>Student Code</th><th>Full Name</th><th>Email</th><th>Group</th></tr></thead>
-                <tbody>
-                  {classStudents.length === 0
-                    ? <tr><td colSpan="5" className="lgm-empty-row">No students found</td></tr>
-                    : classStudents.map((s, i) => (
-                      <tr key={s.userId}>
-                        <td className="lgm-td-num">{i + 1}</td>
-                        <td><span className="lgm-student-code">{s.studentCode || "—"}</span></td>
-                        <td>{s.fullName}</td>
-                        <td className="lgm-email">{s.email}</td>
-                        <td>{s.groupName ? <span className="lgm-group-chip">{s.groupName}</span> : <span className="lgm-null">No group</span>}</td>
-                      </tr>
-                    ))
-                  }
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
+
+            {studentsLoading ? (
+              <div className="lgm-loading"><span className="lgm-spinner" /> Loading...</div>
+            ) : groupSummaries.length === 0 ? (
+              <div className="lgm-empty-sm">No groups available.</div>
+            ) : (
+              <div className="lgm-group-list">
+                {groupSummaries
+                  .filter(group => {
+                    // Lọc theo từ khóa và bộ lọc "Có thành viên / Không có thành viên"
+                    const matchesSearch =
+                      studentSearch.trim() === "" ||
+                      group.groupName.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                      (group.members || []).some(m => m.fullName.toLowerCase().includes(studentSearch.toLowerCase()));
+
+                    if (hasGroupFilter === "true") return matchesSearch && (group.members?.length > 0);
+                    if (hasGroupFilter === "false") return matchesSearch && (group.members?.length === 0);
+                    return matchesSearch;
+                  })
+                  .map((group, idx) => (
+                    <div key={group.groupId} className="lgm-group-card">
+                      <div className="lgm-group-card-header">
+                        <div className="lgm-group-name">
+                          <span className="lgm-group-index">{idx + 1}</span>
+                          {group.groupName}
+                        </div>
+                        <div className="lgm-group-stats">
+                          <span className="lgm-member-count">{group.members?.length || 0} members</span>
+                          {group.topicName && (
+                            <span className="lgm-topic-badge-sm">{group.topicName}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="lgm-group-members">
+                        {(group.members || []).length === 0 ? (
+                          <div className="lgm-empty-members">No members in this group</div>
+                        ) : (
+                          <table className="lgm-table lgm-table-compact">
+                            <thead>
+                              <tr>
+                                <th>#</th>
+                                <th>Student Code</th>
+                                <th>Full Name</th>
+                                <th>Role</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(group.members || []).map((member, mi) => (
+                                <tr key={member.userId}>
+                                  <td className="lgm-td-num">{mi + 1}</td>
+                                  <td>
+                                    <span className="lgm-student-code">{member.studentCode || "—"}</span>
+                                  </td>
+                                  <td>{member.fullName}</td>
+                                  <td>
+                                    <span className={`lgm-role-badge ${member.memberRole === "LEADER" ? "lgm-leader" : "lgm-member"}`}>
+                                      {member.memberRole}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </section>
+        )}
+      </main>
 
       {/*  Members Modal  */}
       {showMemberModal && (
@@ -469,9 +561,10 @@ export default function LecturerGroupManagement() {
               <table className="lgm-table">
                 <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
                 <tbody>
-                  {members.length === 0
-                    ? <tr><td colSpan="6" className="lgm-empty-row">No members yet</td></tr>
-                    : members.map((m, i) => (
+                  {members.length === 0 ? (
+                    <tr><td colSpan="6" className="lgm-empty-row">No members yet</td></tr>
+                  ) : (
+                    members.map((m, i) => (
                       <tr key={m.userId}>
                         <td className="lgm-td-num">{i + 1}</td>
                         <td>{m.fullName}</td>
@@ -486,7 +579,7 @@ export default function LecturerGroupManagement() {
                         </td>
                       </tr>
                     ))
-                  }
+                  )}
                 </tbody>
               </table>
 
@@ -497,9 +590,10 @@ export default function LecturerGroupManagement() {
               <table className="lgm-table" style={{ marginTop: 8 }}>
                 <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Action</th></tr></thead>
                 <tbody>
-                  {eligibleStudents.length === 0
-                    ? <tr><td colSpan="5" className="lgm-empty-row">No eligible students</td></tr>
-                    : eligibleStudents.map((s, i) => (
+                  {eligibleStudents.length === 0 ? (
+                    <tr><td colSpan="5" className="lgm-empty-row">No eligible students</td></tr>
+                  ) : (
+                    eligibleStudents.map((s, i) => (
                       <tr key={s.userId}>
                         <td className="lgm-td-num">{i + 1}</td>
                         <td>{s.fullName}</td>
@@ -508,7 +602,7 @@ export default function LecturerGroupManagement() {
                         <td><button className="lgm-btn-action lgm-btn-add" onClick={() => handleAddMember(s.userId)}>Add</button></td>
                       </tr>
                     ))
-                  }
+                  )}
                 </tbody>
               </table>
               {memberTotalPages > 1 && (
@@ -547,9 +641,10 @@ export default function LecturerGroupManagement() {
               <table className="lgm-table">
                 <thead><tr><th>Code</th><th>Name</th><th>Action</th></tr></thead>
                 <tbody>
-                  {filteredTopics.length === 0
-                    ? <tr><td colSpan="3" className="lgm-empty-row">No topics found</td></tr>
-                    : filteredTopics.map(t => (
+                  {filteredTopics.length === 0 ? (
+                    <tr><td colSpan="3" className="lgm-empty-row">No topics found</td></tr>
+                  ) : (
+                    filteredTopics.map(t => (
                       <tr key={t.topicId}>
                         <td><span className="lgm-topic-code">{t.topicCode}</span></td>
                         <td>{t.topicName}</td>
@@ -562,7 +657,7 @@ export default function LecturerGroupManagement() {
                         </td>
                       </tr>
                     ))
-                  }
+                  )}
                 </tbody>
               </table>
             </div>

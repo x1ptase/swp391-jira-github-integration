@@ -13,9 +13,6 @@ export default function AdminLecturerManagement() {
   // Assign modal
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedLecturer, setSelectedLecturer] = useState(null);
-  const [assigning, setAssigning] = useState(null);
-  const [assignError, setAssignError] = useState("");
-  const [assignSuccess, setAssignSuccess] = useState("");
   const [classSearch, setClassSearch] = useState("");
 
   const token = localStorage.getItem("token");
@@ -43,28 +40,6 @@ export default function AdminLecturerManagement() {
   const getAssignedClasses = (lecturerId) =>
     classes.filter(c => c.lecturerId === lecturerId);
 
-  const openAssignModal = (lecturer) => {
-    setSelectedLecturer(lecturer);
-    setAssignError(""); setAssignSuccess(""); setClassSearch("");
-    setShowAssignModal(true);
-  };
-
-  const handleAssign = async (classId) => {
-    setAssigning(classId); setAssignError(""); setAssignSuccess("");
-    const res = await fetch(`${ASSIGN_API}/${classId}/lecturer`, {
-      method: "PUT", headers: authJson(),
-      body: JSON.stringify({ lecturerId: selectedLecturer.userId }),
-    });
-    if (res.ok) {
-      setAssignSuccess("Assigned successfully!");
-      await fetchData();
-    } else {
-      const err = await res.json();
-      setAssignError(err.message || "Failed to assign");
-    }
-    setAssigning(null);
-  };
-
   const filteredClasses = classes.filter(c =>
     c.classCode?.toLowerCase().includes(classSearch.toLowerCase()) ||
     c.semesterCode?.toLowerCase().includes(classSearch.toLowerCase())
@@ -89,7 +64,6 @@ export default function AdminLecturerManagement() {
                 <th>Username</th>
                 <th>Email</th>
                 <th>Assigned Classes</th>
-                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -113,11 +87,6 @@ export default function AdminLecturerManagement() {
                             ))}
                           </div>
                       }
-                    </td>
-                    <td>
-                      <button className="alm-btn-action alm-btn-assign" onClick={() => openAssignModal(l)}>
-                        Assign Class
-                      </button>
                     </td>
                   </tr>
                 );
@@ -182,18 +151,6 @@ export default function AdminLecturerManagement() {
                                 {c.lecturerName}
                               </span>
                             : <span className="alm-no-class">Not assigned</span>
-                          }
-                        </td>
-                        <td>
-                          {isAssignedToThis
-                            ? <span className="alm-assigned-tag">✓ Assigned</span>
-                            : <button
-                                className="alm-btn-action alm-btn-assign"
-                                onClick={() => handleAssign(c.classId)}
-                                disabled={assigning === c.classId}
-                              >
-                                {assigning === c.classId ? <span className="alm-spinner-sm"/> : "Assign"}
-                              </button>
                           }
                         </td>
                       </tr>
