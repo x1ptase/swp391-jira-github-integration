@@ -5,7 +5,7 @@ const CLASS_API = "/api/classes";
 const SEMESTER_API = "/api/semesters?page=0&size=999";
 const STUDENT_API = "/api/admin/users/unassigned-students";
 const ASSIGN_STUDENT_API = "/api/admin/classes";
-
+const LECTURER_API = "/api/admin/users?roleCode=LECTURER&page=0&size=999";
 const COURSE_ID = 1;
 const COURSE_CODE = "SWP391";
 
@@ -33,6 +33,16 @@ export default function AdminClassManagement() {
   const [addError, setAddError] = useState("");
   const [addSuccess, setAddSuccess] = useState("");
   const [enrolledStudentIds, setEnrolledStudentIds] = useState(new Set());
+
+  // Assign lecturer modal
+  const [showLecturerModal, setShowLecturerModal] = useState(false);
+  const [lecturerClass, setLecturerClass] = useState(null);
+  const [lecturers, setLecturers] = useState([]);
+  const [lecturerSearch, setLecturerSearch] = useState("");
+  const [assigningLec, setAssigningLec] = useState(null);
+  const [lecError, setLecError] = useState("");
+  const [lecSuccess, setLecSuccess] = useState("");
+
 
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
@@ -150,7 +160,34 @@ export default function AdminClassManagement() {
     if (status === "CLOSED") return { bg: "#fef2f2", color: "#dc2626", border: "#fecaca" };
     return { bg: "#f8fafc", color: "#94a3b8", border: "#e2e8f0" };
   };
+  //Add Lecturer
+  const openLecturerModal = async (cls) => {
+    setLecturerClass(cls); setLecturerSearch(""); setLecError(""); setLecSuccess("");
+    const res = await fetch(LECTURER_API, { headers: auth() });
+    const data = await res.json();
+    setLecturers(data.data?.content || data.data || []);
+    setShowLecturerModal(true);
+  };
 
+  const handleAssignLecturer = async (lecturerId) => {
+    setAssigningLec(lecturerId); setLecError(""); setLecSuccess("");
+    const res = await fetch(`/api/admin/classes/${lecturerClass.classId}/lecturer`, {
+      method: "PUT", headers: authJson(),
+      body: JSON.stringify({ lecturerId }),
+    });
+    const data = await res.json();
+    if (!res.ok) { setLecError(data.message || "Failed"); }
+    else {
+      setLecSuccess("Lecturer assigned!");
+      await fetchClasses();
+      // Tìm lecturer vừa assign để update lecturerClass
+      const assignedLec = lecturers.find(l => l.userId === lecturerId);
+      if (assignedLec) {
+        setLecturerClass(prev => ({ ...prev, lecturerName: assignedLec.fullName }));
+      }
+    }
+    setAssigningLec(null);
+  };
   return (
     <div className="acm-root">
       <div className="acm-page-header">
@@ -250,6 +287,7 @@ export default function AdminClassManagement() {
                       <div className="acm-actions">
                         <button className="acm-btn-action acm-btn-edit" onClick={() => handleEdit(c)}>Edit</button>
                         <button className="acm-btn-action acm-btn-detail" onClick={() => openDetail(c)}>Detail</button>
+                        <button className="acm-btn-action acm-btn-lecturer" onClick={() => openLecturerModal(c)}>+ Lecturer</button>
                         <button className="acm-btn-action acm-btn-student"
                           onClick={() => openAddStudent(c)}
                           disabled={c.status === "CLOSED"}
@@ -268,6 +306,53 @@ export default function AdminClassManagement() {
           </table>
         )}
       </div>
+      {/*Add lec modal*/}
+      {showLecturerModal && (
+        <div className="acm-modal-overlay" onClick={() => setShowLecturerModal(false)}>
+          <div className="acm-modal acm-modal-lg" onClick={e => e.stopPropagation()}>
+            <div className="acm-modal-header">
+              <div>
+                <div className="acm-modal-title">Assign Lecturer — {lecturerClass?.classCode}</div>
+                {lecturerClass?.lecturerName && <div className="acm-modal-subtitle">Current: 👨‍🏫 {lecturerClass.lecturerName}</div>}
+              </div>
+              <button className="acm-modal-close" onClick={() => setShowLecturerModal(false)}>×</button>
+            </div>
+            <div className="acm-modal-body">
+              {lecSuccess && <div className="acm-add-success">{lecSuccess}</div>}
+              {lecError && <div className="acm-add-error">{lecError}</div>}
+              <div className="acm-search-wrap" style={{ marginBottom: 14 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                </svg>
+                <input className="acm-search-input" placeholder="Search lecturer..."
+                  value={lecturerSearch} onChange={e => setLecturerSearch(e.target.value)} autoFocus />
+              </div>
+              <table className="acm-table">
+                <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Action</th></tr></thead>
+                <tbody>
+                  {lecturers
+                    .filter(l => l.fullName?.toLowerCase().includes(lecturerSearch.toLowerCase()) || l.username?.toLowerCase().includes(lecturerSearch.toLowerCase()))
+                    .map((l, i) => (
+                      <tr key={l.userId}>
+                        <td className="acm-td-num">{i + 1}</td>
+                        <td>{l.fullName}</td>
+                        <td><span className="acm-username">{l.username}</span></td>
+                        <td>{l.email}</td>
+                        <td>
+                          <button className="acm-btn-action acm-btn-lecturer"
+                            onClick={() => handleAssignLecturer(l.userId)}
+                            disabled={assigningLec === l.userId}>
+                            {assigningLec === l.userId ? <span className="acm-spinner-sm" /> : "Assign"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Detail Modal */}
       {showDetailModal && (
