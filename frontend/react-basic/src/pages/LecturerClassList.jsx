@@ -11,11 +11,14 @@ export default function LecturerClassList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [keyword, setKeyword] = useState("");
+  const [semester, setSemester] = useState("");
+  const [semesters, setSemesters] = useState([]);
 
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
 
-  useEffect(() => { fetchClasses(); }, []);
+  useEffect(() => { fetchClasses(); fetchSemesters(); }, []);
   // utils/color.js (hoặc đặt trong component)
   function hexToLuminance(hex) {
     const c = hex.replace("#", "");
@@ -25,6 +28,21 @@ export default function LecturerClassList() {
     const srgb = [r, g, b].map(v => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
     return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
   }
+  const fetchSemesters = async () => {
+    try {
+      const res = await fetch("/api/semesters/list", { headers: auth() });
+      const data = await res.json();
+      setSemesters(data.data?.content || data.data || []);
+
+    } catch (err) {
+      console.log("Cannot load semesters");
+      setSemesters([]); // tránh crash
+    }
+  };
+
+  useEffect(() => {
+    fetchSemesters();
+  }, []);
 
   function pickColorFromId(id) {
     const palette = ["#60A5FA", "#FBBF24", "#A78BFA", "#FB7185", "#34D399", "#F97316", "#60C5A8", "#FBCFE8"];
@@ -39,26 +57,35 @@ export default function LecturerClassList() {
   const fetchClasses = async () => {
     setLoading(true); setError("");
     try {
-      const res = await fetch(CLASS_API, { headers: auth() });
+      const query = new URLSearchParams({
+        keyword: keyword || "",
+        semesterCode: semester || "",
+        page: 0,
+        size: 20
+      });
+
+      const res = await fetch(`/api/classes?${query}`, {
+        headers: auth()
+      });
+
       if (!res.ok) throw new Error("Failed to fetch classes");
+
       const data = await res.json();
-      setClasses(data.data || []);
+      setClasses(data.data?.content || []);
     } catch (err) {
       setError(err.message || "Error occurred");
     } finally {
       setLoading(false);
     }
   };
+  // Tự động refetch khi keyword hoặc semester thay đổi, với debounce 400ms
+  useEffect(() => {
+  const delay = setTimeout(() => {
+    fetchClasses();
+  }, 10);
 
-  function getColorFromId(id) {
-    const colors = ["#FFCDD2", "#C8E6C9", "#BBDEFB", "#FFF9C4", "#D1C4E9", "#FFE0B2"];
-    // Tạo chỉ số bằng cách cộng mã ASCII của các ký tự trong id
-    const index = id
-      .toString()
-      .split("")
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
-    return colors[index];
-  }
+  return () => clearTimeout(delay);
+}, [keyword, semester]);
 
   return (
     <div className="lcl-root">
@@ -78,6 +105,42 @@ export default function LecturerClassList() {
       <div className="lcl-main">
         <div className="lcl-content-card">
           <div className="lcl-page-header">
+            <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
+
+              {/* Search */}
+              <input
+                type="text"
+                placeholder="Search class..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid #e2e8f0",
+                  flex: 1
+                }}
+              />
+
+              {/* Dropdown Semester */}
+              <select
+                value={semester}
+                onChange={(e) => setSemester(e.target.value)}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid #e2e8f0",
+                  width: "180px"
+                }}
+              >
+                <option value="">All Semester</option>
+                {semesters.map(s => (
+                  <option key={s.semesterId} value={s.semesterCode}>
+                    {s.semesterCode}
+                  </option>
+                ))}
+              </select>
+
+            </div>
             <div>
               <h1 className="lcl-page-title">My Assigned Classes</h1>
               <p className="lcl-page-desc">You are assigned to {classes.length} class(es)</p>
