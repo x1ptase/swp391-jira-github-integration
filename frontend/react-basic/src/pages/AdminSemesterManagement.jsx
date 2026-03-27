@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./AdminSemesterManagement.css";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useNavigate } from "react-router-dom";
 
 const SEMESTER_API = "/api/semesters";
 
@@ -10,10 +11,10 @@ export default function AdminSemesterManagement() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ semesterId: null, semesterCode: "", semesterName: "", startDate: "", endDate: "" });
   const [formError, setFormError] = useState("");
-
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
   const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
+  const navigate = useNavigate();
   const parseDate = (str) => str ? new Date(str) : null;
   const formatISO = (date) => {
     if (!date) return "";
@@ -177,7 +178,7 @@ export default function AdminSemesterManagement() {
                 placeholderText="dd/mm/yyyy"
                 isClearable
               />
-            </div>  
+            </div>
           </div>
           {formError && <div className="asm-form-error">{formError}</div>}
           <div className="asm-form-actions">
@@ -227,7 +228,10 @@ export default function AdminSemesterManagement() {
                     <td>
                       <div className="asm-actions">
                         <button className="asm-btn-action asm-btn-edit" onClick={() => handleEdit(s)}>Edit</button>
+                        <button className="asm-btn-action asm-btn-classes" onClick={() => navigate(`/admin/classes?semesterCode=${s.semesterCode}`)}>Classes</button>
+                        <button className="asm-btn-action asm-btn-topics" onClick={() => navigate(`/admin/topics`)}>Topics</button>
                         <button className="asm-btn-action asm-btn-delete" onClick={() => handleDelete(s)}>Delete</button>
+
                       </div>
                     </td>
                   </tr>
