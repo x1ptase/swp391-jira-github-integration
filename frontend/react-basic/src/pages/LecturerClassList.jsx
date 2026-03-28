@@ -17,6 +17,7 @@ export default function LecturerClassList() {
 
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
+  const [summaries, setSummaries] = useState({});
 
   useEffect(() => { fetchClasses(); fetchSemesters(); }, []);
   // utils/color.js (hoặc đặt trong component)
@@ -44,6 +45,27 @@ export default function LecturerClassList() {
     fetchSemesters();
   }, []);
 
+  const fetchSummary = async (classId) => {
+    try {
+      const res = await fetch(`/api/classes/${classId}/summary`, {
+        headers: auth()
+      });
+
+      const data = await res.json();
+
+      setSummaries(prev => ({
+        ...prev,
+        [classId]: data.data
+      }));
+
+    } catch (err) {
+      console.log("Cannot load summary");
+    }
+  };
+  useEffect(() => {
+    classes.forEach(c => fetchSummary(c.classId));
+  }, [classes]);
+
   function pickColorFromId(id) {
     const palette = ["#60A5FA", "#FBBF24", "#A78BFA", "#FB7185", "#34D399", "#F97316", "#60C5A8", "#FBCFE8"];
     const sum = id.toString().split("").reduce((s, ch) => s + ch.charCodeAt(0), 0);
@@ -54,38 +76,25 @@ export default function LecturerClassList() {
     return { color, textColor };
   }
 
-  const fetchClasses = async () => {
-    setLoading(true); setError("");
-    try {
-      const query = new URLSearchParams({
-        keyword: keyword || "",
-        semesterCode: semester || "",
-        page: 0,
-        size: 20
-      });
-
-      const res = await fetch(`/api/classes?${query}`, {
-        headers: auth()
-      });
-
-      if (!res.ok) throw new Error("Failed to fetch classes");
-
-      const data = await res.json();
-      setClasses(data.data?.content || []);
-    } catch (err) {
-      setError(err.message || "Error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-  // Tự động refetch khi keyword hoặc semester thay đổi, với debounce 400ms
-  useEffect(() => {
-  const delay = setTimeout(() => {
-    fetchClasses();
-  }, 10);
-
-  return () => clearTimeout(delay);
-}, [keyword, semester]);
+ const fetchClasses = async () => {
+  setLoading(true); setError("");
+  try {
+    const res = await fetch(CLASS_API, { headers: auth() });
+    if (!res.ok) throw new Error("Failed to fetch classes");
+    const data = await res.json();
+    setClasses(data.data || []);
+  } catch (err) {
+    setError(err.message || "Error occurred");
+  } finally {
+    setLoading(false);
+  }
+};
+const filteredClasses = classes.filter(c => {
+  const matchKeyword = !keyword.trim() || 
+    c.classCode?.toLowerCase().includes(keyword.toLowerCase());
+  const matchSemester = !semester || c.semesterCode === semester;
+  return matchKeyword && matchSemester;
+});
 
   return (
     <div className="lcl-root">
@@ -106,7 +115,6 @@ export default function LecturerClassList() {
         <div className="lcl-content-card">
           <div className="lcl-page-header">
             <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
-
               {/* Search */}
               <input
                 type="text"
@@ -141,7 +149,7 @@ export default function LecturerClassList() {
               </select>
 
             </div>
-            <div>
+            <div className="lcl-page-center">
               <h1 className="lcl-page-title">My Assigned Classes</h1>
               <p className="lcl-page-desc">You are assigned to {classes.length} class(es)</p>
             </div>
@@ -168,7 +176,7 @@ export default function LecturerClassList() {
             </div>
           ) : (
             <div className="lcl-grid">
-              {classes.map(cls => {
+              {filteredClasses.map(cls => {
                 const { color: accent, textColor } = pickColorFromId(cls.classId);
                 return (
                   <div key={cls.classId} className="lcl-card">
@@ -183,8 +191,14 @@ export default function LecturerClassList() {
                           <h3 className="lcl-card-title">{cls.classCode}</h3>
                           <span className="lcl-course-badge">{cls.courseCode}</span>
                         </div>
-
+                        <div className="lcl-card-sum">
+                          <span>Groups: {summaries[cls.classId]?.totalGroups ?? "..."}</span>
+                          <span>Students: {summaries[cls.classId]?.totalStudents ?? "..."}</span>
+                          <span>Topic Assigned: {summaries[cls.classId]?.topicAssignedSummary ?? "..."}</span>
+                        </div>
                       </div>
+
+
                       <div className="lcl-card-body">
                         <div className="lcl-card-row">
                           <span className="lcl-card-label">Course</span>

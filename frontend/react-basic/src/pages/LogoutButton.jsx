@@ -21,7 +21,7 @@ export default function LogoutButton() {
 
   return (
     <div className="lgb-wrap">
-      {username && <span className="lgb-username">👤 {username}</span>}
+      {username && <span className="lgb-username">Welcome, {username}</span>}
       <button className="lgb-btn" onClick={handleLogout} disabled={loading}>
         {loading ? <span className="lgb-spinner"/> : (
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
