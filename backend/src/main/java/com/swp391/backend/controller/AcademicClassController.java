@@ -7,6 +7,7 @@ import com.swp391.backend.service.AcademicClassService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
+import com.swp391.backend.dto.response.ClassSummaryResponse;
 
 @RestController
 @RequestMapping("/api/classes")
@@ -16,6 +17,12 @@ public class AcademicClassController {
 
     public AcademicClassController(AcademicClassService academicClassService) {
         this.academicClassService = academicClassService;
+    }
+
+    //SUMMARY CLASS
+    @GetMapping("/{id}/summary")
+    public ApiResponse<ClassSummaryResponse> getClassSummary(@PathVariable Long id) {
+        return ApiResponse.success(academicClassService.getClassSummary(id));
     }
 
     // SEARCH CLASS

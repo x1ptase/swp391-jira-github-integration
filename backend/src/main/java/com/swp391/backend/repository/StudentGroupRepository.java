@@ -47,6 +47,10 @@ public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long
 
     boolean existsByAcademicClass_ClassIdAndGroupNameAndGroupIdNot(Long classId, String groupName, Long groupId);
 
+    long countByAcademicClass_ClassId(Long classId);
+
+    long countByAcademicClass_ClassIdAndTopicIsNotNull(Long classId);
+
     @EntityGraph(attributePaths = {"academicClass", "academicClass.course", "academicClass.semester"})
     List<StudentGroup> findByAcademicClass_Course_CourseCode(String courseCode);
 
