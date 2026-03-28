@@ -227,7 +227,7 @@ export default function AdminSemesterManagement() {
                     <td>
                       <div className="asm-actions">
                         <button className="asm-btn-action asm-btn-edit" onClick={() => handleEdit(s)}>Edit</button>
-                        <button className="asm-btn-action asm-btn-classes" onClick={() => navigate(`/admin/classes?semesterCode=${s.semesterCode}`)}>Classes</button>
+                        <button className="asm-btn-action asm-btn-classes" onClick={() => navigate(`/admin/classes?semesterId=${s.semesterId}&semesterCode=${s.semesterCode}`)}>Classes</button>
                         <button className="asm-btn-action asm-btn-topics" onClick={() => navigate(`/admin/topics?semesterId=${s.semesterId}`)}>Topics</button>
                         <button className="asm-btn-action asm-btn-delete" onClick={() => handleDelete(s)}>Delete</button>
                       </div>

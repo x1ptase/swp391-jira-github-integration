@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import "./AdminClassManagement.css";
 
 const CLASS_API = "/api/classes";
@@ -10,12 +11,16 @@ const COURSE_ID = 1;
 const COURSE_CODE = "SWP391";
 
 export default function AdminClassManagement() {
+  const [searchParams] = useSearchParams();
+  const semesterIdFromUrl = searchParams.get("semesterId") || "";
+  const semesterCodeFromUrl = searchParams.get("semesterCode") || "";
+
   const [classes, setClasses] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [filter, setFilter] = useState({ keyword: "", semesterCode: "" });
-  const [form, setForm] = useState({ classId: null, classCode: "", semesterId: "" });
+  const [filter, setFilter] = useState({ keyword: "", semesterCode: semesterCodeFromUrl });
+  const [form, setForm] = useState({ classId: null, classCode: "", semesterId: semesterIdFromUrl });
   const [formError, setFormError] = useState("");
 
   // Detail modal
@@ -47,6 +52,12 @@ export default function AdminClassManagement() {
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
   const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
+  // Khi URL params thay đổi (navigate từ trang Semester), cập nhật form và filter
+  useEffect(() => {
+    setForm(prev => ({ ...prev, semesterId: semesterIdFromUrl }));
+    setFilter(prev => ({ ...prev, semesterCode: semesterCodeFromUrl }));
+  }, [semesterIdFromUrl, semesterCodeFromUrl]);
+
   useEffect(() => { fetchClasses(); fetchSemesters(); }, []);
 
 
@@ -100,7 +111,8 @@ export default function AdminClassManagement() {
     fetchClasses();
   };
 
-  const resetForm = () => { setForm({ classId: null, classCode: "", semesterId: "" }); setFormError(""); };
+  // Giữ lại semesterIdFromUrl sau khi create/update
+  const resetForm = () => { setForm({ classId: null, classCode: "", semesterId: semesterIdFromUrl || "" }); setFormError(""); };
 
   // Detail 
   const openDetail = async (cls) => {
@@ -214,12 +226,19 @@ export default function AdminClassManagement() {
             <div className="acm-field">
               <label className="acm-label">Semester</label>
               <select className="acm-select" value={form.semesterId}
-                onChange={e => setForm({ ...form, semesterId: e.target.value })} required>
+                onChange={e => setForm({ ...form, semesterId: e.target.value })}
+                disabled={!!semesterIdFromUrl}
+                required>
                 <option value="">Select semester...</option>
                 {semesters.map(s => (
                   <option key={s.semesterId} value={s.semesterId}>{s.semesterCode} — {s.semesterName}</option>
                 ))}
               </select>
+              {semesterIdFromUrl && (
+                <small style={{ color: "#64748b", marginTop: 4, display: "block" }}>
+                  🔒 Semester locked from navigation
+                </small>
+              )}
             </div>
           </div>
           {formError && <div className="acm-form-error">{formError}</div>}
