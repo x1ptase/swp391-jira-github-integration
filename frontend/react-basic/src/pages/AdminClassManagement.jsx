@@ -45,6 +45,7 @@ export default function AdminClassManagement() {
   const [lecturers, setLecturers] = useState([]);
   const [lecturerSearch, setLecturerSearch] = useState("");
   const [assigningLec, setAssigningLec] = useState(null);
+  const [unassigningLec, setUnassigningLec] = useState(null); // classId đang unassign
   const [lecError, setLecError] = useState("");
   const [lecSuccess, setLecSuccess] = useState("");
 
@@ -200,6 +201,25 @@ export default function AdminClassManagement() {
     }
     setAssigningLec(null);
   };
+
+  // Unassign Lecturer
+  const handleUnassignLecturer = async (cls) => {
+    if (!cls.lecturerName) return;
+    if (!window.confirm(`Are you sure you want to remove lecturer "${cls.lecturerName}" from class "${cls.classCode}"?`)) return;
+    setUnassigningLec(cls.classId);
+    const res = await fetch(`/api/admin/classes/${cls.classId}/lecturer`, {
+      method: "PUT", headers: authJson(),
+      body: JSON.stringify({ lecturerId: null }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.message || "Failed to unassign lecturer");
+    } else {
+      await fetchClasses();
+    }
+    setUnassigningLec(null);
+  };
+
   return (
     <div className="acm-root">
       <div className="acm-page-header">
@@ -307,6 +327,14 @@ export default function AdminClassManagement() {
                         <button className="acm-btn-action acm-btn-edit" onClick={() => handleEdit(c)}>Edit</button>
                         <button className="acm-btn-action acm-btn-detail" onClick={() => openDetail(c)}>Detail</button>
                         <button className="acm-btn-action acm-btn-lecturer" onClick={() => openLecturerModal(c)}>+ Lecturer</button>
+                        <button
+                          className="acm-btn-action acm-btn-danger"
+                          onClick={() => handleUnassignLecturer(c)}
+                          disabled={!c.lecturerName || unassigningLec === c.classId}
+                          title={!c.lecturerName ? "No lecturer assigned" : `Remove ${c.lecturerName}`}
+                          style={{ opacity: !c.lecturerName ? 0.45 : 1 }}>
+                          {unassigningLec === c.classId ? <span className="acm-spinner-sm" /> : "− Lecturer"}
+                        </button>
                         <button className="acm-btn-action acm-btn-student"
                           onClick={() => openAddStudent(c)}
                           disabled={c.status === "CLOSED"}
