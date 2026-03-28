@@ -2,18 +2,18 @@ import { useEffect, useState } from "react";
 import "./AdminSemesterManagement.css";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useNavigate } from "react-router-dom";
 
-const SEMESTER_API = "/api/semesters";
 
 export default function AdminSemesterManagement() {
   const [semesters, setSemesters] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ semesterId: null, semesterCode: "", semesterName: "", startDate: "", endDate: "" });
   const [formError, setFormError] = useState("");
-
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
   const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
+  const navigate = useNavigate();
   const parseDate = (str) => str ? new Date(str) : null;
   const formatISO = (date) => {
     if (!date) return "";
@@ -27,7 +27,7 @@ export default function AdminSemesterManagement() {
 
   const fetchSemesters = async () => {
     setLoading(true);
-    const res = await fetch(`${SEMESTER_API}?page=0&size=999`, { headers: auth() });
+    const res = await fetch("/api/semesters/list", { headers: auth() });
     const data = await res.json();
     setSemesters(data.data?.content || data.data || []);
     setLoading(false);
@@ -45,7 +45,7 @@ export default function AdminSemesterManagement() {
     }
 
     const method = form.semesterId ? "PUT" : "POST";
-    const url = form.semesterId ? `${SEMESTER_API}/${form.semesterId}` : SEMESTER_API;
+    const url = form.semesterId ? `/api/semesters/${form.semesterId}` : "/api/semesters";
     const body = {
       semesterCode: form.semesterCode,
       semesterName: form.semesterName,
@@ -79,7 +79,7 @@ export default function AdminSemesterManagement() {
     if (!window.confirm(`Are you sure you want to delete semester "${s.semesterName}"? This action cannot be undone.`)) {
       return;
     }
-    const res = await fetch(`${SEMESTER_API}/${s.semesterId}`, { headers: auth(), method: "DELETE" });
+    const res = await fetch(`/api/semesters/${s.semesterId}`, { headers: auth(), method: "DELETE" });
     if (!res.ok) {
       const err = await res.json();
       setFormError(err.message || "Error occurred");
@@ -177,7 +177,7 @@ export default function AdminSemesterManagement() {
                 placeholderText="dd/mm/yyyy"
                 isClearable
               />
-            </div>  
+            </div>
           </div>
           {formError && <div className="asm-form-error">{formError}</div>}
           <div className="asm-form-actions">
@@ -227,6 +227,8 @@ export default function AdminSemesterManagement() {
                     <td>
                       <div className="asm-actions">
                         <button className="asm-btn-action asm-btn-edit" onClick={() => handleEdit(s)}>Edit</button>
+                        <button className="asm-btn-action asm-btn-classes" onClick={() => navigate(`/admin/classes?semesterCode=${s.semesterCode}`)}>Classes</button>
+                        <button className="asm-btn-action asm-btn-topics" onClick={() => navigate(`/admin/topics?semesterId=${s.semesterId}`)}>Topics</button>
                         <button className="asm-btn-action asm-btn-delete" onClick={() => handleDelete(s)}>Delete</button>
                       </div>
                     </td>

@@ -22,7 +22,7 @@ public class TopicController {
         this.topicService = topicService;
     }
 
-    @GetMapping
+    @GetMapping("/list")
     public ApiResponse<Page<TopicResponse>> list(
             @RequestParam(value = "semester_id", required = false) Long semesterId,
             @RequestParam(value = "keyword", required = false) String keyword,

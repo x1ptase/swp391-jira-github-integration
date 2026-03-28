@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./AdminTopicManagement.css";
+import { useSearchParams } from "react-router-dom";
 
-const TOPIC_API = "/api/topics";
 
 export default function AdminTopicManagement() {
   const [topics, setTopics] = useState([]);
@@ -9,6 +9,8 @@ export default function AdminTopicManagement() {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [keyword, setKeyword] = useState("");
+  const [searchParams] = useSearchParams();
+  const [semesterId, setSemesterId] = useState(searchParams.get("semesterId") || "");
 
   const [form, setForm] = useState({ topicId: null, topicCode: "", topicName: "", description: "" });
   const [formError, setFormError] = useState("");
@@ -21,13 +23,16 @@ export default function AdminTopicManagement() {
   const auth = () => ({ Authorization: `Bearer ${token}` });
   const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
 
-  useEffect(() => { fetchTopics(0); }, []);
+  useEffect(() => {
+    fetchTopics(0, keyword, semesterId);
+  }, [semesterId, keyword]);
 
-  const fetchTopics = async (p = 0, kw = keyword) => {
+  const fetchTopics = async (p = 0, kw = keyword, semId = semesterId) => {
     setLoading(true);
     const params = new URLSearchParams({ page: p, size: 10 });
     if (kw.trim()) params.set("keyword", kw.trim());
-    const res = await fetch(`${TOPIC_API}?${params}`, { headers: auth() });
+    if (semId) params.set("semester_id", semId);
+    const res = await fetch(`/api/topics/list?${params}`, { headers: auth() });
     const data = await res.json();
     setTopics(data.data?.content || []);
     setTotalPages(data.data?.totalPages || 0);
@@ -39,10 +44,10 @@ export default function AdminTopicManagement() {
     e.preventDefault();
     setFormError("");
     const method = form.topicId ? "PUT" : "POST";
-    const url = form.topicId ? `${TOPIC_API}/${form.topicId}` : TOPIC_API;
+    const url = form.topicId ? `/api/topics/${form.topicId}` : "/api/topics";
     const body = form.topicId
       ? { topicName: form.topicName, description: form.description }
-      : { topicCode: form.topicCode, topicName: form.topicName, description: form.description };
+      : { topicCode: form.topicCode, topicName: form.topicName, description: form.description, semesterId: Number(semesterId) };
 
     const res = await fetch(url, { method, headers: authJson(), body: JSON.stringify(body) });
     if (!res.ok) {
@@ -51,7 +56,7 @@ export default function AdminTopicManagement() {
       return;
     }
     resetForm();
-    fetchTopics(page);
+    fetchTopics(page, keyword, semesterId);
   };
 
   const handleEdit = (t) => {
@@ -62,13 +67,13 @@ export default function AdminTopicManagement() {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this topic?")) return;
-    const res = await fetch(`${TOPIC_API}/${id}`, { method: "DELETE", headers: auth() });
+    const res = await fetch(`/api/topics/${id}`, { method: "DELETE", headers: auth() });
     if (!res.ok) { const err = await res.json(); alert(err.message || "Failed to delete"); return; }
-    fetchTopics(page);
+    fetchTopics(page, keyword, semesterId);
   };
 
   const handleDetail = async (id) => {
-    const res = await fetch(`${TOPIC_API}/${id}`, { headers: auth() });
+    const res = await fetch(`/api/topics/${id}`, { headers: auth() });
     const data = await res.json();
     setDetailTopic(data.data);
     setShowDetail(true);
@@ -144,25 +149,25 @@ export default function AdminTopicManagement() {
       <div className="atm-filter-bar">
         <div className="atm-search-wrap">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
           </svg>
           <input
             className="atm-search-input"
             placeholder="Search by code or name..."
             value={keyword}
             onChange={e => setKeyword(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && fetchTopics(0, keyword)}
+            onKeyDown={e => e.key === "Enter" && fetchTopics(0, keyword, semesterId)}
           />
-          {keyword && <button className="atm-clear-btn" onClick={() => { setKeyword(""); fetchTopics(0, ""); }}>×</button>}
+          {keyword && <button className="atm-clear-btn" onClick={() => { setKeyword(""); fetchTopics(0, "", semesterId); }}>×</button>}
         </div>
-        <button className="atm-btn-primary atm-btn-sm" onClick={() => fetchTopics(0, keyword)}>Search</button>
-        <button className="atm-btn-ghost atm-btn-sm" onClick={() => { setKeyword(""); fetchTopics(0, ""); }}>Clear</button>
+        <button className="atm-btn-primary atm-btn-sm" onClick={() => fetchTopics(0, keyword, semesterId)}>Search</button>
+        <button className="atm-btn-ghost atm-btn-sm" onClick={() => { setKeyword(""); fetchTopics(0, "", semesterId); }}>Clear</button>
       </div>
 
       {/* Table */}
       <div className="atm-card atm-table-card">
         {loading ? (
-          <div className="atm-loading"><span className="atm-spinner"/> Loading...</div>
+          <div className="atm-loading"><span className="atm-spinner" /> Loading...</div>
         ) : (
           <>
             <table className="atm-table">
@@ -205,16 +210,34 @@ export default function AdminTopicManagement() {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="atm-pagination">
-                <button className="atm-page-btn" onClick={() => fetchTopics(page - 1)} disabled={page === 0 || loading}>← Prev</button>
+                <button
+                  className="atm-page-btn"
+                  onClick={() => fetchTopics(page - 1, keyword, semesterId)}
+                  disabled={page === 0 || loading}
+                >
+                  ← Prev
+                </button>
+
                 <div className="atm-page-numbers">
                   {Array.from({ length: totalPages }, (_, i) => (
-                    <button key={i} className={`atm-page-num ${i === page ? "active" : ""}`}
-                      onClick={() => fetchTopics(i)} disabled={loading}>
+                    <button
+                      key={i}
+                      className={`atm-page-num ${i === page ? "active" : ""}`}
+                      onClick={() => fetchTopics(i, keyword, semesterId)}
+                      disabled={loading}
+                    >
                       {i + 1}
                     </button>
                   ))}
                 </div>
-                <button className="atm-page-btn" onClick={() => fetchTopics(page + 1)} disabled={page >= totalPages - 1 || loading}>Next →</button>
+
+                <button
+                  className="atm-page-btn"
+                  onClick={() => fetchTopics(page + 1, keyword, semesterId)}
+                  disabled={page >= totalPages - 1 || loading}
+                >
+                  Next →
+                </button>
               </div>
             )}
           </>

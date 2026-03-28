@@ -18,7 +18,7 @@ public class SemesterController {
     }
 
     // LIST SEMESTER
-    @GetMapping
+    @GetMapping("/list")
     public ApiResponse<Page<Semester>> listSemesters(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size

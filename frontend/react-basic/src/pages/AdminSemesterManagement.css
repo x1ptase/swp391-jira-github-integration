@@ -96,3 +96,8 @@
 }
 @keyframes asm-spin { to { transform: rotate(360deg); } }
 
+.asm-btn-classes { background: #eff6ff; color: #3b82f6; border-color: #bfdbfe; }
+.asm-btn-classes:hover { background: #dbeafe; }
+.asm-btn-topics { background: #fefce8; color: #ca8a04; border-color: #fde68a; }
+.asm-btn-topics:hover { background: #fef9c3; }
+

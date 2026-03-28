@@ -42,19 +42,6 @@ function AdminLayout() {
               <span>Lecturers</span>
             </Link>
 
-          
-            <Link
-              to="classes"
-              className={`nav-item ${location.pathname.includes('classes') ? 'active' : ''}`}
-            >
-              <span className="nav-icon">👥</span>
-              <span>Classes</span>
-            </Link>
-
-            <Link to="topics" className={`nav-item ${location.pathname.includes('topics') ? 'active' : ''}`}>
-              <span className="nav-icon">📋</span>
-              <span>Topics</span>
-            </Link>
           </nav>
         </div>
 
