@@ -1,6 +1,7 @@
 package com.swp391.backend.service.impl;
 
 import com.swp391.backend.dto.response.AcademicClassResponse;
+import com.swp391.backend.dto.response.ClassSummaryResponse;
 import com.swp391.backend.entity.*;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.repository.*;
@@ -21,14 +22,17 @@ public class AcademicClassServiceImpl implements AcademicClassService {
     private final LecturerAssignmentRepository lecturerAssignmentRepository;
     private final StudentGroupRepository studentGroupRepository;
     private final UserRepository userRepository;
-
+    private final StudentClassAssignmentRepository studentClassAssignmentRepository;
+    private final GroupMemberRepository groupMemberRepository;
     public AcademicClassServiceImpl(
             AcademicClassRepository academicClassRepository,
             CourseRepository courseRepository,
             SemesterRepository semesterRepository,
             LecturerAssignmentRepository lecturerAssignmentRepository,
             StudentGroupRepository studentGroupRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            StudentClassAssignmentRepository studentClassAssignmentRepository,
+            GroupMemberRepository groupMemberRepository
     ) {
         this.academicClassRepository = academicClassRepository;
         this.courseRepository = courseRepository;
@@ -36,6 +40,30 @@ public class AcademicClassServiceImpl implements AcademicClassService {
         this.lecturerAssignmentRepository = lecturerAssignmentRepository;
         this.studentGroupRepository = studentGroupRepository;
         this.userRepository = userRepository;
+        this.studentClassAssignmentRepository = studentClassAssignmentRepository;
+        this.groupMemberRepository = groupMemberRepository;
+    }
+
+    //SUMMARY CLASS
+    @Override
+    public ClassSummaryResponse getClassSummary(Long classId) {
+        AcademicClass academicClass = academicClassRepository.findById(classId)
+                .orElseThrow(() -> new BusinessException("Class not found: " + classId, 404));
+
+        long totalStudents = studentClassAssignmentRepository.countByAcademicClass_ClassId(classId);
+        long totalGroups = studentGroupRepository.countByAcademicClass_ClassId(classId);
+        long groupsWithTopic = studentGroupRepository.countByAcademicClass_ClassIdAndTopicIsNotNull(classId);
+        long studentsWithoutGroup = groupMemberRepository.countStudentsWithoutGroupByClassId(classId);
+
+        return ClassSummaryResponse.builder()
+                .classId(academicClass.getClassId())
+                .classCode(academicClass.getClassCode())
+                .totalStudents(totalStudents)
+                .totalGroups(totalGroups)
+                .groupsWithAssignedTopic(groupsWithTopic)
+                .topicAssignedSummary(groupsWithTopic + "/" + totalGroups)
+                .studentsWithoutGroup(studentsWithoutGroup)
+                .build();
     }
 
     // SEARCH CLASS
