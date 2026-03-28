@@ -33,15 +33,18 @@ export default function UpdateProfileModal({ onClose }) {
     e.preventDefault();
     setLoading(true); setError(""); setSuccess("");
     try {
-      const res = await fetch("/api/users/me", {
+      const res = await fetch("/api/users/profile", {
         method: "PUT",
         headers: authJson(),
         body: JSON.stringify(form),
       });
-      const data = await res.json();
-      if (!res.ok) { setError(data.message || "Failed to update profile"); return; }
+      // Safe parse: backend có thể trả plain text khi lỗi
+      let data = {};
+      const text = await res.text();
+      try { data = JSON.parse(text); } catch { /* not JSON */ }
+      if (!res.ok) { setError(data.message || `Error ${res.status}: Failed to update profile`); return; }
       setSuccess("Profile updated successfully!");
-    } catch { setError("Network error"); }
+    } catch { setError("Network error. Please try again."); }
     finally { setLoading(false); }
   };
 

@@ -58,6 +58,7 @@ export default function LecturerGroupManagement() {
   const [topicSearch, setTopicSearch] = useState("");
   const [assigningTopic, setAssigningTopic] = useState(null);
   const [topicError, setTopicError] = useState("");
+  const [topicLoading, setTopicLoading] = useState(false);
 
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
@@ -192,11 +193,17 @@ export default function LecturerGroupManagement() {
 
   //  Topic 
   const openTopicModal = async (group) => {
-    setTopicGroup(group); setTopicSearch(""); setTopicError("");
-    const res = await fetch(`${TOPIC_API}?page=0&size=999`, { headers: auth() });
+    setTopicGroup(group); setTopicSearch(""); setTopicError(""); setTopics([]);
+    setShowTopicModal(true);
+    setTopicLoading(true);
+    // Lấy semesterId từ classInfo (class hiện tại)
+    const semId = classInfo?.semesterId || "";
+    const params = new URLSearchParams({ page: 0, size: 999 });
+    if (semId) params.set("semester_id", semId);
+    const res = await fetch(`/api/topics/list?${params}`, { headers: auth() });
     const data = await res.json();
     setTopics(data.data?.content || data.data || []);
-    setShowTopicModal(true);
+    setTopicLoading(false);
   };
 
   const handleAssignTopic = async (topicId) => {
@@ -641,8 +648,14 @@ export default function LecturerGroupManagement() {
               <table className="lgm-table">
                 <thead><tr><th>Code</th><th>Name</th><th>Action</th></tr></thead>
                 <tbody>
-                  {filteredTopics.length === 0 ? (
-                    <tr><td colSpan="3" className="lgm-empty-row">No topics found</td></tr>
+                  {topicLoading ? (
+                    <tr><td colSpan="3" className="lgm-empty-row"><span className="lgm-spinner" /> Loading topics...</td></tr>
+                  ) : filteredTopics.length === 0 ? (
+                    <tr><td colSpan="3" className="lgm-empty-row">
+                      {classInfo?.semesterId
+                        ? `No topics found for this semester (${classInfo.semesterCode || classInfo.semesterId})`
+                        : "No topics found"}
+                    </td></tr>
                   ) : (
                     filteredTopics.map(t => (
                       <tr key={t.topicId}>
