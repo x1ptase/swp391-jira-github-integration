@@ -333,4 +333,96 @@ public interface MonitoringAggregationRepository
             @Param("classId") Long classId,
             @Param("fromDate") java.time.LocalDateTime fromDate,
             @Param("toDate") java.time.LocalDateTime toDate);
+    // ── Single-shot student watchlist query by classId ────────────────────────
+
+    /**
+     * Lấy danh sách Watchlist sinh viên cho toàn bộ lớp học trong một lần truy vấn duy nhất.
+     *
+     * <h4>Chiến lược JOIN:</h4>
+     * <ul>
+     *   <li><b>Base list</b>: {@code StudentClassAssignment} → đảm bảo toàn bộ sinh viên
+     *       trong lớp đều xuất hiện, kể cả người chưa có nhóm/commit.</li>
+     *   <li><b>LEFT JOIN GroupMember + StudentGroup</b>: lấy thông tin nhóm và vai trò.
+     *       Sinh viên chưa vào nhóm sẽ có {@code groupId, groupName, memberRole = null}.</li>
+     *   <li><b>LEFT JOIN Repository + GitCommit</b>: tính commit trong khoảng thời gian.
+     *       Phải qua nhóm → repository → commit để đảm bảo đúng scope;
+     *       sinh viên chưa có commit sẽ có {@code commitCount = 0}.</li>
+     * </ul>
+     *
+     * <h4>Match commit với sinh viên:</h4>
+     * <p>Commit được tính cho sinh viên khi {@code gc.author_user_id = u.user_id}
+     * (đã được map trong quá trình sync GitHub). Sinh viên chưa map GitHub email
+     * vào tài khoản hệ thống sẽ không được tính commit dù có commit trên GitHub.
+     *
+     * @param classId  ID lớp học
+     * @param fromDate Bắt đầu khoảng thời gian lọc commit (inclusive)
+     * @param toDate   Kết thúc khoảng thời gian lọc commit (inclusive)
+     * @return danh sách {@link StudentWatchlistProjection}, mỗi phần tử là một sinh viên
+     */
+    @Query(value = """
+            SELECT
+                u.user_id                   AS userId,
+                u.full_name                 AS fullName,
+                u.student_code              AS studentCode,
+                u.email                     AS email,
+
+                -- Thông tin nhóm (null nếu sinh viên chưa vào nhóm nào)
+                sg.group_id                 AS groupId,
+                sg.group_name               AS groupName,
+                mr.code                     AS memberRole,
+
+                -- Commit count (0 nếu không có commit, không bao giờ null)
+                ISNULL(COUNT(DISTINCT gc.commit_id), 0) AS commitCount,
+
+                -- Commit gần nhất trong khoảng thời gian
+                MAX(gc.commit_date)         AS lastActiveAt
+
+            FROM StudentClassAssignment sca
+
+            -- Lấy thông tin sinh viên
+            JOIN Users u
+                ON u.user_id = sca.student_id
+
+            -- LEFT JOIN vào nhóm: sinh viên chưa vào nhóm vẫn hiện ra
+            LEFT JOIN GroupMember gm
+                ON gm.user_id  = u.user_id
+
+            LEFT JOIN StudentGroup sg
+                ON sg.group_id  = gm.group_id
+               AND sg.class_id  = sca.class_id
+
+            -- LEFT JOIN lấy role trong nhóm
+            LEFT JOIN MemberRole mr
+                ON mr.member_role_id = gm.member_role_id
+
+            -- LEFT JOIN qua Repository để lọc đúng repo của nhóm trong lớp
+            LEFT JOIN Repository r
+                ON r.group_id = sg.group_id
+
+            -- LEFT JOIN lấy commit của sinh viên trong khoảng thời gian
+            -- Quan trọng: match qua author_user_id để đúng người, không bị lẫn commit người khác
+            LEFT JOIN GitCommit gc
+                ON gc.repo_id           = r.repo_id
+               AND gc.author_user_id    = u.user_id
+               AND gc.commit_date BETWEEN :fromDate AND :toDate
+
+            WHERE sca.class_id = :classId
+
+            GROUP BY
+                u.user_id,
+                u.full_name,
+                u.student_code,
+                u.email,
+                sg.group_id,
+                sg.group_name,
+                mr.code
+
+            ORDER BY
+                ISNULL(COUNT(DISTINCT gc.commit_id), 0) ASC,
+                u.full_name ASC
+            """, nativeQuery = true)
+    List<StudentWatchlistProjection> getStudentWatchlistByClassId(
+            @Param("classId") Long classId,
+            @Param("fromDate") java.time.LocalDateTime fromDate,
+            @Param("toDate") java.time.LocalDateTime toDate);
 }
