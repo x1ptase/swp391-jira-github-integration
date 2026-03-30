@@ -209,4 +209,128 @@ public interface MonitoringAggregationRepository
      */
     @Query("SELECT sg.groupId FROM StudentGroup sg WHERE sg.groupId IN :groupIds AND sg.topic IS NOT NULL")
     List<Long> findGroupIdsWithTopic(@Param("groupIds") List<Long> groupIds);
+
+    // ── Single-shot monitoring query by classId ───────────────────────────────
+
+    /**
+     * Lấy toàn bộ dữ liệu giám sát cho các nhóm trong một lớp học, trong một lần truy vấn duy nhất.
+     *
+     * <p><b>Chiến lược:</b> Thay vì gọi nhiều batch queries rồi assemble ở tầng Service,
+     * query này dùng LEFT JOIN + conditional aggregation (MAX CASE WHEN) để trả về
+     * một hàng phẳng (flat row) cho mỗi group. Phù hợp khi cần export hoặc hiển thị
+     * bảng tổng quan cho một class cụ thể.
+     *
+     * <p><b>Lưu ý Active Members:</b> Đếm theo định danh thực tế theo thứ tự ưu tiên:
+     * {@code user_id} (đã map) → {@code author_login} → {@code author_email} → {@code author_name}.
+     *
+     * <p><b>Lưu ý Sync Status:</b> Lấy trạng thái và thời điểm bắt đầu của sync
+     * <em>mới nhất</em> cho từng source (GITHUB / JIRA) bằng {@code ROW_NUMBER()} trong CTE.
+     *
+     * @param classId  ID của lớp học cần giám sát
+     * @param fromDate Bắt đầu khoảng thời gian lọc commit (inclusive)
+     * @param toDate   Kết thúc khoảng thời gian lọc commit (inclusive)
+     * @return danh sách {@link GroupRawProjection}, mỗi phần tử tương ứng một group
+     */
+    @Query(value = """
+            WITH LatestSync AS (
+                SELECT group_id,
+                       source,
+                       status,
+                       started_at,
+                       ROW_NUMBER() OVER (PARTITION BY group_id, source ORDER BY started_at DESC) AS rn
+                FROM SyncLog
+            )
+            SELECT
+                sg.group_id          AS groupId,
+                sg.group_name        AS groupName,
+                sg.status            AS groupStatus,
+                tp.topic_name        AS topicName,
+
+                -- Member count
+                COUNT(DISTINCT gm.user_id)          AS totalMembers,
+
+                -- Active members: tính theo định danh thực tế
+                COUNT(DISTINCT
+                    CASE
+                        WHEN gc_active.author_user_id IS NOT NULL
+                            THEN CAST('uid:' + CAST(gc_active.author_user_id AS NVARCHAR(20)) AS NVARCHAR(200))
+                        WHEN gc_active.author_login IS NOT NULL
+                            THEN CAST('login:' + gc_active.author_login AS NVARCHAR(200))
+                        WHEN gc_active.author_email IS NOT NULL
+                            THEN CAST('email:' + gc_active.author_email AS NVARCHAR(200))
+                        ELSE CAST('name:' + ISNULL(gc_active.author_name, '(unknown)') AS NVARCHAR(200))
+                    END
+                )                                   AS activeMembers,
+
+                -- Overdue tasks: due_date đã qua hiện tại và chưa DONE
+                SUM(CASE
+                    WHEN t.due_date IS NOT NULL
+                         AND CAST(t.due_date AS DATETIME2) < GETUTCDATE()
+                         AND UPPER(ts.code) != 'DONE'
+                    THEN 1 ELSE 0
+                END)                                AS overdueTasks,
+
+                -- Commit stats trong khoảng thời gian
+                COUNT(DISTINCT gc_active.commit_id) AS totalCommits,
+                MAX(gc_active.commit_date)          AS lastCommitAt,
+
+                -- Sync status: GitHub
+                MAX(CASE WHEN ls_gh.source = 'GITHUB' THEN ls_gh.status      END) AS githubSyncStatus,
+                MAX(CASE WHEN ls_gh.source = 'GITHUB' THEN ls_gh.started_at  END) AS githubSyncStartedAt,
+
+                -- Sync status: Jira
+                MAX(CASE WHEN ls_ji.source = 'JIRA'   THEN ls_ji.status      END) AS jiraSyncStatus,
+                MAX(CASE WHEN ls_ji.source = 'JIRA'   THEN ls_ji.started_at  END) AS jiraSyncStartedAt
+
+            FROM StudentGroup sg
+
+            -- Topic (optional)
+            LEFT JOIN Topic tp
+                ON tp.topic_id = sg.topic_id
+
+            -- All members
+            LEFT JOIN GroupMember gm
+                ON gm.group_id = sg.group_id
+
+            -- Repositories của nhóm
+            LEFT JOIN Repository r
+                ON r.group_id = sg.group_id
+
+            -- Commits trong khoảng thời gian (dùng cho totalCommits, lastCommitAt, activeMembers)
+            LEFT JOIN GitCommit gc_active
+                ON gc_active.repo_id = r.repo_id
+               AND gc_active.commit_date BETWEEN :fromDate AND :toDate
+
+            -- Tasks của nhóm (để tính overdue)
+            LEFT JOIN Task t
+                ON t.group_id = sg.group_id
+
+            -- TaskStatus
+            LEFT JOIN TaskStatus ts
+                ON ts.status_id = t.status_id
+
+            -- Sync mới nhất: GitHub
+            LEFT JOIN LatestSync ls_gh
+                ON ls_gh.group_id = sg.group_id
+               AND ls_gh.source   = 'GITHUB'
+               AND ls_gh.rn       = 1
+
+            -- Sync mới nhất: JIRA
+            LEFT JOIN LatestSync ls_ji
+                ON ls_ji.group_id = sg.group_id
+               AND ls_ji.source   = 'JIRA'
+               AND ls_ji.rn       = 1
+
+            WHERE sg.class_id = :classId
+
+            GROUP BY
+                sg.group_id,
+                sg.group_name,
+                sg.status,
+                tp.topic_name
+            """, nativeQuery = true)
+    List<GroupRawProjection> getGroupRawByClassId(
+            @Param("classId") Long classId,
+            @Param("fromDate") java.time.LocalDateTime fromDate,
+            @Param("toDate") java.time.LocalDateTime toDate);
 }

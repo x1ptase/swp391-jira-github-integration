@@ -126,6 +126,36 @@ public class SecurityService {
                 .orElse(false);
     }
 
+    /**
+     * Kiểm tra người dùng hiện tại có quyền truy cập thông tin của một lớp học không.
+     *
+     * <ul>
+     *   <li><b>ADMIN</b> → luôn được phép.</li>
+     *   <li><b>LECTURER</b> → chỉ được phép nếu đã được gán vào lớp đó
+     *       ({@code LecturerAssignment.class_id = classId AND lecturer_id = currentUserId}).</li>
+     *   <li>Còn lại → từ chối.</li>
+     * </ul>
+     *
+     * @param classId ID của lớp học cần truy cập
+     * @return {@code true} nếu được phép, {@code false} nếu bị từ chối
+     */
+    public boolean hasAccessToClass(Long classId) {
+        if (isAdmin()) return true;
+
+        Long userId = getCurrentUserId();
+        if (userId == null || classId == null) return false;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isLecturer = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_LECTURER"));
+
+        if (isLecturer) {
+            return lecturerAssignmentRepository.existsByClassIdAndLecturer_UserId(classId, userId);
+        }
+
+        return false;
+    }
+
     @Deprecated
     public boolean isGroupLeader(Long groupId) {
         return isGroupManager(groupId);
