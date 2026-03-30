@@ -24,5 +24,11 @@ public enum HealthStatus {
      * Nhóm/lớp ở mức rủi ro cao.
      * Ví dụ: không có commit, quá nhiều task trễ, không có thành viên hoạt động.
      */
-    CRITICAL
+    CRITICAL,
+
+    /**
+     * Nhóm đã được đóng ({@code StudentGroup.status = 'CLOSED'}).
+     * Không áp dụng các rule health thông thường cho nhóm này.
+     */
+    CLOSED
 }
