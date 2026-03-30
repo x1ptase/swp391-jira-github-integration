@@ -126,7 +126,6 @@
                         <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
                     </compilerArgs>
                     <fork>true</fork>
-                    <executable>/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/javac</executable>
                 </configuration>
             </plugin>
             <plugin>
