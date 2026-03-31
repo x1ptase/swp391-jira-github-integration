@@ -18,8 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,9 +122,11 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
 
                 commit.setAuthorName(dto.getCommit().getAuthor().getName());
                 commit.setAuthorEmail(dto.getCommit().getAuthor().getEmail());
-                commit.setCommitDate(LocalDateTime.parse(
+                commit.setCommitDate(java.time.ZonedDateTime.parse(
                         dto.getCommit().getAuthor().getDate(),
-                        DateTimeFormatter.ISO_DATE_TIME));
+                        java.time.format.DateTimeFormatter.ISO_DATE_TIME)
+                        .withZoneSameInstant(java.time.ZoneId.of("Asia/Ho_Chi_Minh"))
+                        .toLocalDateTime());
                 commit.setMessage(dto.getCommit().getMessage());
 
                 if (dto.getAuthor() != null) {
