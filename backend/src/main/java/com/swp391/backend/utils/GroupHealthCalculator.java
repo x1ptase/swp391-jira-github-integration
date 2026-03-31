@@ -1,6 +1,6 @@
 package com.swp391.backend.utils;
 
-import com.swp391.backend.entity.GroupHealth;
+import com.swp391.backend.entity.monitoring.HealthStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,14 +14,14 @@ public class GroupHealthCalculator {
 
     private GroupHealthCalculator() {}
 
-    public static GroupHealth calculate(long commits, long overdueTasks) {
+    public static HealthStatus calculate(long commits, long overdueTasks) {
         if (commits <= COMMIT_CRITICAL || overdueTasks >= OVERDUE_CRITICAL) {
-            return GroupHealth.CRITICAL;
+            return HealthStatus.CRITICAL;
         }
         if (commits <= COMMIT_WARNING || overdueTasks >= OVERDUE_WARNING) {
-            return GroupHealth.WARNING;
+            return HealthStatus.WARNING;
         }
-        return GroupHealth.GOOD;
+        return HealthStatus.HEALTHY;
     }
 
     public static List<String> reasons(long commits, long overdueTasks,

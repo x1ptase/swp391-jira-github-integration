@@ -147,4 +147,30 @@ public interface GitCommitRepository extends JpaRepository<GitCommit, Integer> {
             @Param("userId") Long userId,
             @Param("fromDate") java.time.LocalDateTime fromDate,
             @Param("toDate") java.time.LocalDateTime toDate);
+
+    @Query(value = """
+        SELECT MAX(gc.commit_date)
+        FROM GitCommit gc
+        JOIN Repository r ON r.repo_id = gc.repo_id
+        WHERE r.group_id = :groupId
+          AND gc.commit_date BETWEEN :fromDate AND :toDate
+        """, nativeQuery = true)
+    java.time.LocalDateTime findLatestCommitDateByGroup(
+            @Param("groupId") Long groupId,
+            @Param("fromDate") java.time.LocalDateTime fromDate,
+            @Param("toDate") java.time.LocalDateTime toDate);
+
+    @Query(value = """
+        SELECT MAX(gc.commit_date)
+        FROM GitCommit gc
+        JOIN Repository r ON r.repo_id = gc.repo_id
+        WHERE r.group_id = :groupId
+          AND gc.author_user_id = :userId
+          AND gc.commit_date BETWEEN :fromDate AND :toDate
+        """, nativeQuery = true)
+    java.time.LocalDateTime findLatestCommitDateByGroupAndUser(
+            @Param("groupId") Long groupId,
+            @Param("userId") Long userId,
+            @Param("fromDate") java.time.LocalDateTime fromDate,
+            @Param("toDate") java.time.LocalDateTime toDate);
 }
