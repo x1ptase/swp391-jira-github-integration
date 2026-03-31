@@ -4,7 +4,7 @@ import com.swp391.backend.dto.monitoring.shared.ClassMonitoringSummaryResponse;
 import com.swp391.backend.entity.AcademicClass;
 import com.swp391.backend.entity.GroupMember;
 import com.swp391.backend.entity.StudentGroup;
-import com.swp391.backend.entity.GroupHealth;
+import com.swp391.backend.entity.monitoring.HealthStatus;
 import com.swp391.backend.exception.BusinessException;
 import com.swp391.backend.repository.AcademicClassRepository;
 import com.swp391.backend.repository.GitCommitRepository;
@@ -54,10 +54,10 @@ public class ClassMonitoringService {
                                     g.getGroupId(), fromDate, toDate);
                     long overdueTasks = taskRepository
                             .countOverdueTasksByGroupId(g.getGroupId());
-                    GroupHealth health = GroupHealthCalculator
+                    HealthStatus health = GroupHealthCalculator
                             .calculate(commits, overdueTasks);
-                    return health == GroupHealth.WARNING
-                            || health == GroupHealth.CRITICAL;
+                    return health == HealthStatus.WARNING
+                            || health == HealthStatus.CRITICAL;
                 })
                 .count();
 
