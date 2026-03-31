@@ -2,7 +2,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./LecturerGroupManagement.css";
 import LogoutButton from "./LogoutButton";
-import logo from "../assets/logo.png";
+import StudentsWatchlist from "./StudentsWatchlist";
+import GroupsTab from "./GroupsTab";
+
 
 
 export default function LecturerGroupManagement() {
@@ -123,7 +125,7 @@ export default function LecturerGroupManagement() {
       <main className="lgm-main-content">
         {activeTab === "health" && (
           <div className="lgm-health-view">
-            {/* 3 Stats Cards - Khớp ảnh screenshot */}
+            {/* 3 Stats Cards  */}
             <div className="lgm-stats-grid">
               <div className="lgm-stat-card">
                 <div className="lgm-stat-icon icon-blue">👥</div>
@@ -148,7 +150,7 @@ export default function LecturerGroupManagement() {
               </div>
             </div>
 
-            {/* Group Status Monitoring Table - Khớp ảnh screenshot */}
+            {/* Group Status Monitoring Table */}
             <div className="lgm-table-container">
               <div className="lgm-table-header">
                 <h3>Group Status Monitoring</h3>
@@ -203,39 +205,11 @@ export default function LecturerGroupManagement() {
         )}
 
         {activeTab === "students" && (
-          <div className="lgm-students-view">
-            <div className="lgm-table-container">
-              <div className="lgm-table-header">
-                <h3>Students Watchlist</h3>
-              </div>
-              <table className="lgm-monitoring-table">
-                <thead>
-                  <tr>
-                    <th>Student ID</th>
-                    <th>Full Name</th>
-                    <th>Group</th>
-                    <th>Commits</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {studentWatchlist.map((s) => (
-                    <tr key={s.studentId}>
-                      <td>{s.studentCode}</td>
-                      <td>{s.fullName}</td>
-                      <td>{s.groupName}</td>
-                      <td>{s.commitCount}</td>
-                      <td>
-                        <span className={`lgm-status-badge ${s.status === 'ACTIVE' ? 'lgm-badge-healthy' : 'lgm-badge-critical'}`}>
-                          {s.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <StudentsWatchlist classId={classId} classInfo={classInfo} />
+        )}
+
+        {activeTab === "groups" && (
+          <GroupsTab classId={classId} classInfo={classInfo} />
         )}
       </main>
     </div>
