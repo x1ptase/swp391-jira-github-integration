@@ -1,6 +1,6 @@
 package com.swp391.backend.utils;
 
-import com.swp391.backend.entity.ContributionStatus;
+import com.swp391.backend.entity.monitoring.ContributionStatus;
 
 public class StudentStatusCalculator {
 
@@ -11,7 +11,7 @@ public class StudentStatusCalculator {
     public static ContributionStatus calculate(long commitCount) {
         if (commitCount == 0) return ContributionStatus.NO_CONTRIBUTION;
         if (commitCount <= LOW_THRESHOLD) return ContributionStatus.LOW;
-        return ContributionStatus.NORMAL;
+        return ContributionStatus.ACTIVE;
     }
 
     public static boolean isFlagged(long commitCount) {
