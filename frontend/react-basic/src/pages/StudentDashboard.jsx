@@ -85,14 +85,6 @@ export default function StudentDashboard() {
     }
   };
 
-  const openEnrollModal = () => {
-    setShowEnrollModal(true);
-    setClassSearch("");
-    setClassResults([]);
-    setEnrollError("");
-    setEnrollSuccess("");
-  };
-
   const fetchGroups = async () => {
     setLoading(true);
     setError("");
@@ -111,10 +103,7 @@ export default function StudentDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
+
 
   const isLeader = (g) => g.memberRole === "LEADER";
 

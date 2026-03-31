@@ -68,6 +68,10 @@
   box-shadow: var(--shadow-xs);
 }
 
+.lcl-navbar-logo{
+  width: 220px;
+}
+
 .sd-navbar-brand {
   display: flex;
   align-items: center;

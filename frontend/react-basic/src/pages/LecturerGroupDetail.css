@@ -1,0 +1,219 @@
+.lgd-root {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  padding-bottom: 3rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.lgd-header {
+  background: white;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.lgd-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.lgd-back-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+}
+
+.lgd-breadcrumb {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.lgd-page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 4px;
+}
+
+.lgd-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.lgd-topic-tag {
+  background: #f1f5f9;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.lgd-status-pill {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lgd-status-pill.critical { background: #fecaca; color: #b91c1c; }
+.lgd-status-pill.healthy { background: #d1fae5; color: #065f46; }
+
+.lgd-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+.lgd-warning-box h2 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.lgd-warning-box p {
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+.text-danger { color: #dc2626; text-decoration: underline; font-weight: 600; }
+
+/* Stats Cards */
+.lgd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.lgd-stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lgd-stat-label {
+  display: block;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.lgd-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.lgd-stat-icon {
+  font-size: 1.5rem;
+  opacity: 0.2;
+}
+
+/* Table Section */
+.lgd-table-section {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.lgd-table-header {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.lgd-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lgd-table th {
+  background: #f8fafc;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+}
+.lgd-student-info{
+    justify-content: center;
+}
+.lgd-table td {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.lgd-avatar {
+  width: 32px;
+  height: 32px;
+  background: #e0e7ff;
+  color: #4338ca;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.lgd-student-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.lgd-badge {
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.lgd-badge.no-contribution { background: #fee2e2; color: #b91c1c; }
+.lgd-badge.low { background: #fef3c7; color: #92400e; }
+.lgd-badge.high { background: #d1fae5; color: #065f46; }
+
+.italic-text { font-style: italic; color: #64748b; }
+
+/* External section wrapper (Jira, GitHub) */
+.lgd-external-section {
+  margin-top: 2rem;
+}
+
+/* Override rd-root margin khi dùng bên trong LecturerGroupDetail */
+.lgd-external-section .rd-root {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0;
+}
+
+/* Spinner override cho màu purple */
+.rd-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: rd-spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes rd-spin { to { transform: rotate(360deg); } }
