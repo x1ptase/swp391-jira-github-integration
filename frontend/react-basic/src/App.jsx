@@ -14,6 +14,7 @@ import AdminSemesterManagement from "./pages/AdminSemesterManagement";
 import AdminLecturerManagement from "./pages/AdminLecturerManagement";
 import AdminTopicManagement from "./pages/AdminTopicManagement";
 import LecturerGroupManagement from "./pages/LecturerGroupManagement";
+import LecturerGroupDetail from "./pages/LecturerGroupDetail";
 
 
 
@@ -42,6 +43,8 @@ function App() {
           <Route path="groups" element={<LecturerClassList />} />
           <Route path="groups/:groupId/jira-issues" element={<JiraIssuesPreview />} />
           <Route path="classes/:classId" element={<LecturerGroupManagement />} />
+          <Route path="groups/:groupId/detail" element={<LecturerGroupDetail />} />
+
         </Route>
 
         {/* Student — danh sách group */}

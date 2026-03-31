@@ -1,238 +1,333 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import "./LecturerClassList.css";
-import LogoutButton from "./LogoutButton";
 import logo from "../assets/logo.png";
+import "./LecturerClassList.css";
 
-const CLASS_API = "/api/lecturer/classes";
+// helpers────────────────────────────────────────────────────────────────
+const STATUS_CONFIG = {
+  HEALTHY: { label: "Healthy", dot: "#10b981", bg: "#d1fae5", text: "#065f46" },
+  WARNING: { label: "Warning", dot: "#8b5cf6", bg: "#ede9fe", text: "#4c1d95" },
+  CRITICAL: { label: "Critical", dot: "#ef4444", bg: "#fee2e2", text: "#991b1b" },
+  CLOSED: { label: "Closed", dot: "#94a3b8", bg: "#f1f5f9", text: "#475569" },
+};
 
+const username = localStorage.getItem("username") || "";
+
+function deriveClassStatus(summary) {
+  if (!summary) return null;
+  const { groupsAtRisk = 0, studentsFlagged = 0 } = summary;
+  if (groupsAtRisk >= 5 || studentsFlagged >= 10) return "CRITICAL";
+  if (groupsAtRisk >= 2 || studentsFlagged >= 3) return "WARNING";
+  return "HEALTHY";
+}
+
+function StatusBadge({ status }) {
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.HEALTHY;
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5,
+      padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700,
+      letterSpacing: "0.06em", textTransform: "uppercase",
+      background: cfg.bg, color: cfg.text,
+    }}>
+      <span style={{
+        width: 7, height: 7, borderRadius: "50%", background: cfg.dot,
+        flexShrink: 0,
+        boxShadow: status === "CRITICAL" ? `0 0 0 2px ${cfg.dot}44` : "none",
+      }} />
+      {cfg.label}
+    </span>
+  );
+}
+
+// icons
+const IconGroups = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+const IconRisk = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+  </svg>
+);
+const IconFlag = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <line x1="19" y1="8" x2="19" y2="14" />
+    <line x1="22" y1="11" x2="16" y2="11" />
+  </svg>
+);
+const IconRefresh = ({ spinning }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+    style={spinning ? { animation: "spin 0.9s linear infinite" } : {}}>
+    <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+    <path d="M21 3v5h-5" />
+  </svg>
+);
+const IconSearch = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
+const IconLogout = () => (
+  <svg 
+    width="18" 
+    height="18" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="1.8" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    {/* cửa */}
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    
+    {/* mũi tên đi ra */}
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+
+// main component
 export default function LecturerClassList() {
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const auth = useCallback(() => ({ Authorization: `Bearer ${token}` }), [token]);
+
   const [classes, setClasses] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [summaries, setSummaries] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [semester, setSemester] = useState("");
-  const [semesters, setSemesters] = useState([]);
 
-  const token = localStorage.getItem("token");
-  const auth = () => ({ Authorization: `Bearer ${token}` });
-  const [summaries, setSummaries] = useState({});
+  // data fetching
+  const fetchClasses = useCallback(async () => {
+    setLoading(true); setError("");
+    try {
+      const res = await fetch("/api/lecturer/classes", { headers: auth() });
+      if (!res.ok) throw new Error("Failed to fetch classes");
+      const data = await res.json();
+      setClasses(data.data || []);
+    } catch (err) {
+      setError(err.message || "Error occurred");
+    } finally {
+      setLoading(false);
+    }
+  }, [auth]);
 
-  useEffect(() => { fetchClasses(); fetchSemesters(); }, []);
-  // utils/color.js (hoặc đặt trong component)
-  function hexToLuminance(hex) {
-    const c = hex.replace("#", "");
-    const r = parseInt(c.substring(0, 2), 16) / 255;
-    const g = parseInt(c.substring(2, 4), 16) / 255;
-    const b = parseInt(c.substring(4, 6), 16) / 255;
-    const srgb = [r, g, b].map(v => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
-    return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
-  }
-  const fetchSemesters = async () => {
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = "/login";
+  };
+
+  const fetchSemesters = useCallback(async () => {
     try {
       const res = await fetch("/api/semesters/list", { headers: auth() });
       const data = await res.json();
       setSemesters(data.data?.content || data.data || []);
+    } catch { setSemesters([]); }
+  }, [auth]);
 
-    } catch (err) {
-      console.log("Cannot load semesters");
-      setSemesters([]); // tránh crash
-    }
-  };
-
-  useEffect(() => {
-    fetchSemesters();
-  }, []);
-
-  const fetchSummary = async (classId) => {
+  const fetchSummary = useCallback(async (classId) => {
     try {
-      const res = await fetch(`/api/classes/${classId}/summary`, {
-        headers: auth()
+      const now = new Date();
+      const from = new Date(now); from.setDate(from.getDate() - 30);
+      const params = new URLSearchParams({
+        fromDate: from.toISOString(),
+        toDate: now.toISOString(),
       });
-
+      const res = await fetch(
+        `/api/classes/${classId}/monitoring/summary?${params}`,
+        { headers: auth() }
+      );
       const data = await res.json();
+      setSummaries(prev => ({ ...prev, [classId]: data.data }));
+    } catch { /* silent */ }
+  }, [auth]);
 
-      setSummaries(prev => ({
-        ...prev,
-        [classId]: data.data
-      }));
+  useEffect(() => { fetchClasses(); fetchSemesters(); }, [fetchClasses, fetchSemesters]);
+  useEffect(() => { classes.forEach(c => fetchSummary(c.classId)); }, [classes, fetchSummary]);
 
-    } catch (err) {
-      console.log("Cannot load summary");
-    }
-  };
-  useEffect(() => {
-    classes.forEach(c => fetchSummary(c.classId));
-  }, [classes]);
+  // filter───────────────────────────────────────────────────────────────
+  const filtered = classes.filter(c => {
+    const matchKw = !keyword.trim() || c.classCode?.toLowerCase().includes(keyword.toLowerCase());
+    const matchSem = !semester || c.semesterCode === semester;
+    return matchKw && matchSem;
+  });
 
-  function pickColorFromId(id) {
-    const palette = ["#60A5FA", "#FBBF24", "#A78BFA", "#FB7185", "#34D399", "#F97316", "#60C5A8", "#FBCFE8"];
-    const sum = id.toString().split("").reduce((s, ch) => s + ch.charCodeAt(0), 0);
-    const color = palette[sum % palette.length];
-    const lum = hexToLuminance(color);
-    // nếu nền sáng -> text tối, ngược lại text trắng
-    const textColor = lum > 0.5 ? "#0f172a" : "#ffffff";
-    return { color, textColor };
-  }
-
- const fetchClasses = async () => {
-  setLoading(true); setError("");
-  try {
-    const res = await fetch(CLASS_API, { headers: auth() });
-    if (!res.ok) throw new Error("Failed to fetch classes");
-    const data = await res.json();
-    setClasses(data.data || []);
-  } catch (err) {
-    setError(err.message || "Error occurred");
-  } finally {
-    setLoading(false);
-  }
-};
-const filteredClasses = classes.filter(c => {
-  const matchKeyword = !keyword.trim() || 
-    c.classCode?.toLowerCase().includes(keyword.toLowerCase());
-  const matchSemester = !semester || c.semesterCode === semester;
-  return matchKeyword && matchSemester;
-});
+  const now = new Date();
+  const lastUpdate = now.toLocaleString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+  const activeTerm = semesters.slice(0, 2).map(s => s.semesterCode).join(", ") || "—";
 
   return (
-    <div className="lcl-root">
+
+    <div className="lcd-root">
       {/* Navbar */}
-      <div className="lcl-navbar">
-        <img src={logo} alt="Logo" className="lcl-navbar-logo" />
-        <div className="lcl-navbar-brand">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-          </svg>
-          Lecturer Portal
+      <nav className="lcd-nav">
+        <img src={logo} alt="Logo" className="lcd-nav-logo" />
+        <span className="lcd-nav-brand">The Github & Jira Tool Support</span>
+        <div className="lcd-nav-spacer" />
+        <div className="lcd-nav-user">
+          <div className="lcd-nav-userinfo">
+            <div className="lcd-nav-name">{username}</div>
+            <div className="lcd-nav-role">Academic Lecturer</div>
+          </div>
+          <button className="lcd-nav-icon-btn" title="logout" onClick={handleLogout}>
+            <IconLogout/>
+          </button>
         </div>
-        <LogoutButton />
-      </div>
+      </nav>
 
       {/* Main */}
-      <div className="lcl-main">
-        <div className="lcl-content-card">
-          <div className="lcl-page-header">
-            <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
-              {/* Search */}
+      <main className="lcd-main">
+        {/* Header */}
+        <div className="lcd-header">
+          <div className="lcd-title-block">
+            <h1 className="lcd-title">My Classes Dashboard</h1>
+            <p className="lcd-subtitle">Manage and monitor academic performance for the current term.</p>
+          </div>
+
+          <div className="lcd-controls">
+            {/* Semester dropdown */}
+            <div className="lcd-select-wrap">
+              <select
+                className="lcd-select"
+                value={semester}
+                onChange={e => setSemester(e.target.value)}
+              >
+                <option value="">All Semesters</option>
+                {semesters.map(s => (
+                  <option key={s.semesterId} value={s.semesterCode}>{s.semesterCode}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Search */}
+            <div className="lcd-search-wrap">
+              <span className="lcd-search-icon"><IconSearch /></span>
               <input
+                className="lcd-search"
                 type="text"
                 placeholder="Search class..."
                 value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: "8px",
-                  border: "1px solid #e2e8f0",
-                  flex: 1
-                }}
+                onChange={e => setKeyword(e.target.value)}
               />
-
-              {/* Dropdown Semester */}
-              <select
-                value={semester}
-                onChange={(e) => setSemester(e.target.value)}
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: "8px",
-                  border: "1px solid #e2e8f0",
-                  width: "180px"
-                }}
-              >
-                <option value="">All Semester</option>
-                {semesters.map(s => (
-                  <option key={s.semesterId} value={s.semesterCode}>
-                    {s.semesterCode}
-                  </option>
-                ))}
-              </select>
-
             </div>
-            <div className="lcl-page-center">
-              <h1 className="lcl-page-title">My Assigned Classes</h1>
-              <p className="lcl-page-desc">You are assigned to {classes.length} class(es)</p>
-            </div>
-            <button className="lcl-refresh-btn" onClick={fetchClasses} disabled={loading}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                style={loading ? { animation: "lcl-spin 1s linear infinite" } : {}}>
-                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" />
-              </svg>
-              Refresh
+
+            {/* Refresh */}
+            <button className="lcd-refresh-btn" onClick={fetchClasses} disabled={loading}>
+              <IconRefresh spinning={loading} />
             </button>
           </div>
-
-          {error && <div className="lcl-error">{error}</div>}
-
-          {loading ? (
-            <div className="lcl-loading"><span className="lcl-spinner" />Loading classes...</div>
-          ) : classes.length === 0 ? (
-            <div className="lcl-empty">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-              </svg>
-              <p>No classes assigned yet</p>
-              <span>Contact your admin to assign you to classes</span>
-            </div>
-          ) : (
-            <div className="lcl-grid">
-              {filteredClasses.map(cls => {
-                const { color: accent, textColor } = pickColorFromId(cls.classId);
-                return (
-                  <div key={cls.classId} className="lcl-card">
-                    {/* Accent stripe (left) */}
-                    <div className="lcl-card-accent" style={{ background: accent }} />
-                    <div className="lcl-card-inner">
-                      <div className="lcl-card-header">
-                        <div className="lcl-card-icon" style={{ background: accent, color: textColor }}>
-                          {cls.classCode?.charAt(0) || "C"}
-                        </div>
-                        <div className="lcl-card-title-wrap">
-                          <h3 className="lcl-card-title">{cls.classCode}</h3>
-                          <span className="lcl-course-badge">{cls.courseCode}</span>
-                        </div>
-                        <div className="lcl-card-sum">
-                          <span>Groups: {summaries[cls.classId]?.totalGroups ?? "..."}</span>
-                          <span>Students: {summaries[cls.classId]?.totalStudents ?? "..."}</span>
-                          <span>Topic Assigned: {summaries[cls.classId]?.topicAssignedSummary ?? "..."}</span>
-                        </div>
-                      </div>
-
-
-                      <div className="lcl-card-body">
-                        <div className="lcl-card-row">
-                          <span className="lcl-card-label">Course</span>
-                          <span className="lcl-card-val">{cls.courseName || cls.courseCode}</span>
-                        </div>
-                        <div className="lcl-card-row">
-                          <span className="lcl-card-label">Semester</span>
-                          <span className="lcl-card-val">{cls.semesterCode || "—"}</span>
-                        </div>
-                        <div className="lcl-card-row">
-                          <span className="lcl-card-label">Lecturer</span>
-                          <span className="lcl-card-val">{cls.lecturerName || "—"}</span>
-                        </div>
-                      </div>
-                      <div className="lcl-card-actions">
-                        <button className="lcl-btn-manage" onClick={() => navigate(`/lecturer/classes/${cls.classId}`)}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                          </svg>
-                          Manage Class
-                        </button>
-                      </div>
-                    </div>
-
-                  </div>
-                )
-              }
-              )}
-            </div>
-          )}
         </div>
-      </div>
+
+        {/* Error */}
+        {error && <div className="lcd-error">{error}</div>}
+
+        {/* Loading */}
+        {loading ? (
+          <div className="lcd-grid">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="lcd-skeleton-card" style={{ animationDelay: `${i * 0.12}s` }}>
+                <div className="skel" style={{ height: 10, width: 80, marginBottom: 10 }} />
+                <div className="skel" style={{ height: 34, width: 130, marginBottom: 20 }} />
+                {[1, 2, 3].map(j => <div key={j} className="skel" style={{ height: 14, marginBottom: 12 }} />)}
+                <div className="skel" style={{ height: 42, marginTop: 12, borderRadius: 10 }} />
+              </div>
+            ))}
+          </div>
+        ) : classes.length === 0 ? (
+          <div className="lcd-empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            <p>No classes assigned yet</p>
+            <span>Contact your admin to assign you to classes</span>
+          </div>
+        ) : (
+          <div className="lcd-grid">
+            {filtered.map((cls, idx) => {
+              const sum = summaries[cls.classId];
+              const status = deriveClassStatus(sum);
+              const riskVal = sum?.groupsAtRisk ?? null;
+              const flaggedVal = sum?.studentsFlagged ?? null;
+
+              return (
+                <div
+                  key={cls.classId}
+                  className="lcd-card"
+                  style={{ animationDelay: `${idx * 0.06}s` }}
+                >
+                  {/* Top row */}
+                  <div className="lcd-card-top">
+                    <div>
+                      <div className="lcd-card-label">Course Code</div>
+                      <div className="lcd-card-code">{cls.classCode}</div>
+                    </div>
+                    {status ? <StatusBadge status={status} /> : (
+                      <span style={{ height: 22, width: 70, borderRadius: 999, background: "#f1f5f9", display: "block" }} />
+                    )}
+                  </div>
+
+                  {/* Stats */}
+                  <div className="lcd-stats">
+                    <div className="lcd-stat-row">
+                      <span className="lcd-stat-left"><IconGroups /> Total Groups</span>
+                      <span className="lcd-stat-val">
+                        {sum ? String(sum.totalGroups ?? 0).padStart(2, "0") : "—"}
+                      </span>
+                    </div>
+                    <div className="lcd-stat-row">
+                      <span className="lcd-stat-left"><IconRisk /> Groups at Risk</span>
+                      <span className={`lcd-stat-val ${riskVal >= 5 ? "danger" : riskVal >= 2 ? "warn" : ""}`}>
+                        {riskVal !== null ? riskVal : "—"}
+                      </span>
+                    </div>
+                    <div className="lcd-stat-row">
+                      <span className="lcd-stat-left"><IconFlag /> Students Flagged</span>
+                      <span className={`lcd-stat-val ${flaggedVal >= 10 ? "danger" : flaggedVal >= 3 ? "warn" : ""}`}>
+                        {flaggedVal !== null ? flaggedVal : "—"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* CTA */}
+                  <button
+                    className="lcd-view-btn"
+                    onClick={() => navigate(`/lecturer/classes/${cls.classId}`)}
+                  >
+                    View class
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+                    </svg>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="lcd-footer">
+        <div className="lcd-footer-item">
+          <strong>Active Terms</strong>
+          {activeTerm}
+        </div>
+        <div className="lcd-footer-item">
+          <strong>Last Update</strong>
+          Today at {lastUpdate}
+        </div>
+        <span className="lcd-footer-copy">© 2026 The Academic Github & Jira Support Tool</span>
+      </footer>
     </div>
   );
 }
