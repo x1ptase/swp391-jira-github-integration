@@ -121,4 +121,30 @@ public interface GitCommitRepository extends JpaRepository<GitCommit, Integer> {
     PersonalCommitStatsProjection getPersonalCommitStats(
             @Param("groupId") Long groupId,
             @Param("userId") Long userId);
+
+    @Query(value = """
+        SELECT COUNT(gc.commit_id)
+        FROM GitCommit gc
+        JOIN Repository r ON r.repo_id = gc.repo_id
+        WHERE r.group_id = :groupId
+          AND gc.commit_date BETWEEN :fromDate AND :toDate
+        """, nativeQuery = true)
+    long countCommitsByGroupAndDateRange(
+            @Param("groupId") Long groupId,
+            @Param("fromDate") java.time.LocalDateTime fromDate,
+            @Param("toDate") java.time.LocalDateTime toDate);
+
+    @Query(value = """
+        SELECT COUNT(gc.commit_id)
+        FROM GitCommit gc
+        JOIN Repository r ON r.repo_id = gc.repo_id
+        WHERE r.group_id = :groupId
+          AND gc.author_user_id = :userId
+          AND gc.commit_date BETWEEN :fromDate AND :toDate
+        """, nativeQuery = true)
+    long countCommitsByGroupAndUserAndDateRange(
+            @Param("groupId") Long groupId,
+            @Param("userId") Long userId,
+            @Param("fromDate") java.time.LocalDateTime fromDate,
+            @Param("toDate") java.time.LocalDateTime toDate);
 }

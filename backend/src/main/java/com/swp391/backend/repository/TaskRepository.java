@@ -252,4 +252,14 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
             @Param("taskId") Integer taskId,
             @Param("groupId") Long groupId,
             @Param("currentUserId") Long currentUserId);
+
+    @Query(value = """
+        SELECT COUNT(*)
+        FROM Task t
+        JOIN TaskStatus ts ON ts.status_id = t.status_id
+        WHERE t.group_id = :groupId
+          AND t.due_date < CAST(GETDATE() AS DATE)
+          AND UPPER(ts.code) <> 'DONE'
+        """, nativeQuery = true)
+    long countOverdueTasksByGroupId(@Param("groupId") Long groupId);
 }
