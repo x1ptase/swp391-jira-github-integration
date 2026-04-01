@@ -13,7 +13,7 @@
   background: #fff; border: 1px solid #e2e8f0;
   border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;
 }
-.asm-table-card{ padding: 0; overflow: hidden; }
+.asm-table-card{ padding: 0; border-radius: 12px; }
 .asm-card-title { font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 16px; }
 /* Form */
 .asm-form-row { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -101,3 +101,36 @@
 .asm-btn-topics { background: #fefce8; color: #ca8a04; border-color: #fde68a; }
 .asm-btn-topics:hover { background: #fef9c3; }
 
+/* Kebab / More */
+.asm-actions { display: flex; align-items: center; gap: 4px; justify-content: center; }
+.asm-dropdown-wrapper { position: relative; }
+.asm-btn-more {
+  background: #f8fafc; color: #475569; border-color: #e2e8f0;
+  font-weight: bold; width: 32px; padding: 5px 0; text-align: center;
+}
+.asm-btn-more:hover { border-color: #94a3b8; color: #1e293b; }
+
+.asm-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  padding: 6px;
+  min-width: 130px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.asm-dropdown-item {
+  background: none; border: none; padding: 8px 12px; border-radius: 5px;
+  cursor: pointer; font-size: 13px; font-weight: 500; color: #475569;
+  text-align: left; transition: all 0.15s; white-space: nowrap; width: 100%;
+}
+.asm-dropdown-item:hover { background: #f1f5f9; color: #1e293b; }
+.asm-dropdown-divider { height: 1px; background: #e2e8f0; margin: 4px; border: none; }
+.asm-dropdown-danger { color: #dc2626; }
+.asm-dropdown-danger:hover { background: #fef2f2 !important; color: #b91c1c !important; }

@@ -10,6 +10,7 @@ export default function AdminSemesterManagement() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ semesterId: null, semesterCode: "", semesterName: "", startDate: "", endDate: "" });
   const [formError, setFormError] = useState("");
+  const [activeMenu, setActiveMenu] = useState(null);
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
   const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
@@ -22,6 +23,23 @@ export default function AdminSemesterManagement() {
     const d = String(date.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
   };
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest('.asm-dropdown-wrapper')) setActiveMenu(null);
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setActiveMenu(null);
+    };
+    if (activeMenu) {
+      document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeMenu]);
 
   useEffect(() => { fetchSemesters(); }, []);
 
@@ -226,10 +244,39 @@ export default function AdminSemesterManagement() {
                     </td>
                     <td>
                       <div className="asm-actions">
-                        <button className="asm-btn-action asm-btn-edit" onClick={() => handleEdit(s)}>Edit</button>
-                        <button className="asm-btn-action asm-btn-classes" onClick={() => navigate(`/admin/classes?semesterId=${s.semesterId}&semesterCode=${s.semesterCode}`)}>Classes</button>
-                        <button className="asm-btn-action asm-btn-topics" onClick={() => navigate(`/admin/topics?semesterId=${s.semesterId}`)}>Topics</button>
-                        <button className="asm-btn-action asm-btn-delete" onClick={() => handleDelete(s)}>Delete</button>
+                        <button
+                          className="asm-btn-action asm-btn-classes"
+                          onClick={() => navigate(`/admin/classes?semesterId=${s.semesterId}&semesterCode=${s.semesterCode}`)}
+                        >
+                          Classes
+                        </button>
+                        <button
+                          className="asm-btn-action asm-btn-topics"
+                          onClick={() => navigate(`/admin/topics?semesterId=${s.semesterId}`)}
+                        >
+                          Topics
+                        </button>
+
+                        {/* Kebab menu */}
+                        <div className="asm-dropdown-wrapper">
+                          <button
+                            className="asm-btn-action asm-btn-more"
+                            onClick={() => setActiveMenu(activeMenu === s.semesterId ? null : s.semesterId)}
+                          >
+                            ⋮
+                          </button>
+                          {activeMenu === s.semesterId && (
+                            <div className="asm-dropdown-menu">
+                              <button className="asm-dropdown-item" onClick={() => { setActiveMenu(null); handleEdit(s); }}>
+                                Edit
+                              </button>
+                              <div className="asm-dropdown-divider"></div>
+                              <button className="asm-dropdown-item asm-dropdown-danger" onClick={() => { setActiveMenu(null); handleDelete(s); }}>
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>

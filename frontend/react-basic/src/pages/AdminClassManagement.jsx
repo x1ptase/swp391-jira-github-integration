@@ -49,6 +49,33 @@ export default function AdminClassManagement() {
   const [lecError, setLecError] = useState("");
   const [lecSuccess, setLecSuccess] = useState("");
 
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const toggleDropdown = (type, id) => {
+    setActiveDropdown(prev => prev === `${type}-${id}` ? null : `${type}-${id}`);
+  };
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest('.acm-dropdown-wrapper')) {
+        setActiveDropdown(null);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setActiveDropdown(null);
+      }
+    };
+    if (activeDropdown) {
+      document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeDropdown]);
+
+
 
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
@@ -169,8 +196,8 @@ export default function AdminClassManagement() {
   );
 
   const getStatusStyle = (status) => {
-    if (status === "OPEN") return { bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0" };
-    if (status === "CLOSED") return { bg: "#fef2f2", color: "#dc2626", border: "#fecaca" };
+    if (status === "OPEN") return { bg: "#fef2f2", color: "#dc2626", border: "#fecaca" };
+    if (status === "CLOSED") return { bg: "#eff6ff", color: "#3b82f6", border: "#bfdbfe" };
     return { bg: "#f8fafc", color: "#94a3b8", border: "#e2e8f0" };
   };
   //Add Lecturer
@@ -245,19 +272,25 @@ export default function AdminClassManagement() {
             </div>
             <div className="acm-field">
               <label className="acm-label">Semester</label>
-              <select className="acm-select" value={form.semesterId}
-                onChange={e => setForm({ ...form, semesterId: e.target.value })}
-                disabled={!!semesterIdFromUrl}
-                required>
-                <option value="">Select semester...</option>
-                {semesters.map(s => (
-                  <option key={s.semesterId} value={s.semesterId}>{s.semesterCode} — {s.semesterName}</option>
-                ))}
-              </select>
-              {semesterIdFromUrl && (
-                <small style={{ color: "#64748b", marginTop: 4, display: "block" }}>
-                  🔒 Semester locked from navigation
-                </small>
+              {semesterIdFromUrl ? (
+                <div className="acm-input acm-disabled" style={{ display: "flex", alignItems: "center", gap: "8px", backgroundColor: "#f8fafc", color: "#64748b" }}>
+                  <span>🔒</span>
+                  <span>
+                    {(() => {
+                      const s = semesters.find(x => String(x.semesterId) === String(form.semesterId));
+                      return s ? `${s.semesterCode} — ${s.semesterName}` : (semesterCodeFromUrl || "Locked Semester");
+                    })()}
+                  </span>
+                </div>
+              ) : (
+                <select className="acm-select" value={form.semesterId}
+                  onChange={e => setForm({ ...form, semesterId: e.target.value })}
+                  required>
+                  <option value="">Select semester...</option>
+                  {semesters.map(s => (
+                    <option key={s.semesterId} value={s.semesterId}>{s.semesterCode} — {s.semesterName}</option>
+                  ))}
+                </select>
               )}
             </div>
           </div>
@@ -324,24 +357,55 @@ export default function AdminClassManagement() {
                     </td>
                     <td>
                       <div className="acm-actions">
-                        <button className="acm-btn-action acm-btn-edit" onClick={() => handleEdit(c)}>Edit</button>
-                        <button className="acm-btn-action acm-btn-detail" onClick={() => openDetail(c)}>Detail</button>
-                        <button className="acm-btn-action acm-btn-lecturer" onClick={() => openLecturerModal(c)}>+ Lecturer</button>
-                        <button
-                          className="acm-btn-action acm-btn-danger"
-                          onClick={() => handleUnassignLecturer(c)}
-                          disabled={!c.lecturerName || unassigningLec === c.classId}
-                          title={!c.lecturerName ? "No lecturer assigned" : `Remove ${c.lecturerName}`}
-                          style={{ opacity: !c.lecturerName ? 0.45 : 1 }}>
-                          {unassigningLec === c.classId ? <span className="acm-spinner-sm" /> : "− Lecturer"}
+                        
+                        {/* 1. Lecturer */}
+                        <div className="acm-dropdown-wrapper">
+                          <button className="acm-btn-action acm-btn-lecturer" onClick={() => toggleDropdown("lecturer", c.classId)}>
+                            Lecturer ▾
+                          </button>
+                          {activeDropdown === `lecturer-${c.classId}` && (
+                            <div className="acm-dropdown-menu">
+                              <button className="acm-dropdown-item" onClick={() => { setActiveDropdown(null); openLecturerModal(c); }}>
+                                Add Lecturer
+                              </button>
+                              <button className="acm-dropdown-item" 
+                                onClick={() => { setActiveDropdown(null); handleUnassignLecturer(c); }}
+                                disabled={!c.lecturerName || unassigningLec === c.classId}>
+                                {unassigningLec === c.classId ? "Removing..." : "Remove Lecturer"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 2. Student */}
+                        <button className="acm-btn-action acm-btn-student" onClick={() => openAddStudent(c)} disabled={c.status === "CLOSED"}>
+                          Student
                         </button>
-                        <button className="acm-btn-action acm-btn-student"
-                          onClick={() => openAddStudent(c)}
-                          disabled={c.status === "CLOSED"}
-                          title={c.status === "CLOSED" ? "Class is closed" : "Add student"}>
-                          + Student
+
+                        {/* 3. Detail */}
+                        <button className="acm-btn-action acm-btn-detail" onClick={() => openDetail(c)}>
+                          Detail
                         </button>
-                        <button className="acm-btn-action acm-btn-danger" onClick={() => handleDelete(c.classId)}>Delete</button>
+
+
+                        {/* 4. More / Kebab */}
+                        <div className="acm-dropdown-wrapper">
+                          <button className="acm-btn-action acm-btn-more" onClick={() => toggleDropdown("more", c.classId)}>
+                            ⋮
+                          </button>
+                          {activeDropdown === `more-${c.classId}` && (
+                            <div className="acm-dropdown-menu acm-dropdown-menu-right">
+                              <button className="acm-dropdown-item" onClick={() => { setActiveDropdown(null); handleEdit(c); }}>
+                                Edit
+                              </button>
+                              <div className="acm-dropdown-divider"></div>
+                              <button className="acm-dropdown-item acm-dropdown-danger" onClick={() => { setActiveDropdown(null); handleDelete(c.classId); }}>
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
                       </div>
                     </td>
                   </tr>
