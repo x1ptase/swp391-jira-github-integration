@@ -169,6 +169,7 @@ public class UserServiceImpl implements UserService {
         }
 
         Page<User> page = userRepository.searchWithRole(keyword, roleCode, pageable);
+        //@Entity User
         List<User> users = page.getContent();
 
         List<UserResponse> dtoList = new ArrayList<UserResponse>();
@@ -176,6 +177,7 @@ public class UserServiceImpl implements UserService {
             dtoList.add(toResponse(users.get(i)));
         }
 
+        //Wrapped - output: Page<UserRessponse>
         return new PageImpl<UserResponse>(dtoList, pageable, page.getTotalElements());
     }
 
@@ -201,7 +203,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long userId) {
-        // Nếu user đang dính FK (GroupMember, LecturerAssignment, ...) -> DB sẽ chặn
         User user = getUserOrThrow(userId);
         try {
             userRepository.delete(user);

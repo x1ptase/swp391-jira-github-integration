@@ -180,7 +180,14 @@ export default function LecturerGroupManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {groupMonitoring.map((group, index) => (
+                  {loading && (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: "center", padding: "24px", color: "#888" }}>
+                        Loading...
+                      </td>
+                    </tr>
+                  )}
+                  {!loading && groupMonitoring.map((group, index) => (
                     <tr key={group.groupId || index}>
                       <td>{index + 1}</td>
                       <td className="fw-bold">{group.groupName}</td>
@@ -203,12 +210,12 @@ export default function LecturerGroupManagement() {
                       </td>
                     </tr>
                   ))}
-                  {/* Fallback data nếu API chưa có để giống ảnh bạn gửi */}
-                  {groupMonitoring.length === 0 && (
-                    <>
-                      <tr><td>1</td><td className="fw-bold">Group 1</td><td><span className="lgm-status-badge lgm-badge-healthy">HEALTHY</span></td><td>3/3 active</td><td>Stable</td><td><button className="lgm-view-link">VIEW</button></td></tr>
-                      <tr><td>2</td><td className="fw-bold">Group 2</td><td><span className="lgm-status-badge lgm-badge-critical">CRITICAL</span></td><td>1/4 active</td><td>No activity this week</td><td><button className="lgm-view-link">VIEW</button></td></tr>
-                    </>
+                  {!loading && groupMonitoring.length === 0 && (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: "center", padding: "24px", color: "#888" }}>
+                        No groups found for this class
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>

@@ -13,10 +13,6 @@ import java.util.Optional;
 
 public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long> {
 
-    /**
-     * Lấy tất cả StudentGroup mà một Giảng viên phụ trách,
-     * thông qua bảng LecturerAssignment (join theo classId).
-     */
     @EntityGraph(attributePaths = {"academicClass", "academicClass.course", "academicClass.semester", "topic"})
     @Query("SELECT sg FROM StudentGroup sg JOIN LecturerAssignment la ON la.classId = sg.academicClass.classId WHERE la.lecturer.userId = :lecturerId")
     List<StudentGroup> findByLecturerId(@Param("lecturerId") Long lecturerId);

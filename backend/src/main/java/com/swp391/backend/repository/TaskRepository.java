@@ -25,13 +25,6 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
 
     // ── Requirement dashboard (epic list) ─────────────────────────────────────
 
-    /**
-     * Đếm số Story (jira_issue_type = 'STORY') theo từng requirementId.
-     * Batch query tránh N+1 khi build dashboard response.
-     *
-     * @param requirementIds danh sách requirement PK
-     * @return list projection {requirementId, count}
-     */
     @Query("""
             SELECT t.requirement.requirementId AS requirementId,
                    COUNT(t) AS count
@@ -43,13 +36,6 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
     List<StoryCountProjection> countStoriesByRequirementIds(
             @Param("requirementIds") List<Integer> requirementIds);
 
-    /**
-     * Đếm số Story có status DONE theo từng requirementId.
-     * Batch query tránh N+1 khi build dashboard response.
-     *
-     * @param requirementIds danh sách requirement PK
-     * @return list projection {requirementId, count}
-     */
     @Query("""
             SELECT t.requirement.requirementId AS requirementId,
                    COUNT(t) AS count
@@ -64,23 +50,6 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
 
     // ── Story dashboard ────────────────────────────────────────────────────────
 
-    /**
-     * Lấy danh sách Story (STORY top-level) thuộc một Requirement + Group
-     * với các filter tuỳ chọn. Phân trang qua {@code Pageable}.
-     *
-     * <p>Không dùng JOIN FETCH để tránh lỗi count/duplicate khi pageable.
-     * Sort nên được cung cấp qua Pageable (không dùng NULLS LAST trong JPQL).
-     *
-     * @param requirementId bắt buộc
-     * @param groupId       bắt buộc
-     * @param statusId      optional — null = bỏ qua
-     * @param assigneeId    optional — null = bỏ qua; nếu myTasks=true caller
-     *                      truyền currentUserId vào đây
-     * @param keyword       optional — null = bỏ qua; tìm trong jiraIssueKey
-     *                      hoặc title (case-insensitive)
-     * @param pageable      phân trang + sort
-     * @return page of Task entity (Story)
-     */
     @Query("""
             SELECT t FROM Task t
             WHERE t.requirement.requirementId = :requirementId
@@ -101,12 +70,6 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
             @Param("keyword") String keyword,
             Pageable pageable);
 
-    /**
-     * Batch-count subtask theo parentTaskId để tránh N+1.
-     *
-     * @param parentTaskIds danh sách taskId của Story
-     * @return list projection {parentTaskId, count}
-     */
     @Query("""
             SELECT t.parentTask.taskId AS parentTaskId,
                    COUNT(t) AS count
@@ -118,18 +81,6 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
     List<SubtaskCountProjection> countSubtasksByParentTaskIds(
             @Param("parentTaskIds") List<Integer> parentTaskIds);
 
-    /**
-     * Aggregate story count theo status để build progress summary.
-     * Áp dụng đúng cùng dataset filter với findStoriesByRequirementAndGroup.
-     * doneCount sẽ được tính từ kết quả này theo {@code UPPER(statusCode) = 'DONE'}.
-     *
-     * @param requirementId bắt buộc
-     * @param groupId       bắt buộc
-     * @param statusId      optional — null = bỏ qua (cùng filter với query chính)
-     * @param assigneeId    optional — null = bỏ qua (cùng filter với query chính)
-     * @param keyword       optional — null = bỏ qua (cùng filter với query chính)
-     * @return list projection {statusId, statusCode, count}
-     */
     @Query("""
             SELECT t.status.statusId AS statusId,
                    t.status.code     AS statusCode,
@@ -155,28 +106,11 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
 
     // ── Subtask list ──────────────────────────────────────────────────────────
 
-    /**
-     * Lấy danh sách Subtask theo parentStoryId.
-     * Sort được cung cấp qua tham số {@code Sort} (không dùng NULLS LAST trong JPQL).
-     *
-     * @param parentTaskId taskId của Story cha
-     * @param sort         yêu cầu sort (caller: jiraUpdatedAt desc + createdAt desc)
-     * @return list Task entity (Subtask)
-     */
     List<Task> findAllByParentTask_TaskIdAndJiraIssueType(
             Integer parentTaskId,
             String jiraIssueType,
             Sort sort);
 
-    /**
-     * Validate storyId hợp lệ: thuộc groupId, là top-level STORY.
-     * Dùng để 404-check trước khi query subtask.
-     *
-     * @param taskId       PK của Task
-     * @param groupId      group phải match
-     * @param jiraIssueType phải là 'STORY'
-     * @return Optional Task nếu tìm thấy
-     */
     Optional<Task> findByTaskIdAndStudentGroup_GroupIdAndParentTaskIsNullAndJiraIssueType(
             Integer taskId,
             Long groupId,
@@ -184,23 +118,6 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
 
     // ── My Work – Subtasks (personal view) ───────────────────────────────────
 
-    /**
-     * Lấy danh sách Subtask được assign cho current user trong một group.
-     * Điều kiện chính: t.assignee.userId = :currentUserId (internal mapping).
-     *
-     * <p>Không dùng JOIN FETCH để tránh lỗi count/duplicate khi pageable.
-     * Sort cung cấp qua Pageable.
-     *
-     * @param groupId       group ID (bắt buộc)
-     * @param currentUserId userId của current user (bắt buộc)
-     * @param statusId      optional — null = bỏ qua
-     * @param priority      optional — null = bỏ qua; so sánh LOWERCASE
-     * @param requirementId optional — null = bỏ qua (filter theo Epic)
-     * @param parentTaskId  optional — null = bỏ qua (filter theo Story cha)
-     * @param keyword       optional — null = bỏ qua; tìm trong jiraIssueKey hoặc title
-     * @param pageable      phân trang + sort
-     * @return page of Task entity (Subtask)
-     */
     @Query("""
             SELECT t FROM Task t
             WHERE t.studentGroup.groupId = :groupId
@@ -225,18 +142,6 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
             @Param("keyword") String keyword,
             Pageable pageable);
 
-    /**
-     * Lấy detail một Subtask của current user.
-     * Dùng LEFT JOIN FETCH để giảm N+1 khi map DTO có đủ context Story + Epic.
-     *
-     * <p>Leak-safe: chỉ trả nếu taskId + groupId + assignee.userId + SUBTASK đều match.
-     * Nếu không match bất kỳ điều kiện nào → Optional.empty() → caller ném 404.
-     *
-     * @param taskId        PK của Task
-     * @param groupId       group phải match
-     * @param currentUserId assignee phải là current user
-     * @return Optional Task với parentTask, requirement, assignee, status đã fetch
-     */
     @Query("""
             SELECT t FROM Task t
             LEFT JOIN FETCH t.parentTask p

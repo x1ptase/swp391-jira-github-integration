@@ -3,6 +3,15 @@ package com.swp391.backend.dto.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 
 public class CreateUserRequest {
 
@@ -38,66 +47,4 @@ public class CreateUserRequest {
     @Size(max = 255, message = "Jira account id max length is 255")
     private String jiraAccountId;
 
-    public CreateUserRequest() {
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getStudentCode() {
-        return studentCode;
-    }
-
-    public void setStudentCode(String studentCode) {
-        this.studentCode = studentCode;
-    }
-
-    public String getRoleCode() {
-        return roleCode;
-    }
-
-    public void setRoleCode(String roleCode) {
-        this.roleCode = roleCode;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getGithubUsername() {
-        return githubUsername;
-    }
-
-    public void setGithubUsername(String githubUsername) {
-        this.githubUsername = githubUsername;
-    }
-
-    public String getJiraAccountId() { return jiraAccountId; }
-
-    public void setJiraAccountId(String jiraAccountId) { this.jiraAccountId = jiraAccountId; }
 }
