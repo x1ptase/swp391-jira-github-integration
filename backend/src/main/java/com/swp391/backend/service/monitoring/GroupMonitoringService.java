@@ -150,9 +150,7 @@ public class GroupMonitoringService {
                 (int) totalMembers);
 
         // ── 5. Chọn PrimaryReason (chỉ tính nếu không CLOSED) ────────────
-        PrimaryReason primaryReason = "CLOSED".equalsIgnoreCase(raw.getGroupStatus())
-                ? PrimaryReason.STABLE
-                : choosePrimaryReason(
+        PrimaryReason primaryReason = choosePrimaryReason(
                         totalCommits, activeMemberRatio, (int) overdueTasks,
                         lastActivityAt, githubSyncStale, jiraSyncStale, hasTopic, now);
 
@@ -219,11 +217,6 @@ public class GroupMonitoringService {
             boolean jiraSyncStale,
             boolean hasTopic,
             int totalMembers) {
-
-        // ── CLOSED ────────────────────────────────────────────────────────
-        if ("CLOSED".equalsIgnoreCase(groupStatus)) {
-            return HealthStatus.CLOSED;
-        }
 
         // ── CRITICAL ──────────────────────────────────────────────────────
         if (totalCommits == 0) return HealthStatus.CRITICAL;
