@@ -204,57 +204,65 @@ function MembersModal({ group, onClose }) {
           )}
 
           {/* Add student section */}
-          <div className="gt-modal-section-label" style={{ marginTop: "1.25rem" }}>Add Student</div>
-          <div className="gt-modal-search-wrap">
-            <input
-              className="gt-modal-search-input"
-              placeholder="Search by name or username..."
-              value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value);
-                fetchEligible(e.target.value, 0);
-              }}
-            />
-          </div>
-          {eligibleLoading ? (
-            <div className="gt-modal-loading"><div className="gt-spinner" /> Searching...</div>
-          ) : (
-            <table className="gt-modal-table" style={{ marginTop: "0.5rem" }}>
-              <thead>
-                <tr><th>#</th><th>Full Name</th><th>Student Code</th><th>Email</th><th>Action</th></tr>
-              </thead>
-              <tbody>
-                {eligible.length === 0 ? (
-                  <tr><td colSpan={5} className="gt-modal-empty-row">No eligible students found</td></tr>
-                ) : eligible.map((s, i) => (
-                  <tr key={s.userId || i}>
-                    <td>{i + 1}</td>
-                    <td className="gt-modal-name">{s.fullName || s.username}</td>
-                    <td>{s.studentCode || "—"}</td>
-                    <td className="gt-modal-email">{s.email || "—"}</td>
-                    <td>
-                      <button className="gt-modal-action gt-modal-action-add"
-                        onClick={() => handleAdd(s.userId)}>
-                        Add
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          {eligibleTotal > 1 && (
-            <div className="gt-modal-pagination">
-              {Array.from({ length: eligibleTotal }, (_, i) => i).map((p) => (
-                <button
-                  key={p}
-                  className={`gt-modal-page-btn ${p === eligiblePage ? "active" : ""}`}
-                  onClick={() => fetchEligible(keyword, p)}
-                >
-                  {p + 1}
-                </button>
-              ))}
+          {group.status === "CLOSED" ? (
+            <div style={{ marginTop: "1.5rem", padding: "0.875rem", background: "#fffbeb", color: "#b45309", borderRadius: "8px", fontSize: "0.85rem" }}>
+              <strong>Group is CLOSED.</strong> You cannot add new students to this group.
             </div>
+          ) : (
+            <>
+              <div className="gt-modal-section-label" style={{ marginTop: "1.25rem" }}>Add Student</div>
+              <div className="gt-modal-search-wrap">
+                <input
+                  className="gt-modal-search-input"
+                  placeholder="Search by name or username..."
+                  value={keyword}
+                  onChange={(e) => {
+                    setKeyword(e.target.value);
+                    fetchEligible(e.target.value, 0);
+                  }}
+                />
+              </div>
+              {eligibleLoading ? (
+                <div className="gt-modal-loading"><div className="gt-spinner" /> Searching...</div>
+              ) : (
+                <table className="gt-modal-table" style={{ marginTop: "0.5rem" }}>
+                  <thead>
+                    <tr><th>#</th><th>Full Name</th><th>Student Code</th><th>Email</th><th>Action</th></tr>
+                  </thead>
+                  <tbody>
+                    {eligible.length === 0 ? (
+                      <tr><td colSpan={5} className="gt-modal-empty-row">No eligible students found</td></tr>
+                    ) : eligible.map((s, i) => (
+                      <tr key={s.userId || i}>
+                        <td>{i + 1}</td>
+                        <td className="gt-modal-name">{s.fullName || s.username}</td>
+                        <td>{s.studentCode || "—"}</td>
+                        <td className="gt-modal-email">{s.email || "—"}</td>
+                        <td>
+                          <button className="gt-modal-action gt-modal-action-add"
+                            onClick={() => handleAdd(s.userId)}>
+                            Add
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+              {eligibleTotal > 1 && (
+                <div className="gt-modal-pagination">
+                  {Array.from({ length: eligibleTotal }, (_, i) => i).map((p) => (
+                    <button
+                      key={p}
+                      className={`gt-modal-page-btn ${p === eligiblePage ? "active" : ""}`}
+                      onClick={() => fetchEligible(keyword, p)}
+                    >
+                      {p + 1}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -337,6 +345,12 @@ function TopicModal({ group, onClose, onAssigned }) {
         <div className="gt-modal-body">
           {error && <div className="gt-field-error" style={{ marginBottom: "1rem" }}>{error}</div>}
 
+          {group.status === "CLOSED" && (
+            <div style={{ marginBottom: "1rem", padding: "0.875rem", background: "#fffbeb", color: "#b45309", borderRadius: "8px", fontSize: "0.85rem" }}>
+              <strong>Group is CLOSED.</strong> You cannot assign topics to this group.
+            </div>
+          )}
+
           <div className="gt-modal-search-wrap" style={{ marginBottom: "1rem" }}>
             <input
               className="gt-modal-search-input"
@@ -371,7 +385,8 @@ function TopicModal({ group, onClose, onAssigned }) {
                           <button
                             className="gt-modal-action gt-modal-action-add"
                             onClick={() => handleAssign(t.topicId)}
-                            disabled={assigningId === t.topicId}
+                            disabled={assigningId === t.topicId || group.status === "CLOSED"}
+                            style={{ opacity: group.status === "CLOSED" ? 0.5 : 1, cursor: group.status === "CLOSED" ? "not-allowed" : "pointer" }}
                           >
                             {assigningId === t.topicId ? "..." : "Assign"}
                           </button>
@@ -394,16 +409,24 @@ function TopicModal({ group, onClose, onAssigned }) {
 
 const GROUP_STATUSES = ["OPEN", "CLOSED"];
 
-function StatusMenu({ group, onClose, onStatusChanged }) {
+function GroupMenu({ group, onClose, onRefresh, onStatusChanged, onEditRequest }) {
   const token = localStorage.getItem("token");
   const ref = useRef();
+  const [isDropUp, setIsDropUp] = useState(false);
 
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) onClose();
     };
-    // slight delay so the click that opened this menu doesn't immediately close it
     const t = setTimeout(() => document.addEventListener("mousedown", handler), 10);
+    
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 10) {
+        setIsDropUp(true);
+      }
+    }
+
     return () => { clearTimeout(t); document.removeEventListener("mousedown", handler); };
   }, [onClose]);
 
@@ -421,8 +444,28 @@ function StatusMenu({ group, onClose, onStatusChanged }) {
     }
   };
 
+  const handleDelete = async () => {
+    onClose();
+    if (!window.confirm(`Are you sure you want to delete group "${group.groupName}"?`)) return;
+    try {
+      const res = await fetch(`/api/student_group/delete/${group.groupId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        onRefresh();
+      } else {
+        const data = await res.json();
+        alert(data.message || "Failed to delete group");
+      }
+    } catch (e) {
+      console.error("Failed to delete group", e);
+      alert("Network error. Please try again.");
+    }
+  };
+
   return (
-    <div className="gt-context-menu" ref={ref}>
+    <div className={`gt-context-menu ${isDropUp ? "drop-up" : ""}`} ref={ref}>
       <div className="gt-context-header">Change Status</div>
       {GROUP_STATUSES.map((s) => (
         <button
@@ -434,6 +477,13 @@ function StatusMenu({ group, onClose, onStatusChanged }) {
           {group.status === s && <span className="gt-context-check">✓</span>}
         </button>
       ))}
+      <div className="gt-context-divider" style={{ borderTop: "1px solid #e2e8f0", margin: "4px 0" }} />
+      <button className="gt-context-item" onClick={() => { onClose(); onEditRequest(group); }}>
+        Edit group
+      </button>
+      <button className="gt-context-item" style={{ color: "#ef4444" }} onClick={handleDelete}>
+        Delete group
+      </button>
     </div>
   );
 }
@@ -457,6 +507,7 @@ export default function GroupsTab({ classId, classInfo }) {
   const [menuOpen, setMenuOpen] = useState(null);  // groupId number
 
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [editGroupInfo, setEditGroupInfo] = useState(null);
   const [newGroupName, setNewGroupName] = useState("");
   const [createError, setCreateError] = useState("");
   const [creating, setCreating] = useState(false);
@@ -543,6 +594,31 @@ export default function GroupsTab({ classId, classInfo }) {
     }
   };
 
+  const handleEditGroupSave = async () => {
+    if (!newGroupName.trim()) { setCreateError("Group name is required."); return; }
+    setCreating(true);
+    setCreateError("");
+    try {
+      const res = await fetch(`/api/student_group/update/${editGroupInfo.groupId}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ ...editGroupInfo, groupName: newGroupName }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setEditGroupInfo(null);
+        setNewGroupName("");
+        fetchGroups();
+      } else {
+        setCreateError(data.message || "Failed to edit group.");
+      }
+    } catch (e) {
+      setCreateError("Network error. Please try again.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <div className="gt-container">
       {/* Header */}
@@ -552,8 +628,8 @@ export default function GroupsTab({ classId, classInfo }) {
           <p className="gt-page-sub">Manage student groups in this class.</p>
         </div>
 
-        {!showCreateGroup ? (
-          <button className="gt-new-group-btn" onClick={() => setShowCreateGroup(true)}>
+        {!showCreateGroup && !editGroupInfo ? (
+          <button className="gt-new-group-btn" onClick={() => { setEditGroupInfo(null); setNewGroupName(""); setShowCreateGroup(true); }}>
             + New Group
           </button>
         ) : (
@@ -562,24 +638,24 @@ export default function GroupsTab({ classId, classInfo }) {
               <input
                 className="gt-field-input"
                 style={{ width: "220px", padding: "0.5rem 0.75rem" }}
-                placeholder="Group name..."
+                placeholder={editGroupInfo ? "Edit group name..." : "Group name..."}
                 value={newGroupName}
                 onChange={(e) => { setNewGroupName(e.target.value); setCreateError(""); }}
-                onKeyDown={(e) => e.key === "Enter" && handleCreateGroup()}
+                onKeyDown={(e) => e.key === "Enter" && (editGroupInfo ? handleEditGroupSave() : handleCreateGroup())}
                 autoFocus
               />
               <button
                 className="gt-btn-primary"
                 style={{ padding: "0.5rem 1rem" }}
-                onClick={handleCreateGroup}
+                onClick={editGroupInfo ? handleEditGroupSave : handleCreateGroup}
                 disabled={creating}
               >
-                {creating ? "..." : "Save"}
+                {creating ? "..." : (editGroupInfo ? "Update" : "Save")}
               </button>
               <button
                 className="gt-btn-cancel"
                 style={{ padding: "0.5rem 0.8rem" }}
-                onClick={() => { setShowCreateGroup(false); setNewGroupName(""); setCreateError(""); }}
+                onClick={() => { setShowCreateGroup(false); setEditGroupInfo(null); setNewGroupName(""); setCreateError(""); }}
                 disabled={creating}
               >
                 Cancel
@@ -626,7 +702,6 @@ export default function GroupsTab({ classId, classInfo }) {
                   <th>#</th>
                   <th className="gt-th-left">GROUP</th>
                   <th className="gt-th-left">TOPIC</th>
-                  <th>MEMBERS</th>
                   <th>STATUS</th>
                   <th>HEALTH</th>
                   <th>ACTION</th>
@@ -654,9 +729,6 @@ export default function GroupsTab({ classId, classInfo }) {
                           ? <span className="gt-topic-text">{g.topicName}</span>
                           : <span className="gt-topic-empty">Not assigned</span>}
                       </td>
-                      <td className="gt-td-members">
-                        {g.memberCount != null ? `${g.memberCount} members` : "—"}
-                      </td>
                       <td><StatusBadge status={g.status} /></td>
                       <td><HealthBadge health={health} /></td>
                       <td>
@@ -680,10 +752,15 @@ export default function GroupsTab({ classId, classInfo }) {
                               ⋮
                             </button>
                             {isMenuOpen && (
-                              <StatusMenu
+                              <GroupMenu
                                 group={g}
                                 onClose={() => setMenuOpen(null)}
+                                onRefresh={fetchGroups}
                                 onStatusChanged={handleStatusChanged}
+                                onEditRequest={(editingGroup) => {
+                                  setEditGroupInfo(editingGroup);
+                                  setNewGroupName(editingGroup.groupName);
+                                }}
                               />
                             )}
                           </div>
@@ -693,7 +770,7 @@ export default function GroupsTab({ classId, classInfo }) {
                   );
                 })}
                 {paginated.length === 0 && (
-                  <tr><td colSpan={7} className="gt-empty">No groups found.</td></tr>
+                  <tr><td colSpan={6} className="gt-empty">No groups found.</td></tr>
                 )}
               </tbody>
             </table>

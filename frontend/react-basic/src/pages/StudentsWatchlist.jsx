@@ -66,10 +66,10 @@ export default function StudentsWatchlist({ classId, classInfo }) {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Source: real API data, or demo when API is empty
+  // Source: real API data 
   const sourceList = useMemo(
-    () => (!loading && students.length === 0 ? DEMO_STUDENTS : students),
-    [loading, students]
+    () => students,
+    [students]
   );
 
   // Unique groups for filter dropdown
@@ -112,7 +112,7 @@ export default function StudentsWatchlist({ classId, classInfo }) {
         groupFilter === "all" || s.groupName === groupFilter;
       const matchStatus =
         statusFilter === "all" ||
-        normalizeStatus(s.status) === normalizeStatus(statusFilter);
+        normalizeStatus(s.contributionStatus ?? s.status) === normalizeStatus(statusFilter);
       return matchSearch && matchGroup && matchStatus;
     });
   }, [sourceList, searchQuery, groupFilter, statusFilter]);
@@ -205,11 +205,13 @@ export default function StudentsWatchlist({ classId, classInfo }) {
                 {displayList.map((s, idx) => {
                   const initials = getInitials(s.fullName);
                   const avatarColor = getAvatarColor(s.fullName);
-                  const badge = getStatusBadge(s.status);
-                  const lastActive = formatLastActive(s.lastActiveDate);
+                  const rawStatus = s.contributionStatus ?? s.status;
+                  const rawLastActive = s.lastActiveAt ?? s.lastActiveDate;
+                  const badge = getStatusBadge(rawStatus);
+                  const lastActive = formatLastActive(rawLastActive);
 
                   return (
-                    <tr key={s.studentId || idx}>
+                    <tr key={s.userId ?? s.studentId ?? idx}>
                       <td className="sw-td-num">{(page - 1) * PAGE_SIZE + idx + 1}</td>
                       <td className="sw-td-student">
                         <div
@@ -272,17 +274,7 @@ export default function StudentsWatchlist({ classId, classInfo }) {
         )}
       </div>
 
-      {/* Bottom Note */}
-      <div className="sw-footer-note">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
-        Data updates every 24 hours based on{" "}
-        <a href="#" className="sw-footer-link">Git repository commits</a> and{" "}
-        <a href="#" className="sw-footer-link">workspace activity</a>.
-      </div>
+      {/* Bottom Note Removed */}
     </div>
   );
 }
