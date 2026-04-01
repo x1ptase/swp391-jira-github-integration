@@ -3,30 +3,16 @@ package com.swp391.backend.integration.jira;
 import com.swp391.backend.exception.BusinessException;
 import org.springframework.stereotype.Component;
 
-/**
- * Builds JQL queries for Jira Search API.
- * All user-supplied values are safely quoted to prevent injection.
- */
+
 @Component
 public class JiraJqlBuilder {
 
-    /**
-     * Supported filter types for Jira issue export.
-     */
+
     public enum FilterType {
         ALL, SPRINT, VERSION, LABEL
     }
 
-    /**
-     * Builds a JQL string for the given filter configuration.
-     *
-     * @param projectKey the Jira project key (from saved config)
-     * @param filterType the filter type (ALL / SPRINT / VERSION / LABEL)
-     * @param sprintId   required when filterType = SPRINT
-     * @param versionId  required when filterType = VERSION
-     * @param label      required when filterType = LABEL
-     * @return a valid JQL string
-     */
+
     public String buildJql(String projectKey, FilterType filterType,
             Long sprintId, String versionId, String label) {
 
@@ -61,17 +47,7 @@ public class JiraJqlBuilder {
         };
     }
 
-    /**
-     * Safely quotes a JQL value:
-     * <ul>
-     * <li>Trims whitespace</li>
-     * <li>Escapes embedded double-quotes ( " → \" )</li>
-     * <li>Wraps with "..." if value contains whitespace or special JQL chars</li>
-     * </ul>
-     *
-     * @param value raw user-supplied value
-     * @return safely quoted JQL value
-     */
+
     static String quoteJqlValue(String value) {
         if (value == null) {
             return "\"\"";

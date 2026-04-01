@@ -22,10 +22,5 @@ public class JiraConfigRequest {
     @Email(message = "jiraEmail must be a valid email address")
     private String jiraEmail;
 
-    /**
-     * Token is required on CREATE; optional on UPDATE.
-     * If null/blank on UPDATE, existing token_encrypted is retained.
-     * This field is NEVER returned in responses.
-     */
     private String token;
 }

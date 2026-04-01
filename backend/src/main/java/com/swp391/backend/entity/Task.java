@@ -58,32 +58,19 @@ public class Task {
     @Column(name = "jira_issue_key", length = 50, unique = true)
     private String jiraIssueKey;
 
-    /**
-     * Self-reference FK cho sub-tasks.
-     * Story (top-level task) có parentTask = null.
-     * Sub-task có parentTask trỏ tới Story tương ứng.
-     * Mapping với cột parent_task_id trong DB.
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_task_id")
     private Task parentTask;
 
-    /** Raw issue type từ Jira (e.g. "STORY", "SUBTASK"). */
     @Column(name = "jira_issue_type", length = 50)
     private String jiraIssueType;
 
-    /**
-     * Jira key của issue cha.
-     * Story → Epic key; Sub-task → Story key.
-     */
     @Column(name = "jira_parent_issue_key", length = 50)
     private String jiraParentIssueKey;
 
-    /** Raw status name từ Jira (e.g. "To Do", "In Progress", "Done"). */
     @Column(name = "jira_status_raw", length = 100)
     private String jiraStatusRaw;
 
-    /** Raw priority name từ Jira (e.g. "High", "Medium"). Nullable. */
     @Column(name = "jira_priority_raw", length = 100)
     private String jiraPriorityRaw;
 

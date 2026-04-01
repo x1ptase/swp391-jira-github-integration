@@ -14,13 +14,7 @@ public class JiraIntegrationResponse {
     private String projectKey;
     private String jiraEmail;
 
-    /** True if token_encrypted is stored in DB; false otherwise. */
     private boolean hasToken;
 
-    /**
-     * Masked representation of the stored token (e.g. "****abcd").
-     * Null when hasToken is false.
-     * NEVER contains the raw token value.
-     */
     private String tokenMasked;
 }

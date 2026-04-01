@@ -109,11 +109,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(403).body(ApiResponse.error(403, "Access Denied"));
     }
 
-    /**
-     * Handler cho ResponseStatusException – được dùng bởi SyncLogService để trả 409
-     * "Sync is running".
-     * Đảm bảo format ApiResponse nhất quán với các exception khác.
-     */
     @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
     public ResponseEntity<ApiResponse<Void>> handleResponseStatusException(
             org.springframework.web.server.ResponseStatusException ex) {

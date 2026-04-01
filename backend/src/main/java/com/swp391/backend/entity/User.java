@@ -40,9 +40,11 @@ public class User {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    //trước khi insert tự set createdAt
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

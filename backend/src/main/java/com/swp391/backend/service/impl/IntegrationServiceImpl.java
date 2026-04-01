@@ -79,10 +79,6 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     // ── Jira ─────────────────────────────────────────────────────────────────
 
-    /**
-     * Simple email regex (Jakarta @Email covers annotation-validated fields, this
-     * covers service-layer checks).
-     */
     private static final Pattern EMAIL_PATTERN = Pattern
             .compile("^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$");
 
@@ -121,18 +117,15 @@ public class IntegrationServiceImpl implements IntegrationService {
 
             return repository.save(config);
         } else {
-            // ── CREATE ──
-            // Token is mandatory on create; do NOT log or include token value in error
-            // message
             if (token == null || token.trim().isEmpty()) {
                 throw new BusinessException("Token is required when creating a new Jira integration configuration",
                         400);
             }
 
             StudentGroup sg = new StudentGroup();
-            sg.setGroupId(groupId);
+            sg.setGroupId(groupId); //Foreign key
             IntegrationType it = new IntegrationType();
-            it.setIntegrationTypeId(IntegrationTypeIds.JIRA);
+            it.setIntegrationTypeId(IntegrationTypeIds.JIRA); //Foreign key
 
             IntegrationConfig newConfig = IntegrationConfig.builder()
                     .studentGroup(sg)
@@ -190,7 +183,7 @@ public class IntegrationServiceImpl implements IntegrationService {
             throw new BusinessException("Jira email is missing in configuration", 400);
         }
 
-        // 3. Decrypt token (không log token)
+        // 3. Decrypt token
         String rawToken;
         try {
             rawToken = tokenCryptoService.decryptFromBytes(config.getTokenEncrypted());
