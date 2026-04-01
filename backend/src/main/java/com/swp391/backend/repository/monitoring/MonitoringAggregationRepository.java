@@ -253,14 +253,11 @@ public interface MonitoringAggregationRepository
                 COUNT(DISTINCT
                     CASE
                         WHEN gc_active.author_user_id IS NOT NULL
-                            THEN CAST('uid:' + CAST(gc_active.author_user_id AS NVARCHAR(20)) AS NVARCHAR(200))
-                        WHEN gc_active.author_login IS NOT NULL
-                            THEN CAST('login:' + gc_active.author_login AS NVARCHAR(200))
-                        WHEN gc_active.author_email IS NOT NULL
-                            THEN CAST('email:' + gc_active.author_email AS NVARCHAR(200))
-                        ELSE CAST('name:' + ISNULL(gc_active.author_name, '(unknown)') AS NVARCHAR(200))
+                             AND gc_active.author_user_id = gm.user_id
+                        THEN gc_active.author_user_id
+                        ELSE NULL
                     END
-                )                                   AS activeMembers,
+                ) AS activeMembers,
 
                 -- Overdue tasks: due_date đã qua hiện tại và chưa DONE
                 SUM(CASE
