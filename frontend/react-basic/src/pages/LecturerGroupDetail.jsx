@@ -52,6 +52,17 @@ function ProgressBar({ done, total }) {
   );
 }
 
+const formatDateVN = (value) => {
+  if (!value) return "No record";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "No record";
+  return d.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
 export default function LecturerGroupDetail() {
   const { groupId } = useParams();
   const navigate = useNavigate();
@@ -114,7 +125,7 @@ export default function LecturerGroupDetail() {
     setLoading(true);
     try {
       const toDate = new Date().toISOString();
-      const fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const fromDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const res = await fetch(
         `/api/groups/${groupId}/monitoring/detail?fromDate=${fromDate}&toDate=${toDate}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -174,13 +185,6 @@ export default function LecturerGroupDetail() {
         <div className="lgd-stats-grid">
           <div className="lgd-stat-card">
             <div className="lgd-stat-content">
-              <span className="lgd-stat-label">COMMITS (7D)</span>
-              <span className="lgd-stat-value">{summary.commits}</span>
-            </div>
-            <div className="lgd-stat-icon red-icon">🔄</div>
-          </div>
-          <div className="lgd-stat-card">
-            <div className="lgd-stat-content">
               <span className="lgd-stat-label">ACTIVE MEMBERS</span>
               <span className="lgd-stat-value">{summary.activeMembers} <small>/{summary.totalMembers}</small></span>
             </div>
@@ -188,15 +192,15 @@ export default function LecturerGroupDetail() {
           </div>
           <div className="lgd-stat-card">
             <div className="lgd-stat-content">
-              <span className="lgd-stat-label">OVERDUE TASKS</span>
-              <span className="lgd-stat-value">{summary.overdueTasks}</span>
-            </div>
-            <div className="lgd-stat-icon">⚠️</div>
-          </div>
-          <div className="lgd-stat-card">
-            <div className="lgd-stat-content">
               <span className="lgd-stat-label">LAST ACTIVITY</span>
-              <span className="lgd-stat-value">{summary.lastActivityAt ? "Active" : "None"}</span>
+              <span className="lgd-stat-value" style={{ fontSize: "1.2rem", marginTop: "4px" }}>
+                {summary.lastActivityAt 
+                  ? new Date(summary.lastActivityAt).toLocaleString("vi-VN", {
+                      day: "2-digit", month: "2-digit", year: "numeric",
+                      hour: "2-digit", minute: "2-digit"
+                    })
+                  : "No activity"}
+              </span>
             </div>
             <div className="lgd-stat-icon">📅</div>
           </div>
@@ -205,7 +209,7 @@ export default function LecturerGroupDetail() {
         {/* Member Table Section */}
         <div className="lgd-table-section">
           <div className="lgd-table-header">
-            <h3>Member Contribution</h3>
+            <h3>Member Contribution (Last 7 Days)</h3>
           </div>
           <table className="lgd-table">
             <thead>
@@ -228,9 +232,15 @@ export default function LecturerGroupDetail() {
                       <div className="text-muted small">{m.studentId}</div>
                     </div>
                   </td>
-                  <td className="italic-text">{m.role}</td>
+                  <td>
+                    {m.role === "LEADER" ? (
+                      <span className="lgd-role-badge leader">LEADER</span>
+                    ) : (
+                      <span className="lgd-role-badge member">{m.role || "MEMBER"}</span>
+                    )}
+                  </td>
                   <td className="fw-bold">{m.commitCount}</td>
-                  <td>{m.lastActiveAt ? new Date(m.lastActiveAt).toLocaleDateString() : "No record"}</td>
+                  <td>{formatDateVN(m.lastActiveAt)}</td>
                   <td>
                     <span className={`lgd-badge ${m.contributionStatus.toLowerCase().replace('_', '-')}`}>
                       {m.contributionStatus}

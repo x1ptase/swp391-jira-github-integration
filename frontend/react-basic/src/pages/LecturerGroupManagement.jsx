@@ -84,6 +84,19 @@ export default function LecturerGroupManagement() {
     }
   };
 
+  const formatReason = (reason) => {
+    switch (reason) {
+      case "NO_ACTIVITY_THIS_WEEK": return "No activity this week";
+      case "TOO_FEW_ACTIVE_MEMBERS": return "Too few active members";
+      case "TOO_MANY_OVERDUE_TASKS": return "Too many overdue tasks";
+      case "TOPIC_NOT_ASSIGNED": return "Topic not assigned";
+      case "STALE_SYNC": return "Stale sync";
+      case "UNEVEN_CONTRIBUTION": return "Uneven contribution";
+      case "STABLE": return "Stable";
+      default: return "Stable";
+    }
+  };
+
   return (
     <div className="lgm-root">
       {/* Topbar: Giống ảnh 2 & 3 */}
@@ -131,21 +144,21 @@ export default function LecturerGroupManagement() {
                 <div className="lgm-stat-icon icon-blue">👥</div>
                 <div className="lgm-stat-details">
                   <span className="lgm-stat-label">TOTAL GROUPS</span>
-                  <span className="lgm-stat-value">{summary?.totalGroups || 4}</span>
+                  <span className="lgm-stat-value">{summary?.totalGroups ?? 0}</span>
                 </div>
               </div>
               <div className="lgm-stat-card">
                 <div className="lgm-stat-icon icon-purple">⚠️</div>
                 <div className="lgm-stat-details">
                   <span className="lgm-stat-label">AT RISK</span>
-                  <span className="lgm-stat-value">{summary?.groupsAtRisk || 2}</span>
+                  <span className="lgm-stat-value">{summary?.atRisk ?? summary?.groupsAtRisk ?? 0}</span>
                 </div>
               </div>
               <div className="lgm-stat-card">
                 <div className="lgm-stat-icon icon-red">👤!</div>
                 <div className="lgm-stat-details">
                   <span className="lgm-stat-label">STUDENTS FLAGGED</span>
-                  <span className="lgm-stat-value">{summary?.studentsFlagged || 3}</span>
+                  <span className="lgm-stat-value">{summary?.studentsFlagged ?? 0}</span>
                 </div>
               </div>
             </div>
@@ -154,7 +167,6 @@ export default function LecturerGroupManagement() {
             <div className="lgm-table-container">
               <div className="lgm-table-header">
                 <h3>Group Status Monitoring</h3>
-                <span className="lgm-last-update">🕒 Last updated: 5 mins ago</span>
               </div>
               <table className="lgm-monitoring-table">
                 <thead>
@@ -178,7 +190,7 @@ export default function LecturerGroupManagement() {
                         </span>
                       </td>
                       <td>{group.activeMembers || 0}/{group.totalMembers || 0} active</td>
-                      <td className="lgm-reason-text">{group.reason || "Stable"}</td>
+                      <td className="lgm-reason-text">{formatReason(group.primaryReason)}</td>
                       <td>
                         <button
                           className="lgm-view-link"

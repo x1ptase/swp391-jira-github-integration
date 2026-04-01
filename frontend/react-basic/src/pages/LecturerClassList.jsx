@@ -15,7 +15,8 @@ const username = localStorage.getItem("username") || "";
 
 function deriveClassStatus(summary) {
   if (!summary) return null;
-  const { groupsAtRisk = 0, studentsFlagged = 0 } = summary;
+  const groupsAtRisk = summary.atRisk ?? summary.groupsAtRisk ?? 0;
+  const studentsFlagged = summary.studentsFlagged ?? 0;
   if (groupsAtRisk >= 5 || studentsFlagged >= 10) return "CRITICAL";
   if (groupsAtRisk >= 2 || studentsFlagged >= 3) return "WARNING";
   return "HEALTHY";
@@ -256,9 +257,9 @@ export default function LecturerClassList() {
           <div className="lcd-grid">
             {filtered.map((cls, idx) => {
               const sum = summaries[cls.classId];
-              const status = deriveClassStatus(sum);
-              const riskVal = sum?.groupsAtRisk ?? null;
-              const flaggedVal = sum?.studentsFlagged ?? null;
+              const status = sum?.classHealth ?? cls.classHealth ?? deriveClassStatus(sum);
+              const riskVal = sum !== undefined ? (sum?.atRisk ?? sum?.groupsAtRisk ?? 0) : null;
+              const flaggedVal = sum !== undefined ? (sum?.studentsFlagged ?? 0) : null;
 
               return (
                 <div

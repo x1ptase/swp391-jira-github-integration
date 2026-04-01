@@ -126,14 +126,22 @@
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
-  overflow: hidden;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .gt-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: center;
+}
+
+.gt-table thead tr th:first-child {
+  border-top-left-radius: 13px;
+}
+
+.gt-table thead tr th:last-child {
+  border-top-right-radius: 13px;
 }
 
 .gt-table thead tr {
@@ -236,15 +244,15 @@
 }
 
 .gt-status-open {
-  background: #f0f9ff;
-  color: #0284c7;
-  border-color: #bae6fd;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
 }
 
 .gt-status-closed {
-  background: #f1f5f9;
-  color: #64748b;
-  border-color: #cbd5e1;
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
 }
 
 .gt-status-active {
@@ -375,6 +383,11 @@
   min-width: 160px;
   z-index: 100;
   overflow: hidden;
+}
+
+.gt-context-menu.drop-up {
+  top: auto;
+  bottom: calc(100% + 6px);
 }
 
 .gt-context-header {

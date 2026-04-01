@@ -90,7 +90,7 @@
 /* Stats Cards */
 .lgd-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
   margin: 2rem 0;
 }
@@ -189,7 +189,27 @@
 
 .lgd-badge.no-contribution { background: #fee2e2; color: #b91c1c; }
 .lgd-badge.low { background: #fef3c7; color: #92400e; }
-.lgd-badge.high { background: #d1fae5; color: #065f46; }
+.lgd-badge.high, .lgd-badge.active { background: #d1fae5; color: #065f46; }
+
+.lgd-role-badge {
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  display: inline-block;
+}
+
+.lgd-role-badge.leader {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.lgd-role-badge.member {
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 600;
+}
 
 .italic-text { font-style: italic; color: #64748b; }
 
