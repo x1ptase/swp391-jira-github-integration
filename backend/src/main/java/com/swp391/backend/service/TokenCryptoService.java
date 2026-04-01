@@ -11,19 +11,6 @@ import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-/**
- * Service for encrypting and decrypting Jira / GitHub tokens using AES-256-CBC.
- *
- * <p>
- * The secret key is read from {@code app.crypto.secret-key} in
- * {@code application.properties}. It must be exactly 16, 24, or 32 characters
- * long (AES-128 / AES-192 / AES-256).
- *
- * <p>
- * Encrypted format stored in the DB: {@code Base64(IV + ciphertext)}
- * — the 16-byte IV is prepended so that every encryption call produces a
- * different result for the same plaintext.
- */
 @Service
 public class TokenCryptoService {
 
@@ -49,14 +36,6 @@ public class TokenCryptoService {
     // Public API
     // -----------------------------------------------------------------------
 
-    /**
-     * Encrypts {@code rawToken} and returns a Base64 string.
-     * Format: {@code Base64(IV || ciphertext)}.
-     *
-     * @param rawToken the plaintext token to encrypt
-     * @return Base64-encoded encrypted string
-     * @throws RuntimeException wrapping any {@link GeneralSecurityException}
-     */
     public String encrypt(String rawToken) {
         try {
             byte[] iv = generateIv();
@@ -74,13 +53,6 @@ public class TokenCryptoService {
         }
     }
 
-    /**
-     * Decrypts a Base64 string produced by {@link #encrypt(String)}.
-     *
-     * @param encryptedToken Base64-encoded encrypted string
-     * @return original plaintext token
-     * @throws RuntimeException wrapping any {@link GeneralSecurityException}
-     */
     public String decrypt(String encryptedToken) {
         try {
             byte[] ivAndCipher = Base64.getDecoder().decode(encryptedToken);
@@ -90,15 +62,6 @@ public class TokenCryptoService {
         }
     }
 
-    /**
-     * Decrypts a byte array produced by {@link #encryptToBytes(String)}
-     * (hypothetically, if it existed).
-     * In this project, TokenHelper provides encryptToBytes.
-     *
-     * @param ivAndCipher the byte array containing IV + ciphertext
-     * @return original plaintext token
-     * @throws RuntimeException wrapping any {@link GeneralSecurityException}
-     */
     public String decryptFromBytes(byte[] ivAndCipher) {
         try {
             if (ivAndCipher == null) {

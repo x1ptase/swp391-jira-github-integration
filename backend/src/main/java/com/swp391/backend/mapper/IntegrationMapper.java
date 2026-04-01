@@ -38,11 +38,6 @@ public class IntegrationMapper {
 
     // ── Jira config mapper ──────────────────────────────────────────────────
 
-    /**
-     * Maps an IntegrationConfig (Jira type) to JiraIntegrationResponse.
-     * hasToken is computed from token_encrypted presence.
-     * tokenMasked is derived by decrypting then masking – NEVER raw token returned.
-     */
     public JiraIntegrationResponse toJiraResponse(IntegrationConfig config) {
         if (config == null) {
             return null;

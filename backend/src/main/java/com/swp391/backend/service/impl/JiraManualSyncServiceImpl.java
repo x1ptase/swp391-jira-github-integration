@@ -22,31 +22,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * Implements 1-way pull sync from Jira → internal DB.
- *
- * <p>
- * Luồng xử lý:
- * 
- * <pre>
- * Phase 1: Fetch all Jira issues (full pagination, safety guards)
- * Phase 2: Upsert Epics → Requirements
- * Phase 3: Upsert Stories → Tasks (parent_task_id = null)
- * Phase 4: Upsert Sub-tasks → Tasks (parent_task_id = Story Task)
- * </pre>
- *
- * <p>
- * Parent linking:
- * <ul>
- * <li>Story parent được lấy từ {@code fields.parent.key} (Jira Cloud)</li>
- * <li>Sub-task parent tương tự từ {@code fields.parent.key}</li>
- * <li>Nếu không resolve được parent → skip + ghi warning vào SyncLog</li>
- * </ul>
- *
- * <p>
- * Assignee: không được map vì user Jira chưa được link với user nội bộ.
- * Giữ null và comment rõ để tránh map sai entity.
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -364,12 +339,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
 
     // ── Jira fetch (full pagination) ──────────────────────────────────────────
 
-    /**
-     * Fetch tất cả issues theo JQL với full pagination.
-     * Dùng searchIssueIdsByJql + bulkFetchIssueDetails (giống
-     * JiraIssueServiceImpl).
-     * Safety guards: MAX_LOOPS, MAX_ISSUES, token-not-advancing.
-     */
     private List<JiraIssue> fetchAllIssues(String baseUrl, String jiraEmail,
             String token, String jql) {
         List<JiraIssue> collected = new ArrayList<>();
@@ -434,11 +403,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
 
     // ── Classification ────────────────────────────────────────────────────────
 
-    /**
-     * Phân loại issues thành Epic / Story / Sub-task.
-     * Type được xác định bằng fields.issuetype.name (case-insensitive).
-     * Issues không có fields hoặc issuetype bị bỏ qua.
-     */
     private void classifyIssues(List<JiraIssue> issues,
             List<JiraIssue> epics, List<JiraIssue> stories, List<JiraIssue> subtasks) {
         for (JiraIssue issue : issues) {
@@ -464,17 +428,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
 
     // ── Parent resolution ─────────────────────────────────────────────────────
 
-    /**
-     * Lấy key của parent issue từ fields.parent.key.
-     * Trả null nếu không có parent (hoặc parent.key vắng mặt).
-     *
-     * <p>
-     * Jira Cloud: cả Story và Sub-task đều có parent field:
-     * <ul>
-     * <li>Story.parent.key = Epic key</li>
-     * <li>Sub-task.parent.key = Story key</li>
-     * </ul>
-     */
     private String resolveParentKey(JiraFields fields) {
         if (fields == null)
             return null;
@@ -487,10 +440,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
 
     // ── Status mapping ────────────────────────────────────────────────────────
 
-    /**
-     * Map Jira status → TaskStatus theo statusCategory.key.
-     * Fallback an toàn về TODO nếu statusCategory null hoặc key không nhận ra.
-     */
     private TaskStatus mapTaskStatus(JiraName jiraStatus, Map<String, TaskStatus> statusMap) {
         String categoryKey = extractStatusCategoryKey(jiraStatus);
         String code = switch (categoryKey) {
@@ -507,10 +456,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
         return result;
     }
 
-    /**
-     * Map Jira status → RequirementStatus.
-     * "done" → DONE, còn lại → ACTIVE.
-     */
     private RequirementStatus mapRequirementStatus(JiraName jiraStatus,
             Map<String, RequirementStatus> statusMap) {
         String categoryKey = extractStatusCategoryKey(jiraStatus);
@@ -523,10 +468,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
         return result;
     }
 
-    /**
-     * Lấy statusCategory.key một cách an toàn.
-     * Trả "new" nếu bất kỳ field nào null (fallback → TODO).
-     */
     private String extractStatusCategoryKey(JiraName jiraStatus) {
         if (jiraStatus == null)
             return "new";
@@ -592,10 +533,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
 
     // ── ADF → Plain text ──────────────────────────────────────────────────────
 
-    /**
-     * Converts Atlassian Document Format (ADF) to plain text.
-     * Xử lý an toàn: null, String thuần, Map (ADF), List.
-     */
     @SuppressWarnings("unchecked")
     private String extractPlainText(Object description) {
         if (description == null)
@@ -662,9 +599,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
         return s.length() <= maxLen ? s : s.substring(0, maxLen);
     }
 
-    /**
-     * Sanitize error message để không leak token hoặc credentials.
-     */
     private String sanitizeErrorMessage(String msg) {
         if (msg == null)
             return "Unknown error";
@@ -676,10 +610,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
 
     // ── Jira metadata helpers ─────────────────────────────────────────────────
 
-    /**
-     * Trả về normalized issue type name (UPPER_CASE) hoặc null.
-     * Dùng để fill jira_issue_type; gọi getter trực tiếp an toàn hơn.
-     */
     private String extractIssueTypeName(JiraFields fields) {
         if (fields == null || fields.getIssuetype() == null)
             return null;
@@ -687,9 +617,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
         return (name != null && !name.isBlank()) ? name.trim().toUpperCase() : null;
     }
 
-    /**
-     * Trả về raw status name từ Jira. Null-safe.
-     */
     private String extractRawStatusName(JiraFields fields) {
         if (fields == null || fields.getStatus() == null)
             return null;
@@ -697,10 +624,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
         return (name != null && !name.isBlank()) ? name.trim() : null;
     }
 
-    /**
-     * Trả về raw priority name từ Jira. Null-safe.
-     * priority là optional trong Jira, nên có thể null.
-     */
     private String extractRawPriorityName(JiraFields fields) {
         if (fields == null || fields.getPriority() == null)
             return null;
@@ -708,9 +631,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
         return (name != null && !name.isBlank()) ? name.trim() : null;
     }
 
-    /**
-     * Trả về assignee accountId từ Jira. Null-safe.
-     */
     private String extractAssigneeAccountId(JiraFields fields) {
         if (fields == null || fields.getAssignee() == null)
             return null;
@@ -718,11 +638,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
         return (accountId != null && !accountId.isBlank()) ? accountId.trim() : null;
     }
 
-    /**
-     * Parse chuỗi ISO datetime của Jira (có offset timezone) sang LocalDateTime.
-     * Ví dụ: "2024-01-15T10:30:00.000+0700" hoặc "2024-01-15T10:30:00.000+07:00".
-     * Trả null nếu input null/blank/parse lỗi.
-     */
     private LocalDateTime parseJiraUpdatedAt(String updated) {
         if (updated == null || updated.isBlank())
             return null;
@@ -741,11 +656,6 @@ public class JiraManualSyncServiceImpl implements JiraManualSyncService {
         }
     }
 
-    /**
-     * Tìm User trong DB theo jira_account_id.
-     * Trả Optional.empty() nếu accountId null/blank hoặc không tìm thấy.
-     * Không throw exception – caller xử lý null gracefully.
-     */
     private Optional<User> resolveAssigneeByJiraAccountId(String jiraAccountId) {
         if (jiraAccountId == null || jiraAccountId.isBlank())
             return Optional.empty();

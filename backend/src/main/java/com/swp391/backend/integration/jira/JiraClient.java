@@ -31,21 +31,13 @@ public class JiraClient {
     private static final List<String> BULK_FIELDS = List.of(
             "summary", "description", "issuetype", "status", "priority", "assignee", "updated", "labels", "parent");
 
-    /**
-     * Gọi Jira REST API v3 để lấy thông tin project.
-     * Token KHÔNG được log hoặc đưa vào exception message.
-     *
-     * @param baseUrl    Jira base URL (ví dụ: https://myorg.atlassian.net)
-     * @param projectKey Jira project key (ví dụ: SWP391)
-     * @param jiraEmail  Email dùng để xác thực Jira
-     * @param token      Jira API token (raw, không log)
-     * @return JiraProjectResponse chứa key và name của project
-     */
     public JiraProjectResponse getProjectInfo(String baseUrl, String projectKey,
             String jiraEmail, String token) {
+        //Build URL
         String normalizedBaseUrl = baseUrl.stripTrailing().replaceAll("/+$", "");
         String url = normalizedBaseUrl + "/rest/api/3/project/" + projectKey;
 
+        //Build Basic Auth header
         HttpEntity<Void> entity = new HttpEntity<>(buildAuthHeaders(jiraEmail, token));
 
         try {
@@ -81,20 +73,6 @@ public class JiraClient {
         }
     }
 
-    /**
-     * Tìm issue IDs theo JQL dùng endpoint mới /rest/api/3/search/jql (Jira Cloud).
-     * <p>
-     * Endpoint /rest/api/3/search đã bị remove (410) trên Jira Cloud mới.
-     * Token KHÔNG được log hoặc đưa vào exception message.
-     *
-     * @param baseUrl       Jira base URL
-     * @param jiraEmail     Email xác thực
-     * @param token         Jira API token (raw, không log)
-     * @param jql           JQL query (đã escape/quote)
-     * @param maxResults    Số lượng tối đa mỗi trang (1..100)
-     * @param nextPageToken Opaque token từ page trước (null cho page đầu)
-     * @return JiraSearchJqlResponse chứa issues[{id}], nextPageToken, isLast
-     */
     public JiraSearchJqlResponse searchIssueIdsByJql(String baseUrl, String jiraEmail, String token,
             String jql, int maxResults,
             String nextPageToken) {
@@ -149,16 +127,6 @@ public class JiraClient {
         }
     }
 
-    /**
-     * Lấy chi tiết nhiều issues cùng lúc qua POST /rest/api/3/issue/bulkfetch.
-     * Token KHÔNG được log hoặc đưa vào exception message.
-     *
-     * @param baseUrl   Jira base URL
-     * @param jiraEmail Email xác thực
-     * @param token     Jira API token (raw, không log)
-     * @param issueIds  Danh sách issue IDs cần lấy chi tiết
-     * @return JiraBulkFetchResponse chứa issues đầy đủ fields
-     */
     public JiraBulkFetchResponse bulkFetchIssueDetails(String baseUrl, String jiraEmail, String token,
             List<String> issueIds) {
         if (issueIds == null || issueIds.isEmpty()) {
@@ -212,17 +180,6 @@ public class JiraClient {
 
     // ── Agile: boards ────────────────────────────────────────────────────────
 
-    /**
-     * Lấy danh sách boards của project theo Jira Agile REST API.
-     *
-     * @param baseUrl        Jira base URL
-     * @param jiraEmail      Email xác thực
-     * @param token          Jira API token (raw)
-     * @param projectKeyOrId Project key hoặc ID
-     * @param maxResults     Số results mỗi trang
-     * @param startAt        Offset bắt đầu
-     * @return JiraBoardListResponse
-     */
     public JiraBoardListResponse getBoardsByProject(String baseUrl, String jiraEmail, String token,
             String projectKeyOrId, int maxResults, int startAt) {
         String normalizedBaseUrl = baseUrl.stripTrailing().replaceAll("/+$", "");
@@ -268,18 +225,6 @@ public class JiraClient {
 
     // ── Agile: sprints ───────────────────────────────────────────────────────
 
-    /**
-     * Lấy danh sách sprints của board theo Jira Agile REST API.
-     *
-     * @param baseUrl    Jira base URL
-     * @param jiraEmail  Email xác thực
-     * @param token      Jira API token (raw)
-     * @param boardId    Board ID
-     * @param state      State filter (active / future / closed, comma-separated)
-     * @param maxResults Số results mỗi trang
-     * @param startAt    Offset bắt đầu
-     * @return JiraSprintListResponse
-     */
     public JiraSprintListResponse getSprintsByBoard(String baseUrl, String jiraEmail, String token,
             Long boardId, String state, int maxResults, int startAt) {
         String normalizedBaseUrl = baseUrl.stripTrailing().replaceAll("/+$", "");
@@ -328,15 +273,6 @@ public class JiraClient {
 
     // ── Project versions ─────────────────────────────────────────────────────
 
-    /**
-     * Lấy tất cả versions của project từ Jira REST API v3.
-     *
-     * @param baseUrl    Jira base URL
-     * @param jiraEmail  Email xác thực
-     * @param token      Jira API token (raw)
-     * @param projectKey Project key
-     * @return List của JiraVersion
-     */
     public List<JiraVersion> getProjectVersions(String baseUrl, String jiraEmail, String token,
             String projectKey) {
         String normalizedBaseUrl = baseUrl.stripTrailing().replaceAll("/+$", "");
@@ -380,18 +316,6 @@ public class JiraClient {
 
     // ── Labels: search issues for label aggregation ──────────────────────────
 
-    /**
-     * Search issues bằng JQL để aggregate labels.
-     * Reuse endpoint /rest/api/3/search/jql.
-     *
-     * @param baseUrl       Jira base URL
-     * @param jiraEmail     Email xác thực
-     * @param token         Jira API token (raw)
-     * @param jql           JQL query
-     * @param maxResults    Số issues tối đa mỗi lần
-     * @param nextPageToken opaque pagination token (null cho page đầu)
-     * @return JiraSearchJqlResponse
-     */
     public JiraSearchJqlResponse searchIssuesForLabels(String baseUrl, String jiraEmail, String token,
             String jql, int maxResults, String nextPageToken) {
         // Reuse the existing searchIssueIdsByJql method – logic giống nhau
@@ -400,10 +324,6 @@ public class JiraClient {
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    /**
-     * Builds Basic Auth headers using Base64(email:token).
-     * Token is NEVER logged.
-     */
     private HttpHeaders buildAuthHeaders(String jiraEmail, String token) {
         String credentials = jiraEmail + ":" + token;
         String basicAuth = "Basic " + Base64.getEncoder()
@@ -415,10 +335,6 @@ public class JiraClient {
         return headers;
     }
 
-    /**
-     * Strips potential sensitive data from Jira error response bodies.
-     * Truncates to 300 chars to avoid huge error messages.
-     */
     private String sanitizeBody(String body) {
         if (body == null)
             return "";
