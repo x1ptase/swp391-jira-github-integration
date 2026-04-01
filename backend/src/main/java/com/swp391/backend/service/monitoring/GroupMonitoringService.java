@@ -62,7 +62,7 @@ public class GroupMonitoringService {
      * @param classId ID của lớp học cần giám sát
      * @param filter  filter thời gian (có thể null)
      * @return danh sách DTO đã xếp loại sức khoẻ, sắp xếp theo healthStatus giảm dần
-     *         (CRITICAL trước, sau đó WARNING, CLOSED, HEALTHY)
+     *         (CRITICAL trước, sau đó WARNING, HEALTHY)
      */
     public List<GroupMonitoringDTO> getByClass(Long classId, MonitoringFilterRequest filter) {
         MonitoringDateRange range = dateRangeService.resolve(filter);
@@ -110,7 +110,7 @@ public class GroupMonitoringService {
      * <ol>
      *   <li>Tính {@code activeMemberRatio}.</li>
      *   <li>Phát hiện sync stale.</li>
-     *   <li>Xác định {@link HealthStatus} — ưu tiên CLOSED nếu nhóm đã đóng.</li>
+     *   <li>Xác định {@link HealthStatus} từ metrics thực — group OPEN hay CLOSED đều tính như nhau.</li>
      *   <li>Chọn {@link PrimaryReason} primary duy nhất.</li>
      *   <li>Format {@code membersText}.</li>
      * </ol>
@@ -138,8 +138,8 @@ public class GroupMonitoringService {
         boolean jiraSyncStale   = isSyncStale(raw.getJiraSyncStatus(),   raw.getJiraSyncStartedAt(),   now);
 
         // ── 4. Phân loại HealthStatus ─────────────────────────────────────
+        // Không phân biệt OPEN/CLOSED: group CLOSED vẫn tính health bình thường
         HealthStatus healthStatus = classifyHealth(
-                raw.getGroupStatus(),
                 totalCommits,
                 activeMemberRatio,
                 (int) overdueTasks,
@@ -149,10 +149,10 @@ public class GroupMonitoringService {
                 hasTopic,
                 (int) totalMembers);
 
-        // ── 5. Chọn PrimaryReason (chỉ tính nếu không CLOSED) ────────────
+        // ── 5. Chọn PrimaryReason ─────────────────────────────────────────
         PrimaryReason primaryReason = choosePrimaryReason(
-                        totalCommits, activeMemberRatio, (int) overdueTasks,
-                        lastActivityAt, githubSyncStale, jiraSyncStale, hasTopic, now);
+                totalCommits, activeMemberRatio, (int) overdueTasks,
+                lastActivityAt, githubSyncStale, jiraSyncStale, hasTopic, now);
 
         // ── 6. Format membersText ─────────────────────────────────────────
         String membersText = activeMembers + "/" + totalMembers + " active";
@@ -185,9 +185,12 @@ public class GroupMonitoringService {
     /**
      * Xác định {@link HealthStatus} theo quy tắc nghiệp vụ.
      *
+     * <p><b>Lưu ý:</b> group CLOSED vẫn được tính health bình thường.
+     * {@code groupStatus} (OPEN/CLOSED) là operational status, không ảnh hưởng
+     * đến health. Group CLOSED có WARNING/CRITICAL vẫn góp vào At Risk.
+     *
      * <h4>Thứ tự kiểm tra:</h4>
      * <ol>
-     *   <li><b>CLOSED</b>: GroupStatus = 'CLOSED' → dừng tại đây.</li>
      *   <li><b>CRITICAL</b> (bất kỳ điều kiện nào):
      *       <ul>
      *         <li>totalCommits == 0</li>
@@ -208,7 +211,6 @@ public class GroupMonitoringService {
      * </ol>
      */
     private HealthStatus classifyHealth(
-            String groupStatus,
             long totalCommits,
             double activeMemberRatio,
             int overdueTasks,
@@ -299,7 +301,7 @@ public class GroupMonitoringService {
 
     /**
      * Comparator để sắp xếp DTO theo mức độ nghiêm trọng giảm dần:
-     * CRITICAL → WARNING → CLOSED → HEALTHY.
+     * CRITICAL → WARNING → HEALTHY.
      */
     private int compareByHealth(GroupMonitoringDTO a, GroupMonitoringDTO b) {
         return Integer.compare(healthOrder(a.getHealthStatus()), healthOrder(b.getHealthStatus()));
@@ -310,8 +312,7 @@ public class GroupMonitoringService {
         return switch (status) {
             case CRITICAL -> 0;
             case WARNING  -> 1;
-            case CLOSED   -> 2;
-            case HEALTHY  -> 3;
+            case HEALTHY  -> 2;
         };
     }
 
