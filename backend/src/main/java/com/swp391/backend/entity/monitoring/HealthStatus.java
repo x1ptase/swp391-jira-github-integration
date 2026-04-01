@@ -26,9 +26,5 @@ public enum HealthStatus {
      */
     CRITICAL,
 
-    /**
-     * Nhóm đã được đóng ({@code StudentGroup.status = 'CLOSED'}).
-     * Không áp dụng các rule health thông thường cho nhóm này.
-     */
-    CLOSED
+
 }
