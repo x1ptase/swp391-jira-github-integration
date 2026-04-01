@@ -45,9 +45,8 @@ public class ClassMonitoringService {
         // 3. totalGroups = đếm tất cả group
         long totalGroups = allGroups.size();
 
-        // 4. atRisk = group OPEN có health WARNING hoặc CRITICAL
+        // 4. atRisk = group có health WARNING hoặc CRITICAL (bất kể OPEN hay CLOSED)
         long atRisk = allGroups.stream()
-                .filter(g -> "OPEN".equalsIgnoreCase(g.getStatus()))
                 .filter(g -> {
                     long commits      = gitCommitRepository
                             .countCommitsByGroupAndDateRange(

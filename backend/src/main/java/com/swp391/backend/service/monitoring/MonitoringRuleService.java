@@ -195,7 +195,7 @@ public class MonitoringRuleService {
     // ────────────────────────────────────────────────────────────────────────
 
     /**
-     * Tính tình trạng sức khoẻ của lớp dựa trên các nhóm OPEN.
+     * Tính tình trạng sức khoẻ của lớp dựa trên <b>tất cả</b> groups (cả OPEN lẫn CLOSED).
      *
      * <ul>
      *   <li>HEALTHY: không có critical group VÀ riskRatio &lt; 25%</li>
@@ -203,19 +203,19 @@ public class MonitoringRuleService {
      *   <li>CRITICAL: &ge; 2 critical group HOẶC riskRatio &ge; 50%</li>
      * </ul>
      *
-     * <p>Nếu không có nhóm OPEN nào → HEALTHY (không có rủi ro).
+     * <p>Nếu không có nhóm nào → HEALTHY (không có rủi ro).
      *
-     * @param totalOpenGroups tổng số nhóm OPEN
-     * @param criticalGroups  số nhóm có status CRITICAL
-     * @param groupsAtRisk    số nhóm có status WARNING hoặc CRITICAL
+     * @param totalGroups    tổng số nhóm (bao gồm cả OPEN và CLOSED)
+     * @param criticalGroups số nhóm có health CRITICAL
+     * @param groupsAtRisk   số nhóm có health WARNING hoặc CRITICAL
      * @return HealthStatus của lớp
      */
-    public HealthStatus computeClassHealth(int totalOpenGroups, int criticalGroups, int groupsAtRisk) {
-        if (totalOpenGroups == 0) {
+    public HealthStatus computeClassHealth(int totalGroups, int criticalGroups, int groupsAtRisk) {
+        if (totalGroups == 0) {
             return HealthStatus.HEALTHY;
         }
 
-        double riskRatio = (double) groupsAtRisk / totalOpenGroups;
+        double riskRatio = (double) groupsAtRisk / totalGroups;
 
         // CRITICAL: >= 2 nhóm critical HOẶC riskRatio >= 50%
         if (criticalGroups >= 2 || riskRatio >= config.getClassCriticalRiskRatio()) {
