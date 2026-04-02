@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import "./StudentsWatchlist.css";
+import "./LecturerStudentsWatchlist.css";
 
 const PAGE_SIZE = 10;
 
@@ -231,7 +231,13 @@ export default function StudentsWatchlist({ classId, classInfo }) {
                       <td>
                         <button
                           className="sw-view-btn"
-                          onClick={() => navigate(`/lecturer/groups/${s.groupId}/detail`)}
+                          onClick={() => {
+                            if (!s.groupId) {
+                              alert("Student hasn't assigned into any group yet!");
+                            } else {
+                              navigate(`/lecturer/groups/${s.groupId}/detail`);
+                            }
+                          }}
                         >
                           View group
                         </button>

@@ -54,6 +54,9 @@ public class UserServiceImpl implements UserService {
         if (!email.isEmpty() && userRepository.existsByEmailIgnoreCase(email)) {
             throw new BusinessException("Email already exists: " + email, 409);
         }
+        if (!email.isEmpty() && !isValidEmail(email)) {
+            throw new BusinessException("Invalid email format: " + email, 400);
+        }
         if (!studentCode.isEmpty() && userRepository.existsByStudentCode(studentCode)) {
             throw new BusinessException("Student code already exists: " + studentCode, 409);
         }
@@ -110,6 +113,9 @@ public class UserServiceImpl implements UserService {
                 userRepository.existsByEmailIgnoreCase(newEmail)) {
             throw new BusinessException("Email already exists: " + newEmail, 409);
         }
+        if (!newEmail.isEmpty() && !isValidEmail(newEmail)) {
+            throw new BusinessException("Invalid email format: " + newEmail, 400);
+        }
 
         String oldStudentCode = user.getStudentCode() == null ? "" : user.getStudentCode();
         if (!newStudentCode.isEmpty() &&
@@ -146,6 +152,10 @@ public class UserServiceImpl implements UserService {
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException("Unique constraint violated (email/github/jira)", 409);
         }
+    }
+    private boolean isValidEmail(String email) {
+        String regex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
+        return email.matches(regex);
     }
 
     @Override

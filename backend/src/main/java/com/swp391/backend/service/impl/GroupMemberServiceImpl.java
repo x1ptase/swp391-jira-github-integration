@@ -161,6 +161,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
             r.setUsername(gm.getUser().getUsername());
             r.setFullName(gm.getUser().getFullName());
             r.setEmail(gm.getUser().getEmail());
+            r.setStudentCode(gm.getUser().getStudentCode());
             r.setMemberRole(gm.getMemberRole() == null ? null : gm.getMemberRole().getCode());
             result.add(r);
         }
@@ -199,6 +200,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         r.setUsername(u.getUsername());
         r.setFullName(u.getFullName());
         r.setEmail(u.getEmail());
+        r.setStudentCode(u.getStudentCode());
         r.setGithubUsername(u.getGithubUsername());
         r.setJiraAccountId(u.getJiraAccountId());
         if (u.getRole() != null) r.setRoleCode(u.getRole().getRoleCode());

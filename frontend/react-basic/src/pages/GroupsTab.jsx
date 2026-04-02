@@ -4,8 +4,6 @@ import "./GroupsTab.css";
 
 const PAGE_SIZE = 8;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
 function groupInitials(name = "") {
   const m = name.match(/\d+/);
   return m ? `G${m[0]}` : name.slice(0, 2).toUpperCase();
@@ -50,7 +48,7 @@ function StatusBadge({ status }) {
   return <span className={`gt-status-badge ${cls}`}>{status || "—"}</span>;
 }
 
-// ── Members Modal (view + add + remove + set leader) ──────────────────────────
+// Members Modal (view + add + remove + set leader) 
 
 function MembersModal({ group, onClose }) {
   const token = localStorage.getItem("token");
@@ -127,7 +125,10 @@ function MembersModal({ group, onClose }) {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) fetchMembers();
+      if (res.ok) {
+        fetchMembers();
+        fetchEligible(keyword, eligiblePage);
+      }
     } catch (e) {
       console.error("Failed to remove member", e);
     }
@@ -177,7 +178,7 @@ function MembersModal({ group, onClose }) {
                   <tr key={m.userId || i}>
                     <td>{i + 1}</td>
                     <td className="gt-modal-name">{m.fullName || m.username}</td>
-                    <td>{m.studentCode || m.code || "—"}</td>
+                    <td>{m.studentCode || m.studentId || m.code || "—"}</td>
                     <td>
                       <span className={`gt-role-badge ${(m.memberRole || m.role) === "LEADER" ? "gt-role-leader" : "gt-role-member"}`}>
                         {m.memberRole || m.role || "MEMBER"}
@@ -237,7 +238,7 @@ function MembersModal({ group, onClose }) {
                         <td>{i + 1}</td>
                         <td className="gt-modal-name">{s.fullName || s.username}</td>
                         <td>{s.studentCode || "—"}</td>
-                        <td className="gt-modal-email">{s.email || "—"}</td>
+                        <td className="gt-modal-studentcode">{s.studentCode || "—"}</td>
                         <td>
                           <button className="gt-modal-action gt-modal-action-add"
                             onClick={() => handleAdd(s.userId)}>
@@ -270,7 +271,7 @@ function MembersModal({ group, onClose }) {
   );
 }
 
-// ── Topic Modal ───────────────────────────────────────────────────────────────
+//Topic Modal 
 
 function TopicModal({ group, onClose, onAssigned }) {
   const token = localStorage.getItem("token");
@@ -405,7 +406,7 @@ function TopicModal({ group, onClose, onAssigned }) {
 }
 
 
-// ── Status Dropdown (portal-like, fixed to button) ────────────────────────────
+//Status Dropdown (portal-like, fixed to button)
 
 const GROUP_STATUSES = ["OPEN", "CLOSED"];
 
@@ -419,7 +420,7 @@ function GroupMenu({ group, onClose, onRefresh, onStatusChanged, onEditRequest }
       if (ref.current && !ref.current.contains(e.target)) onClose();
     };
     const t = setTimeout(() => document.addEventListener("mousedown", handler), 10);
-    
+
     if (ref.current) {
       const rect = ref.current.getBoundingClientRect();
       if (rect.bottom > window.innerHeight - 10) {
@@ -488,7 +489,7 @@ function GroupMenu({ group, onClose, onRefresh, onStatusChanged, onEditRequest }
   );
 }
 
-// ── Main GroupsTab ────────────────────────────────────────────────────────────
+// Main GroupsTab 
 
 export default function GroupsTab({ classId, classInfo }) {
   const navigate = useNavigate();
@@ -514,7 +515,7 @@ export default function GroupsTab({ classId, classInfo }) {
 
   const classCode = classInfo?.classCode || "Class";
 
-  // ── Fetch ────────────────────────────────────────────────────────────────────
+  // Fetch
   const fetchGroups = useCallback(async () => {
     setLoading(true);
     try {
@@ -539,7 +540,7 @@ export default function GroupsTab({ classId, classInfo }) {
 
   useEffect(() => { fetchGroups(); }, [fetchGroups]);
 
-  // ── Filter ───────────────────────────────────────────────────────────────────
+  // Filter
   const filtered = useMemo(() => {
     return groups.filter((g) => {
       const q = searchQuery.toLowerCase();
@@ -554,7 +555,7 @@ export default function GroupsTab({ classId, classInfo }) {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // ── Callbacks ────────────────────────────────────────────────────────────────
+  // Callbacks
   const handleTopicAssigned = (groupId, updatedGroup) => {
     setGroups((prev) => prev.map((g) =>
       g.groupId === groupId

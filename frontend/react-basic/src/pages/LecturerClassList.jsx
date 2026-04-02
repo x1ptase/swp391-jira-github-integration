@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import "./LecturerClassList.css";
 
-// helpers────────────────────────────────────────────────────────────────
+// helpers
 const STATUS_CONFIG = {
   HEALTHY: { label: "Healthy", dot: "#10b981", bg: "#d1fae5", text: "#065f46" },
   WARNING: { label: "Warning", dot: "#8b5cf6", bg: "#ede9fe", text: "#4c1d95" },
@@ -76,19 +76,19 @@ const IconSearch = () => (
 );
 
 const IconLogout = () => (
-  <svg 
-    width="18" 
-    height="18" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="1.8" 
-    strokeLinecap="round" 
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
     strokeLinejoin="round"
   >
     {/* cửa */}
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-    
+
     {/* mũi tên đi ra */}
     <polyline points="16 17 21 12 16 7" />
     <line x1="21" y1="12" x2="9" y2="12" />
@@ -157,7 +157,7 @@ export default function LecturerClassList() {
   useEffect(() => { fetchClasses(); fetchSemesters(); }, [fetchClasses, fetchSemesters]);
   useEffect(() => { classes.forEach(c => fetchSummary(c.classId)); }, [classes, fetchSummary]);
 
-  // filter───────────────────────────────────────────────────────────────
+  // filter
   const filtered = classes.filter(c => {
     const matchKw = !keyword.trim() || c.classCode?.toLowerCase().includes(keyword.toLowerCase());
     const matchSem = !semester || c.semesterCode === semester;
@@ -166,7 +166,7 @@ export default function LecturerClassList() {
 
   const now = new Date();
   const lastUpdate = now.toLocaleString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
-  const activeTerm = semesters.slice(0, 2).map(s => s.semesterCode).join(", ") || "—";
+
 
   return (
 
@@ -174,7 +174,7 @@ export default function LecturerClassList() {
       {/* Navbar */}
       <nav className="lcd-nav">
         <img src={logo} alt="Logo" className="lcd-nav-logo" />
-        <span className="lcd-nav-brand">The Github & Jira Tool Support</span>
+        <span className="lcd-nav-brand">The Jira & Github Tool Support</span>
         <div className="lcd-nav-spacer" />
         <div className="lcd-nav-user">
           <div className="lcd-nav-userinfo">
@@ -182,7 +182,7 @@ export default function LecturerClassList() {
             <div className="lcd-nav-role">Academic Lecturer</div>
           </div>
           <button className="lcd-nav-icon-btn" title="logout" onClick={handleLogout}>
-            <IconLogout/>
+            <IconLogout />
           </button>
         </div>
       </nav>
@@ -320,14 +320,10 @@ export default function LecturerClassList() {
       {/* Footer */}
       <footer className="lcd-footer">
         <div className="lcd-footer-item">
-          <strong>Active Terms</strong>
-          {activeTerm}
-        </div>
-        <div className="lcd-footer-item">
           <strong>Last Update</strong>
           Today at {lastUpdate}
         </div>
-        <span className="lcd-footer-copy">© 2026 The Academic Github & Jira Support Tool</span>
+        <span className="lcd-footer-copy">© 2026 The Academic Jira & Github Support Tool</span>
       </footer>
     </div>
   );
