@@ -2,22 +2,22 @@
 
 .login-wrapper {
   /* Ép nó chiếm toàn bộ chiều rộng và chiều cao trình duyệt cho đẹp */
-  width: 100vw; 
+  width: 100vw;
   height: 100vh;
-  
+
   /* Căn giữa */
   display: flex;
   justify-content: center;
   align-items: center;
-  
- 
-  background-color: #f0f2f5; 
-  
-  
+
+
+  background-color: #f0f2f5;
+
+
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 999; 
+  z-index: 999;
 }
 
 .login-box {
@@ -26,7 +26,7 @@
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 350px; 
+  max-width: 350px;
   text-align: center;
 }
 
