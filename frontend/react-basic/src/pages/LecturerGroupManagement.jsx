@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./LecturerGroupManagement.css";
 import LogoutButton from "./LogoutButton";
-import StudentsWatchlist from "./StudentsWatchlist";
+import LecturerStudentsWatchlist from "./LecturerStudentsWatchlist";
 import GroupsTab from "./GroupsTab";
 
 
@@ -74,7 +74,7 @@ export default function LecturerGroupManagement() {
     if (activeTab === "students") fetchStudentWatchlist();
   }, [activeTab, fetchHealthData, fetchClassDetails]);
 
-  // Helper cho style status badge (Khớp hoàn toàn với ảnh)
+  // Helper cho style status badge
   const getStatusClass = (status) => {
     switch (status?.toUpperCase()) {
       case "HEALTHY": return "lgm-badge-healthy";
@@ -99,8 +99,6 @@ export default function LecturerGroupManagement() {
 
   return (
     <div className="lgm-root">
-      {/* Topbar: Giống ảnh 2 & 3 */}
-      {/* Topbar: Cập nhật phần hiển thị tên lớp động */}
       <header className="lgm-topbar">
         <div className="lgm-topbar-left">
           <button className="lgm-back-btn" onClick={() => navigate(-1)}>
@@ -224,7 +222,7 @@ export default function LecturerGroupManagement() {
         )}
 
         {activeTab === "students" && (
-          <StudentsWatchlist classId={classId} classInfo={classInfo} />
+          <LecturerStudentsWatchlist classId={classId} classInfo={classInfo} />
         )}
 
         {activeTab === "groups" && (
