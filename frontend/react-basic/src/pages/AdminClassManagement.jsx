@@ -80,7 +80,7 @@ export default function AdminClassManagement() {
   const token = localStorage.getItem("token");
   const auth = () => ({ Authorization: `Bearer ${token}` });
   const authJson = () => ({ ...auth(), "Content-Type": "application/json" });
-  // Khi URL params thay đổi (navigate từ trang Semester), cập nhật form và filter
+
   useEffect(() => {
     setForm(prev => ({ ...prev, semesterId: semesterIdFromUrl }));
     setFilter(prev => ({ ...prev, semesterCode: semesterCodeFromUrl }));
@@ -133,9 +133,17 @@ export default function AdminClassManagement() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this class?")) return;
-    await fetch(`${CLASS_API}/${id}`, { method: "DELETE", headers: auth() });
+  const handleDelete = async (cls) => {
+    if (cls.lecturerName) {
+      alert("Lecturer's still in this class!");
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to delete class "${cls.classCode}"?`)) return;
+    const res = await fetch(`${CLASS_API}/${cls.classId}`, { method: "DELETE", headers: auth() });
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.message || "Failed to delete class");
+    }
     fetchClasses();
   };
 
@@ -357,7 +365,7 @@ export default function AdminClassManagement() {
                     </td>
                     <td>
                       <div className="acm-actions">
-                        
+
                         {/* 1. Lecturer */}
                         <div className="acm-dropdown-wrapper">
                           <button className="acm-btn-action acm-btn-lecturer" onClick={() => toggleDropdown("lecturer", c.classId)}>
@@ -368,7 +376,7 @@ export default function AdminClassManagement() {
                               <button className="acm-dropdown-item" onClick={() => { setActiveDropdown(null); openLecturerModal(c); }}>
                                 Add Lecturer
                               </button>
-                              <button className="acm-dropdown-item" 
+                              <button className="acm-dropdown-item"
                                 onClick={() => { setActiveDropdown(null); handleUnassignLecturer(c); }}
                                 disabled={!c.lecturerName || unassigningLec === c.classId}>
                                 {unassigningLec === c.classId ? "Removing..." : "Remove Lecturer"}
@@ -399,7 +407,7 @@ export default function AdminClassManagement() {
                                 Edit
                               </button>
                               <div className="acm-dropdown-divider"></div>
-                              <button className="acm-dropdown-item acm-dropdown-danger" onClick={() => { setActiveDropdown(null); handleDelete(c.classId); }}>
+                              <button className="acm-dropdown-item acm-dropdown-danger" onClick={() => { setActiveDropdown(null); handleDelete(c); }}>
                                 Delete
                               </button>
                             </div>
