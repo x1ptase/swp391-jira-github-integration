@@ -1,16 +1,144 @@
-# Java Maven
-target/
-*.class
-*.jar
+# =============================================
+# SWP391 - Jira GitHub Integration Tool
+# .gitignore - Ẩn file rác & thông tin nhạy cảm
+# =============================================
 
-# IDE rác
+# ─── CẤU HÌNH BÍ MẬT (QUAN TRỌNG - KHÔNG PUSH LÊN GITHUB) ───
+# Spring Boot config có chứa DB password, JWT secret, AES key
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-*.properties
+# Ngoại lệ: cho phép file example/template
+!backend/src/main/resources/application-example.properties
+
+# Biến môi trường
+.env
+.env.*
+!.env.example
+*.env
+
+# ─── JAVA / MAVEN ───
+# Build output
+backend/target/
+**/target/
+
+# Compiled class files
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+*.nar
+
+# Maven wrapper cache
+.mvn/repository/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# ─── SPRING BOOT ───
+# Log files
+*.log
+logs/
+backend/logs/
+
+# ─── NODE.JS / REACT (FRONTEND) ───
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+frontend/react-basic/dist/
+frontend/react-basic/dist-ssr/
+frontend/react-basic/build/
+
+# Vite cache
+frontend/react-basic/.vite/
+**/.vite/
+
+# NPM / Yarn debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local env files (Vite)
+*.local
+
+# ─── IDE / EDITOR ───
+# IntelliJ IDEA
 .idea/
 *.iml
+*.iws
+*.ipr
+
+# VS Code
 .vscode/
+!.vscode/extensions.json
+
+# Eclipse
 .settings/
 .project
 .classpath
+*.launch
 
-# Hệ điều hành
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ─── HỆ ĐIỀU HÀNH ───
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
 Thumbs.db
+Thumbs.db:encdata
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+
+# ─── DATABASE ───
+# SQL Server local backup / export files
+*.bak
+*.mdf
+*.ldf
+*.ndf
+
+# ─── BẢO MẬT / CREDENTIALS ───
+# Private keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+
+# Secrets & tokens
+secrets.yml
+secrets.yaml
+secrets.json
+
+# ─── MISC ───
+# Test coverage report
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
